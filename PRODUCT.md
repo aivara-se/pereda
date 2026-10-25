@@ -21,7 +21,7 @@ v1.0 carries one flow: **the live day**. An account opens today's note, writes, 
 
 ## Reading back
 
-- The calendar opens any day, and the note shows its date above the text.
+- The calendar opens any day up to today, and the note shows its date above the text.
 - The same account sees the same day and the same text on every device.
 - A day is found by its date, not by a title or a search.
 
@@ -30,7 +30,7 @@ v1.0 carries one flow: **the live day**. An account opens today's note, writes, 
 - **Hosted by Aivara.** The service we run; anyone can create an account and write.
 - **Self-hosted.** One binary and one data directory, with no external database, object store or service of ours. The operator runs it and decides who has an account; self-hosting is free.
 - No note feature is withheld from a self-hosted instance. The hosted service adds only signup and the running of it.
-- The source is public, and an instance's data belongs to that instance.
+- The source is public, and an instance's data stays on that instance.
 
 ## Your data
 
@@ -41,12 +41,12 @@ v1.0 carries one flow: **the live day**. An account opens today's note, writes, 
 
 ## AI, later
 
-AI is not in v1.0. When it comes it is an assistant to the writer, never the author: it may summarize a day, answer a question about the notes, or suggest a next line, and every word it produces is marked until the writer accepts it. It reads only the notes the account points it at, never trains on them, and can be turned off. A self-hosted instance uses the operator's own model key; the hosted service names the model it uses.
+AI is not in v1.0. When it comes it is an assistant to the writer, never the author: it may summarize a day, answer a question about the notes, or suggest a next line, and every word it produces is marked until the writer accepts it. It is off until the account turns it on, reads only the notes the account points it at, and never trains on them. A self-hosted instance uses the operator's own model key; the hosted service names the model it uses.
 
 ## What it never does
 
 - Never asks for a save: no save button, no draft state, no sync control.
-- Never asks for structure: no notebooks, titles, templates, required fields or daily prompts.
+- Never asks for structure: no notebooks, titles, templates or required fields.
 - Never loses a keystroke that reached the page: a dropped connection keeps the text and sends it on return.
 - Never publishes a note, and never shares one except by the account's explicit act; v1.0 has no such act.
 - Never shows an ad, sells a note, or trains a model on one.
@@ -71,7 +71,7 @@ Known, and deliberately not handled in this version.
 - **A tab left open past midnight.** It keeps writing to the day it opened until it is reloaded; the new day starts on the next open.
 - **A note deleted on one device while it is open on another.** The other device keeps its copy until it reloads, and an edit there brings the note back.
 - **The account changes timezone.** Existing notes keep their dates; near the change, a day can be skipped or written twice.
-- **Two devices type into one note at once.** The text converges and no character is lost, but the merge has no history and there is no undo across devices.
+- **Two devices type into one note at once, then want to undo one side.** The text converges and no character is lost, but the merge has no history and there is no undo across devices.
 - **The hosted service is down.** Hosted notes are unavailable until it returns; self-hosted instances are unaffected.
 - **A note grows past a book.** v1.0 has no pagination, so a very long note is slow to open.
 
