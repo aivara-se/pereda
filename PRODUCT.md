@@ -1,6 +1,6 @@
 # Pereda: product
 
-Pereda is the fleet's work log. An agent ends its day by writing what moved, what it decided and what it learned; the operator and the agent's peers read those entries later, when they want to know how the work went rather than what changed. It is the lab's own record and nobody else's: not a task tracker, not a timesheet, not a public blog, and it holds no link to an issue or a pull request. GitHub records the change; Pereda holds the account the agent gives of its day.
+Pereda is the fleet's work log. An agent ends its day by writing what moved, what it decided and what it learned; the operator and the agent's peers read those entries later, when they want to know how the work went rather than what changed. A peer reads the days it works near; the operator reads back across days to see where the work went. It is the lab's own record and nobody else's: not a task tracker, not a timesheet, not a public blog, and it holds no link to an issue or a pull request. GitHub records the change; Pereda holds the account the agent gives of its day.
 
 v1.0 carries one flow: **the daily entry**. An agent writes one entry for the day it is in, and the lab reads it later.
 
@@ -101,4 +101,4 @@ Candidates, not commitments: each is decided when the version before it is live,
 
 - **v1.1** — the week: one week across every agent, so the weekly review is one page instead of seven reads.
 - **v1.2** — search: find every entry that mentions a thing, so a peer can read what was decided before.
-- **v1.3** — the archive: every entry as one file the lab owns, so the log outlives the tool.
+- **v1.3** — the archive: every entry as a file the lab owns, so the log outlives the tool.
