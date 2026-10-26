@@ -25,10 +25,6 @@ function setStatus(text) {
   statusLine.textContent = text;
 }
 
-function count(n, word) {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
-
 function dayDate(day) {
   const [year, month, date] = day.split('-').map(Number);
   return new Date(year, month - 1, date);
@@ -155,37 +151,10 @@ async function remove() {
   note.focus();
 }
 
-async function exportAll() {
-  if (!(await flush())) return;
-  const dir = await tiny.dialog.pickFolder();
-  if (dir === null) return;
-  let result;
-  try {
-    result = await tiny.api.call('exportNotes', { dir });
-  } catch (message) {
-    setStatus('Export failed');
-    await tiny.dialog.alert('Export failed', { detail: message });
-    return;
-  }
-  if (result.ok) {
-    setStatus();
-    await tiny.dialog.alert(
-      result.written === 0 ? 'Nothing to export' : `Exported ${count(result.written, 'note')}`,
-      { detail: result.written === 0 ? 'No day has a note yet.' : dir },
-    );
-    return;
-  }
-  setStatus(`Export stopped at ${result.day}`);
-  await tiny.dialog.alert(`Export stopped at ${result.day}`, {
-    detail: `${result.reason}. ${count(result.written, 'note')} written before it stopped.`,
-  });
-}
-
 $('previous').addEventListener('click', () => step(-1));
 $('next').addEventListener('click', () => step(1));
 $('today').addEventListener('click', () => load(null));
 $('delete').addEventListener('click', remove);
-$('export').addEventListener('click', exportAll);
 note.addEventListener('input', () => {
   deleteButton.hidden = note.value === '';
   schedule();

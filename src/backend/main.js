@@ -1,9 +1,8 @@
-// Pereda's backend: it owns the clock, the notes database and the export, and
-// the page reaches them only through the calls below.
+// Pereda's backend: it owns the clock and the notes database, and the page
+// reaches them only through the calls below.
 
 import { Database } from 'tjs:sqlite';
 import { openStore } from './store.js';
-import { join, writeExport } from './export.js';
 import { assertWritableDay, today } from '../shared/day.js';
 
 const DB_NAME = 'pereda.db';
@@ -16,7 +15,7 @@ function store(app) {
   if (opening === null) {
     opening = (async () => {
       const { data } = await app.paths();
-      return openStore(join(data, DB_NAME), (path) => new Database(path));
+      return openStore(`${data}/${DB_NAME}`, (path) => new Database(path));
     })();
   }
   return opening;
@@ -50,17 +49,5 @@ export const api = {
       throw new Error('This note was written somewhere else.');
     }
     return { day, seq: saved.row.seq };
-  },
-
-  // Write every note into the chosen folder. A failure names the day it stopped
-  // on; the files already written stay.
-  async exportNotes(params, app) {
-    const notes = await store(app);
-    if (typeof params?.dir !== 'string' || params.dir === '') {
-      throw new Error('Choose a folder to export into.');
-    }
-    return writeExport(notes.exported(), params.dir, (path, body) =>
-      tjs.writeFile(path, body),
-    );
   },
 };

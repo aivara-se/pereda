@@ -8,7 +8,7 @@ One window, one OS user, one data folder. There is no account and no server ([`0
 
 ## The shape
 
-The page draws and takes input; the backend owns the day, the store and the export. They meet at a small set of named calls, and the page never reaches the database or the filesystem.
+The page draws and takes input; the backend owns the day and the store. They meet at a small set of named calls, and the page never reaches the database or the filesystem.
 
 The backend is the only authority. A state the page believes and the backend has not confirmed is not a state, which is what lets the app promise it never shows a save it did not make. The page holds nothing that has to survive the window: reopen, and the note is read back from the store.
 
@@ -42,12 +42,6 @@ The day is the machine's local calendar day, read by the backend; the page never
 
 The page holds one day at a time: an arrow asks the backend for the day before or after it, and Today asks for the current day. v1.0 has no calendar, no search, no title index and no full-text table, so a day is found by stepping to its date.
 
-## Export
-
-The notes have to leave as files the person can read without the app. Export writes one Markdown file per day, named by its date, with the body verbatim, skipping any day with nothing written; an existing file of the same name is replaced.
-
-It writes where the person points it, one file at a time, stops at the first failure and reports how many were written; what is already written stays. The export is a copy, never a move: the database is unchanged and an edited export is never imported back ([`002`](docs/adrs/002-local-only-in-v1.md)).
-
 ## Failure modes
 
 - **The database is unreadable.** Every write is refused and the app shows the file with the reason; it never deletes, recreates or repairs it over the notes.
@@ -56,7 +50,6 @@ It writes where the person points it, one file at a time, stops at the first fai
 - **The app quits or crashes.** Every committed save is on disk; the edit inside the debounce can be lost.
 - **The clock moves.** A day can repeat or vanish; notes keep their dates.
 - **A second instance.** The running app comes forward, so two windows never write the same file.
-- **Export fails.** The error names the day it stopped on, and the files already written remain.
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **No network.** v1.0 makes no request of any kind, and the acceptance run is made with the network off.
 
@@ -71,8 +64,8 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note and no export, a save that cannot resurrect a tombstone, a day across the turn of the year, and export names and contents.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, and a day across the turn of the year.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-What no test reaches — the webview's drawing and input, the native folder dialog, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
+What no test reaches — the webview's drawing and input, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
