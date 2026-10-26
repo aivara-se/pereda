@@ -190,16 +190,6 @@ note.addEventListener('input', () => {
   deleteButton.hidden = note.value === '';
   schedule();
 });
-document.addEventListener('keydown', (event) => {
-  if (!event.altKey || event.metaKey || event.ctrlKey) return;
-  if (event.key === 'ArrowLeft') {
-    event.preventDefault();
-    step(-1);
-  } else if (event.key === 'ArrowRight') {
-    event.preventDefault();
-    step(1);
-  }
-});
 note.addEventListener('blur', () => flush());
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) flush();

@@ -26,7 +26,7 @@ The store never deletes, recreates or repairs the database over the notes. If it
 
 - The only delay between a keystroke and the database is a short debounce; a blur, a day switch and a hidden window flush at once.
 - One save is in flight at a time: a newer body waits and replaces it, and is sent whole.
-- A failed save is shown with its reason and the text stays on screen; the next flush sends the whole body again. Success is shown only where it happened.
+- A failed save is shown with its reason and the text stays on screen; the next flush sends the whole body again.
 - A day switch flushes before it loads, so text never lands on the wrong date.
 - The debounce is the one window a quit or a kill can lose. Every committed save is on disk; the moment before an abrupt end may not be.
 
