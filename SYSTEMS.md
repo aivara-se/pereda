@@ -10,17 +10,9 @@ The app has one window, `main`, one OS user and one data folder. The notes belon
 
 ## The project
 
-- `tinyjs.json` — `name` `pereda`, `title` `Pereda`, `id` `se.aivara.pereda`, `version`, `minTinyjsVersion` `0.66.2`, a `960x700` window, `rememberWindows` on, the icon at `assets/icon.png`, popups and downloads denied, the webview's Reload/Inspect menu off. No `url`, no `update` block and no remote page.
-- `src/backend/main.js` — the tinyjs module: `init(app)` opens the store and sets the menu; `api` exposes `status`, `today`, `note`, `month`, `save`, `exportTo`; `onSystem` handles wake.
-- `src/backend/store.js` — the SQLite store, written against a `Database`-shaped object and a `now` function, so the tests open it with `bun:sqlite` and the app opens it with `tjs:sqlite`. It has no `tjs` import.
-- `src/backend/day.js` — `today(now)`, `isValidDay`, `isFuture`, the `YYYY-MM-DD` string. Pure.
-- `src/backend/export.js` — rows to `<day>.md` files, with the writer injected. Pure over the filesystem.
-- `src/frontend/index.html`, `app.js`, `format.js`, `styles.css` — plain HTML, CSS and JavaScript, no framework and no bundler.
-- `assets/icon.png` — 1024×1024.
-- `tests/` — Bun tests for the pure modules and the store.
-- `package.json` — scripts only, no dependencies.
+The app is a tinyjs project with a JavaScript backend and a plain page. `src/backend/` owns the module, the store, the day and the export; `src/frontend/` owns the editor and the calendar; `tests/` holds the checks.
 
-There is no `resources/` and no `executables/` in v1.0.
+The page and the backend meet at named calls — `status`, `today`, `note`, `month`, `save`, `exportTo` — and the page never reaches SQLite or the filesystem. `tinyjs.json` carries the app's identity and the pinned tinyjs version; it loads no remote page and has no `url` or `update` block ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
 ## The store
 
@@ -32,28 +24,16 @@ One SQLite database, `pereda.db`, at `(await app.paths()).data + '/pereda.db'`:
 
 The folder is the app's, named after the `id`; changing the `id` starts every user with an empty folder ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-On open the store runs `PRAGMA journal_mode = WAL`, `PRAGMA synchronous = FULL`, and creates the schema if it is missing:
+On open the store enables write-ahead logging and full synchronous commits, and creates the schema if it is missing. One row per day: `day` is the local `YYYY-MM-DD` key, `body` is the whole note, and `seq` is the page's write counter for that day ([`003`](docs/adrs/003-sqlite-is-the-store.md)). The schema version is 1.
 
-```sql
-CREATE TABLE IF NOT EXISTS notes (
-  day  TEXT PRIMARY KEY,
-  body TEXT NOT NULL,
-  seq  INTEGER NOT NULL
-) WITHOUT ROWID;
-
-PRAGMA user_version = 1;
-```
-
-One row per day. `day` is the local `YYYY-MM-DD`; `body` is the whole note; `seq` is the page's write counter for that day ([`003`](docs/adrs/003-sqlite-is-the-store.md)).
-
-**A row is never deleted.** Clearing a note writes `body = ''` and leaves the row as a tombstone; every read filters `body <> ''`. That is what stops an out-of-order save from resurrecting a day the person cleared: the upsert applies only when the incoming `seq` is greater than the stored one.
+**A row is never deleted.** Clearing a note stores an empty body and leaves the row as a tombstone; every read skips the tombstones. That is what stops an out-of-order save from resurrecting a day the person cleared: a save applies only when its sequence is greater than the stored one.
 
 The store's calls:
 
-- `check()` — `PRAGMA quick_check`; `ok`, or the reason and the file path.
+- `check()` — an integrity check; `ok`, or the reason and the file path.
 - `load(day)` — `{ body, seq }`, or `null` for a day never written.
-- `save(day, body, seq)` — validate, upsert with the `seq` guard, return `{ ok, seq, applied }`. An empty body is a tombstone, not a delete.
-- `month(year, month)` — the days in that month with `body <> ''`, sorted, for the calendar.
+- `save(day, body, seq)` — validate, write with the sequence guard, return `{ ok, seq, applied }`. An empty body is a tombstone, not a delete.
+- `month(year, month)` — the days in that month that have a note, sorted, for the calendar.
 - `rows()` — every non-empty day and body, in day order, for export.
 
 Validation is at the boundary: the day matches `YYYY-MM-DD`, is a real calendar date, and is not after `today()`; `body` is a string; `seq` is a non-negative integer. A value that fails is refused with a reason and no write.
@@ -62,7 +42,7 @@ Validation is at the boundary: the day matches `YYYY-MM-DD`, is a real calendar 
 
 1. The page holds the open day and the textarea. On `input` it restarts a 150 ms timer; on `blur`, on a day switch, and when the window becomes hidden it flushes immediately. The timer is the only delay between a keystroke and the database.
 2. A flush sends `api.save({ day, body, seq })` with the whole body and the next `seq`. One call is in flight at a time; a newer body waits for it and is sent next. The page never sends a diff, and the backend never merges text.
-3. The backend validates the request and runs the upsert. The `seq` guard makes an older body that arrives late a no-op. The whole write is one statement, so it is atomic.
+3. The backend validates the request and applies it with the sequence guard. A body that arrives late is a no-op. The write is atomic.
 4. The backend returns `{ ok: true, seq, applied }` or `{ ok: false, reason }`. On a failure the page shows a banner with the reason and keeps the text; the next flush retries the whole body. The app never shows a save it did not make.
 5. A day switch flushes the current day before it loads the next, so text is never moved to the wrong date.
 
