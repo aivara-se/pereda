@@ -1,0 +1,29 @@
+name: publish
+
+# The organisation's optional release flow: run it with a bump, approve the
+# release pull request it opens, and the merge tags and publishes the release.
+# The workflow itself lives in aivara-se/.github; docs/RELEASES.md there
+# explains the artifacts and the secrets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publish:
+    if: "github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'release: v')"
+    uses: aivara-se/.github/.github/workflows/tinyjs-publish.yml@main
+    with:
+      bump: ${{ inputs.bump || 'patch' }}
+    secrets: inherit
