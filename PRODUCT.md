@@ -1,8 +1,8 @@
 # Pereda: product
 
-Pereda is a real-time daily note app for the desktop. It opens on today, one page per day, and everything typed is written to disk as it is typed: there is no save button, no draft state and no sync step. It is a local app — no account, no server, no network. The notes are one database on the computer, and the app works with the network off.
+Pereda is a real-time daily note app for the desktop. It opens on today, one note per day, and everything typed is written to disk as it is typed: there is no save button, no draft state and no sync step. It is a local app — no account, no server, no network. The notes are one database on the computer, and the app works with the network off.
 
-v1.0 carries one flow: **the live day**. The app opens today's note, writes it, and finds any earlier day by its date.
+v1.0 carries one flow: **the live day**. The app opens on today's entry at the top of one log, writes it, and older entries follow as you scroll.
 
 **Live is the promise.** The note is not a document that is saved; it is written as it is made. The app never asks whether to keep the work, because it already has. A quit a moment after typing loses nothing, and a crash can lose only the last moment before it.
 
@@ -17,8 +17,8 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 
 - One note per day. A day is the computer's local calendar day, and it starts at midnight.
 - The app opens on today. A note begins with its first character, so a day with nothing written leaves nothing behind.
-- Any day up to today can be opened and written to; a future day cannot. A note is never closed.
-- A window left open across midnight stays on the day it opened; a Today control moves it to the new day.
+- Every day with a note is in the log and can be written to; today is there even when it is empty. A future day cannot be written, and a past day with nothing written is not in the log. A note is never closed.
+- A window left open across midnight keeps the entry it opened; Today moves the log to the new day.
 
 ## The note
 
@@ -29,9 +29,9 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 
 ## Reading back
 
-- The note shows its date above the text; there is no title to remember.
-- The arrows move one day back or forward, and Today returns to today's note.
-- A day is found by its date. v1.0 has no search and no calendar.
+- The log is the index: every day with a note, newest first, with today at the top.
+- The note shows its date beside the text; there is no title to remember.
+- Scrolling down reaches older days, a page at a time. v1.0 has no search, no calendar and no jump to a date.
 
 ## Your data
 
@@ -89,7 +89,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - No account, sign-in, network request or update check exists; the app works with the network off.
 - Typing a paragraph, waiting a moment, quitting normally and reopening leaves every character.
 - The app has no save button, no dirty state and no unsaved-changes dialog.
-- The arrows open any day up to today; a future day cannot be written.
+- The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - Clearing a note leaves the day empty; deleting asks once and cannot be undone.
 - The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
 - A failed save is shown and the text stays on screen; no success is reported.

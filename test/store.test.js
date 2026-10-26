@@ -84,6 +84,23 @@ describe('the notes store', () => {
     store.close();
   });
 
+  test('pages days newest first, skips empty ones and stops at the end', () => {
+    const store = memoryStore();
+    store.save('2026-10-26', 'today', 1);
+    store.save('2026-10-25', '', 1);
+    store.save('2026-10-24', 'older', 1);
+    store.save('2026-10-20', 'older still', 1);
+
+    expect(store.page('2026-10-27', 2)).toEqual([
+      { day: '2026-10-26', body: 'today', seq: 1 },
+      { day: '2026-10-24', body: 'older', seq: 1 },
+    ]);
+    expect(store.page('2026-10-24', 2)).toEqual([
+      { day: '2026-10-20', body: 'older still', seq: 1 },
+    ]);
+    expect(store.page('2026-10-20', 2)).toEqual([]);
+  });
+
   test('creates the schema at version 1', () => {
     const path = temporaryFile();
     openStore(path, openDatabase).close();
