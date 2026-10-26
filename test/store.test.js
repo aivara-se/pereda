@@ -31,7 +31,6 @@ describe('the notes store', () => {
       row: { body, seq: 1 },
     });
     expect(store.day('2026-10-26')).toEqual({ body, seq: 1 });
-    expect(store.exported()).toEqual([{ day: '2026-10-26', body }]);
     store.close();
   });
 
@@ -77,24 +76,11 @@ describe('the notes store', () => {
       applied: true,
       row: { body: '', seq: 2 },
     });
-    expect(store.exported()).toEqual([]);
 
     expect(store.save('2026-10-26', 'a late save', 1)).toEqual({
       applied: false,
       row: { body: '', seq: 2 },
     });
-    store.close();
-  });
-
-  test('exports only days that have a note, oldest first', () => {
-    const store = memoryStore();
-    store.save('2026-10-26', 'two', 1);
-    store.save('2026-10-24', 'one', 1);
-    store.save('2026-10-25', '', 1);
-    expect(store.exported()).toEqual([
-      { day: '2026-10-24', body: 'one' },
-      { day: '2026-10-26', body: 'two' },
-    ]);
     store.close();
   });
 

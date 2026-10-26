@@ -56,11 +56,6 @@ function store(db) {
     ON CONFLICT(day) DO UPDATE SET body = excluded.body, seq = excluded.seq
     WHERE excluded.seq > notes.seq
   `);
-  const bodies = db.prepare(`
-    SELECT day, body FROM notes
-    WHERE body <> ''
-    ORDER BY day
-  `);
 
   return {
     // The stored row for a day, or null when nothing was ever written.
@@ -76,11 +71,6 @@ function store(db) {
       write.run(day, body, seq);
       const row = read.all(day)[0] ?? null;
       return { applied: row !== null && row.seq === seq && row.body === body, row };
-    },
-
-    // Every day that has a note, with its body, for export.
-    exported() {
-      return bodies.all();
     },
 
     close() {

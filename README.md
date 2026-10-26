@@ -8,6 +8,6 @@ The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEM
 
 ```sh
 tinyjs dev      # the app, with hot reload
-bun test        # the store, the day and the export
+bun test        # the store and the day
 tinyjs build    # the app for this OS
 ```

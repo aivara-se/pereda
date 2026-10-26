@@ -35,9 +35,8 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 
 ## Your data
 
-- The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder except an export.
+- The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder.
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
-- Export writes every note as a Markdown file, one per day, named by its date, with the body unchanged. Export is one-way in v1.0.
 - In v1.0 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes it; there is no trash.
 
@@ -50,7 +49,7 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
 - Never turns a note into a metric: no streak, no count, no score.
-- Never locks the notes in: the database file and the Markdown export are both the person's.
+- Never locks the notes in: the database file is the person's.
 
 ## AI, later
 
@@ -64,6 +63,7 @@ AI is not in v1.0. When it comes it is an assistant to the writer, never the aut
 - Not rich text: no formatting, images, attachments, checkboxes, tables or backlinks.
 - Not mobile: no iOS or Android app.
 - Not an importer: notes from other apps, or from the old pereda.app, are not imported.
+- Not an exporter: the notes leave only as the data folder; v1.0 writes no Markdown files.
 - Not self-updating: a new version is a download.
 - Not AI: no summaries, suggestions, questions or chat.
 
@@ -91,8 +91,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The app has no save button, no dirty state and no unsaved-changes dialog.
 - The arrows open any day up to today; a future day cannot be written.
 - Clearing a note leaves the day empty; deleting asks once and cannot be undone.
-- Export writes one Markdown file per day, named `YYYY-MM-DD.md`, with the body unchanged, and skips empty days.
-- The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder except the export.
+- The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
 - A failed save is shown and the text stays on screen; no success is reported.
 - A corrupt database stops the app with its path and is not overwritten.
 - The macOS build is signed and notarized and opens without a Gatekeeper warning.
