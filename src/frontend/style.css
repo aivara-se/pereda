@@ -150,7 +150,7 @@ button:disabled {
 }
 
 .log {
-  width: min(100% - 64px, 46rem);
+  width: min(100% - 64px, 43rem);
   margin: 0 auto;
   padding: 92px 0 45vh;
 }
@@ -206,7 +206,7 @@ button:disabled {
 
 @media (max-width: 620px) {
   .log {
-    width: min(100% - 40px, 46rem);
+    width: min(100% - 40px, 43rem);
     padding-top: 78px;
   }
 
