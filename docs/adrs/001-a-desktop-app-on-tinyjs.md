@@ -2,7 +2,7 @@
 
 ## Context
 
-Pereda is a daily note app for one person at a computer: it opens on today, writes one note per day and keeps it on the machine. v1.x is local ([002](002-local-only-in-v1.md)), so the first version needs a window, an editor, a local database and a way to ship the result — not a server, an account or a browser tab.
+Pereda is a daily note app for one person at a computer: it opens on today, writes one note per day and keeps it on the machine. The first version is local ([PRODUCT](../../PRODUCT.md)), so it needs a window, an editor, a local database and a way to ship the result — not a server, an account or a browser tab.
 
 What needs recording is the desktop shell, because it fixes the platform, the language, the size of every build and the dependency the project maintains.
 

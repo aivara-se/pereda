@@ -6,7 +6,7 @@ The notes are personal and the app is a desktop app ([001](001-a-desktop-app-on-
 
 ## Decision
 
-v1.x is local-only: no account, no server, no sync and no collaboration. The notes are a SQLite database in the app's data folder ([003](003-sqlite-is-the-store.md)); the app writes and reads them on the machine. v1.0 makes no network request at all — no telemetry, no crash reporting and no update check. A new version is a download.
+v1.x is local-only: no account, no server, no sync and no collaboration. The notes stay in the app's data folder on the machine; the app writes and reads them there. v1.0 makes no network request at all — no telemetry, no crash reporting and no update check. A new version is a download.
 
 Cloud sync is not a v1.x candidate. If it comes, it is a v2 decision that syncs the local store; the local store stays the source of truth and the app still works offline.
 
