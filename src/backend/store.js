@@ -37,8 +37,11 @@ export function openStore(path, openDatabase) {
 
   const version = db.prepare('PRAGMA user_version').all()[0].user_version;
   if (version === 0) {
-    db.exec(SCHEMA);
-    db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+    try {
+      db.exec(`BEGIN; ${SCHEMA} PRAGMA user_version = ${SCHEMA_VERSION}; COMMIT;`);
+    } catch (error) {
+      throw new Error(`Pereda could not open its notes at ${path}: ${error.message}`);
+    }
   } else if (version !== SCHEMA_VERSION) {
     throw new Error(
       `Pereda could not read the notes at ${path}: version ${version}, and this build reads version ${SCHEMA_VERSION}.`,

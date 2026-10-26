@@ -125,6 +125,17 @@ describe('the notes store', () => {
     db.close();
   });
 
+  test('names the notes file when the schema cannot be created', () => {
+    const path = temporaryFile();
+    const db = new Database(path);
+    db.exec(
+      'CREATE TABLE notes (day TEXT PRIMARY KEY, body TEXT NOT NULL, seq INTEGER NOT NULL) WITHOUT ROWID',
+    );
+    db.close();
+
+    expect(() => openStore(path, openDatabase)).toThrow(`could not open its notes at ${path}`);
+  });
+
   test('refuses a file that is not a database, and does not touch it', () => {
     const path = temporaryFile();
     writeFileSync(path, 'this is not a database');
