@@ -2,7 +2,7 @@
 
 ## Where it runs
 
-A tinyjs desktop app: the operating system's webview draws the window and plain JavaScript behind it owns the notes. That shape buys three things the product leans on — a build of about 6 MB, native chrome without a native UI layer, and no server to run ([`001`](docs/adrs/001-a-desktop-app-on-tinyjs.md)). macOS 15 or later, Windows 10 and 11, and a Linux desktop with WebKitGTK 4.1.
+A tinyjs desktop app: the operating system's webview draws the window and plain JavaScript behind it owns the notes. That shape buys three things the product leans on — a build of about 9.5 MB, native chrome without a native UI layer, and no server to run ([`001`](docs/adrs/001-a-desktop-app-on-tinyjs.md)). macOS 15 or later, Windows 10 and 11, and a Linux desktop with WebKitGTK 4.1.
 
 One window, one OS user, one data folder. There is no account and no server ([`002`](docs/adrs/002-local-only-in-v1.md)), and the only channel the app has is inside the machine, so the network is absent by construction rather than by policy. There is no update channel either: the app checks for nothing and a new version is a fresh download ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
