@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pereda</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div id="app" class="app">
+  <aside class="sidebar">
+    <div class="calendar">
+      <div class="calendar-head">
+        <button id="previous" class="icon" aria-label="Previous month">&#8249;</button>
+        <h2 id="month"></h2>
+        <button id="next" class="icon" aria-label="Next month">&#8250;</button>
+      </div>
+      <div class="weekdays" aria-hidden="true">
+        <span>Mo</span><span>Tu</span><span>We</span><span>Th</span>
+        <span>Fr</span><span>Sa</span><span>Su</span>
+      </div>
+      <div id="days" class="days"></div>
+    </div>
+    <div class="sidebar-foot">
+      <button id="export" class="quiet">Export&hellip;</button>
+    </div>
+  </aside>
+
+  <main class="page">
+    <header class="page-head">
+      <h1 id="date"></h1>
+      <div class="tools">
+        <button id="delete" class="quiet danger" hidden>Delete</button>
+        <button id="today" class="quiet">Today</button>
+      </div>
+    </header>
+    <textarea id="note" aria-label="The note" spellcheck="true" placeholder="Write&hellip;" disabled></textarea>
+    <footer class="page-foot">
+      <span id="status" role="status"></span>
+    </footer>
+  </main>
+</div>
+
+<div id="fatal" class="fatal" hidden>
+  <div class="fatal-body">
+    <h1>Pereda cannot open its notes</h1>
+    <p id="fatal-message"></p>
+    <p class="hint">The file was not changed. Move it aside or restore a backup, then open Pereda again.</p>
+  </div>
+</div>
+</body>
+</html>
