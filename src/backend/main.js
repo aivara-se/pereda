@@ -4,7 +4,7 @@
 import { Database } from 'tjs:sqlite';
 import { openStore } from './store.js';
 import { join, writeExport } from './export.js';
-import { assertWritableDay, today, validMonth } from '../shared/day.js';
+import { assertWritableDay, today } from '../shared/day.js';
 
 const DB_NAME = 'pereda.db';
 
@@ -50,13 +50,6 @@ export const api = {
       throw new Error('This note was written somewhere else.');
     }
     return { day, seq: saved.row.seq };
-  },
-
-  // The days in a month that have a note, for the calendar.
-  async month(params, app) {
-    const notes = await store(app);
-    if (!validMonth(params?.month)) throw new Error('That is not a month.');
-    return { month: params.month, days: notes.marked(params.month) };
   },
 
   // Write every note into the chosen folder. A failure names the day it stopped

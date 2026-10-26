@@ -24,14 +24,14 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 
 - A note is plain text with paragraphs: no title, formatting, checkboxes, tags, attachments, images or structured links.
 - One person writes it. There is no sharing, no second writer and no public link.
-- Clearing every character of a note removes it from the calendar; the day remains empty.
+- Clearing every character of a note removes it; the day remains empty.
 - Deleting a day asks once and cannot be undone.
 
 ## Reading back
 
-- The calendar is the index: a month at a time, with every day that has a note marked. Any marked day opens its note.
 - The note shows its date above the text; there is no title to remember.
-- A day is found by its date. v1.0 has no search.
+- The arrows move one day back or forward, and Today returns to today's note.
+- A day is found by its date. v1.0 has no search and no calendar.
 
 ## Your data
 
@@ -39,7 +39,7 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - Export writes every note as a Markdown file, one per day, named by its date, with the body unchanged. Export is one-way in v1.0.
 - In v1.0 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
-- Deleting a note removes it from the calendar; there is no trash.
+- Deleting a note removes it; there is no trash.
 
 ## What it never does
 
@@ -89,8 +89,8 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - No account, sign-in, network request or update check exists; the app works with the network off.
 - Typing a paragraph, waiting a moment, quitting normally and reopening leaves every character.
 - The app has no save button, no dirty state and no unsaved-changes dialog.
-- The calendar marks every day with a note and opens any day up to today; a future day cannot be written.
-- Clearing a note removes its mark; deleting asks once and cannot be undone.
+- The arrows open any day up to today; a future day cannot be written.
+- Clearing a note leaves the day empty; deleting asks once and cannot be undone.
 - Export writes one Markdown file per day, named `YYYY-MM-DD.md`, with the body unchanged, and skips empty days.
 - The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder except the export.
 - A failed save is shown and the text stays on screen; no success is reported.

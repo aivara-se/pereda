@@ -1,17 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
+  addDays,
   assertWritableDay,
-  daysInMonth,
-  firstWeekday,
   localDay,
-  monthOf,
-  nextMonth,
-  previousMonth,
   today,
   validDay,
-  validMonth,
-  weekdayOf,
 } from '../src/shared/day.js';
 
 describe('the local day', () => {
@@ -71,47 +65,30 @@ describe('a day', () => {
   });
 });
 
-describe('a month', () => {
-  test('is valid only as YYYY-MM', () => {
-    expect(validMonth('2026-10')).toBe(true);
-    expect(validMonth('2026-13')).toBe(false);
-    expect(validMonth('2026-1')).toBe(false);
-    expect(validMonth('026-10')).toBe(false);
-    expect(validMonth(undefined)).toBe(false);
+describe('walking to another day', () => {
+  test('moves one day at a time', () => {
+    expect(addDays('2026-10-26', 1)).toBe('2026-10-27');
+    expect(addDays('2026-10-26', -1)).toBe('2026-10-25');
+    expect(addDays('2026-10-26', 0)).toBe('2026-10-26');
   });
 
-  test('knows its length, leap years included', () => {
-    expect(daysInMonth('2026-02')).toBe(28);
-    expect(daysInMonth('2024-02')).toBe(29);
-    expect(daysInMonth('2000-02')).toBe(29);
-    expect(daysInMonth('1900-02')).toBe(28);
-    expect(daysInMonth('2026-04')).toBe(30);
-    expect(daysInMonth('2026-13')).toBe(0);
+  test('crosses the end of a month', () => {
+    expect(addDays('2026-10-31', 1)).toBe('2026-11-01');
+    expect(addDays('2026-11-01', -1)).toBe('2026-10-31');
+    expect(addDays('2026-10-31', -31)).toBe('2026-09-30');
   });
 
-  test('moves across the turn of the year', () => {
-    expect(nextMonth('2026-12')).toBe('2027-01');
-    expect(nextMonth('2026-10')).toBe('2026-11');
-    expect(previousMonth('2026-01')).toBe('2025-12');
-    expect(previousMonth('2026-10')).toBe('2026-09');
+  test('crosses the turn of the year', () => {
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
+    expect(addDays('2026-01-01', -1)).toBe('2025-12-31');
+    expect(addDays('2026-10-26', 365)).toBe('2027-10-26');
   });
 
-  test('is the first seven characters of its days', () => {
-    expect(monthOf('2026-10-26')).toBe('2026-10');
-    expect(monthOf('2027-01-01')).toBe('2027-01');
-  });
-});
-
-describe('the week', () => {
-  test('names every weekday', () => {
-    expect(weekdayOf('2026-10-26')).toBe(1); // Monday
-    expect(weekdayOf('2026-10-25')).toBe(0); // Sunday
-    expect(weekdayOf('2026-01-01')).toBe(4); // Thursday
-  });
-
-  test('starts a month in a Monday-first grid', () => {
-    expect(firstWeekday('2026-06')).toBe(0); // 1 June 2026 is a Monday
-    expect(firstWeekday('2026-10')).toBe(3); // 1 October 2026 is a Thursday
-    expect(firstWeekday('2026-11')).toBe(6); // 1 November 2026 is a Sunday
+  test('crosses a leap day in both directions', () => {
+    expect(addDays('2024-02-28', 1)).toBe('2024-02-29');
+    expect(addDays('2024-02-29', 1)).toBe('2024-03-01');
+    expect(addDays('2025-02-28', 1)).toBe('2025-03-01');
+    expect(addDays('2024-03-01', -1)).toBe('2024-02-29');
+    expect(addDays('2025-03-01', -1)).toBe('2025-02-28');
   });
 });

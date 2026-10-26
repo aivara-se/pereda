@@ -3,8 +3,6 @@
 // The database is opened by the caller, so this module runs under bun in the
 // tests and on txiki.js in the app without a second implementation of the SQL.
 
-import { nextMonth } from '../shared/day.js';
-
 const SCHEMA_VERSION = 1;
 
 // One row per day, keyed by the local date. A cleared day keeps its row with an
@@ -58,11 +56,6 @@ function store(db) {
     ON CONFLICT(day) DO UPDATE SET body = excluded.body, seq = excluded.seq
     WHERE excluded.seq > notes.seq
   `);
-  const marks = db.prepare(`
-    SELECT day FROM notes
-    WHERE day >= ? AND day < ? AND body <> ''
-    ORDER BY day
-  `);
   const bodies = db.prepare(`
     SELECT day, body FROM notes
     WHERE body <> ''
@@ -83,11 +76,6 @@ function store(db) {
       write.run(day, body, seq);
       const row = read.all(day)[0] ?? null;
       return { applied: row !== null && row.seq === seq && row.body === body, row };
-    },
-
-    // The days in a month that have a note, oldest first.
-    marked(month) {
-      return marks.all(`${month}-01`, `${nextMonth(month)}-01`).map((row) => row.day);
     },
 
     // Every day that has a note, with its body, for export.

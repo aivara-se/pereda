@@ -9,37 +9,32 @@
 </head>
 <body>
 <div id="app" class="app">
-  <aside class="sidebar">
-    <div class="calendar">
-      <div class="calendar-head">
-        <button id="previous" class="icon" aria-label="Previous month">&#8249;</button>
-        <h2 id="month"></h2>
-        <button id="next" class="icon" aria-label="Next month">&#8250;</button>
-      </div>
-      <div class="weekdays" aria-hidden="true">
-        <span>Mo</span><span>Tu</span><span>We</span><span>Th</span>
-        <span>Fr</span><span>Sa</span><span>Su</span>
-      </div>
-      <div id="days" class="days"></div>
-    </div>
-    <div class="sidebar-foot">
-      <button id="export" class="quiet">Export&hellip;</button>
-    </div>
-  </aside>
+  <header class="bar">
+    <p id="date" class="date"></p>
+    <nav class="tools" aria-label="Note">
+      <button id="previous" class="icon" type="button" title="Previous day (Alt+Left)" aria-label="Previous day">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button id="next" class="icon" type="button" title="Next day (Alt+Right)" aria-label="Next day">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <button id="today" class="icon" type="button" title="Today" aria-label="Today">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button id="export" class="icon" type="button" title="Export as Markdown" aria-label="Export as Markdown">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19h14"/></svg>
+      </button>
+      <button id="delete" class="icon danger" type="button" title="Delete this note" aria-label="Delete this note" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>
+      </button>
+    </nav>
+  </header>
 
   <main class="page">
-    <header class="page-head">
-      <h1 id="date"></h1>
-      <div class="tools">
-        <button id="delete" class="quiet danger" hidden>Delete</button>
-        <button id="today" class="quiet">Today</button>
-      </div>
-    </header>
-    <textarea id="note" aria-label="The note" spellcheck="true" placeholder="Write&hellip;" disabled></textarea>
-    <footer class="page-foot">
-      <span id="status" role="status"></span>
-    </footer>
+    <textarea id="note" aria-label="The note" spellcheck="true" placeholder="What happened?" disabled></textarea>
   </main>
+
+  <p id="status" class="status" role="status"></p>
 </div>
 
 <div id="fatal" class="fatal" hidden>
