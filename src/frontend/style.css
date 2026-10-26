@@ -86,33 +86,14 @@ button:disabled {
   height: 100%;
 }
 
-/* The date and the controls sit at the edges of the text column, nothing else. */
-
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: min(100% - 64px, 34rem);
-  margin: 0 auto;
-  padding-top: 26px;
-}
-
-.date {
-  margin: 0;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+/* Two controls float over the log; everything else is the note. */
 
 .tools {
+  position: fixed;
+  top: 18px;
+  right: 20px;
+  z-index: 5;
   display: flex;
-  flex: none;
   gap: 2px;
 }
 
@@ -151,16 +132,63 @@ button:disabled {
 .page {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: none;
 }
 
-#note {
-  display: block;
-  height: 100%;
-  width: min(100% - 64px, 34rem);
+/* Text scrolling under the controls fades into the page. */
+.page::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  z-index: 4;
+  background: linear-gradient(var(--bg) 45%, transparent);
+  pointer-events: none;
+}
+
+.log {
+  width: min(100% - 64px, 46rem);
   margin: 0 auto;
-  padding: 34px 0 84px;
+  padding: 92px 0 45vh;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  padding-bottom: 48px;
+}
+
+.entry .date {
+  margin: 0;
+  padding-top: 7px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.entry.today .date,
+.entry:focus-within .date {
+  color: var(--ink);
+}
+
+.entry .note {
+  display: block;
+  width: 100%;
+  min-height: 1.65em;
+  padding: 0;
   border: 0;
   outline: 0;
+  overflow: hidden;
   resize: none;
   background: transparent;
   color: var(--ink);
@@ -171,9 +199,27 @@ button:disabled {
   line-height: 1.65;
 }
 
-#note::placeholder {
+.entry .note::placeholder {
   color: var(--muted);
   opacity: 0.5;
+}
+
+@media (max-width: 620px) {
+  .log {
+    width: min(100% - 40px, 46rem);
+    padding-top: 78px;
+  }
+
+  .entry {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding-bottom: 40px;
+  }
+
+  .entry .date {
+    padding-top: 0;
+    text-align: left;
+  }
 }
 
 .status {

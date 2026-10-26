@@ -3,9 +3,10 @@
 
 import { Database } from 'tjs:sqlite';
 import { openStore } from './store.js';
-import { assertWritableDay, today } from '../shared/day.js';
+import { addDays, assertWritableDay, today, validDay } from '../shared/day.js';
 
 const DB_NAME = 'pereda.db';
+const PAGE = 30;
 
 // The store is opened once and shared by every call, so a database that cannot
 // be opened reports the same reason to each of them for the life of the app.
@@ -22,15 +23,26 @@ function store(app) {
 }
 
 export const api = {
-  // Open a day, or today when none is named, so the page never reads its own
-  // clock. A day after today is refused here as well as in the page.
-  async openDay(params, app) {
+  // One page of the log: today on the first page, then the days before the
+  // oldest one loaded, newest first. A day with nothing written is skipped,
+  // except today, which is the first entry even when it is empty.
+  async openLog(params, app) {
     const notes = await store(app);
     const current = today();
-    const day = params?.day ?? current;
-    assertWritableDay(day, current);
-    const row = notes.day(day);
-    return { day, body: row?.body ?? '', seq: row?.seq ?? 0, today: current };
+    const before = params?.before;
+    if (before !== undefined && !validDay(before)) throw new Error('That is not a date.');
+
+    const rows = notes.page(before ?? addDays(current, 1), PAGE + 1);
+    const more = rows.length > PAGE;
+    let days = rows.slice(0, PAGE);
+    if (before === undefined) {
+      const row = notes.day(current);
+      const first = row
+        ? { day: current, body: row.body, seq: row.seq }
+        : { day: current, body: '', seq: 0 };
+      days = [first, ...days.filter((entry) => entry.day !== current)];
+    }
+    return { today: current, days, more };
   },
 
   // Save a whole body with the page's counter. An older counter loses the

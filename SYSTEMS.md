@@ -24,23 +24,23 @@ The store never deletes, recreates or repairs the database over the notes. If it
 
 ## A keystroke becomes a row
 
-- The only delay between a keystroke and the database is a short debounce; a blur, a day switch and a hidden window flush at once.
-- One save is in flight at a time: a newer body waits and replaces it, and is sent whole.
+- The only delay between a keystroke and the database is a short debounce; a blur, a hidden window and Today flush at once.
+- One save is in flight per entry: a newer body waits and replaces it, and is sent whole.
 - A failed save is shown with its reason and the text stays on screen; the next flush sends the whole body again.
-- A day switch flushes before it loads, so text never lands on the wrong date.
+- Today flushes every entry before it reloads, so no text is lost to the move.
 - The debounce is the one window a quit or a kill can lose. Every committed save is on disk; the moment before an abrupt end may not be.
 
 ## The day
 
 The day is the machine's local calendar day, read by the backend; the page never computes it from its own clock.
 
-- The app opens today, and the arrows open any day up to today. A future day is refused in the page and again at the backend.
+- The app opens on today's entry, and scrolling asks for the days before the oldest one loaded. A future day is refused at the backend; a past day with nothing written is not in the log.
 - A window left open across midnight keeps the day it loaded; Today asks the backend again and loads the new day.
 - A sleep or a timezone change can skip or repeat a day; no existing note changes its date.
 
 ## Reading
 
-The page holds one day at a time: an arrow asks the backend for the day before or after it, and Today asks for the current day. v1.0 has no calendar, no search, no title index and no full-text table, so a day is found by stepping to its date.
+The log is the index: the first page holds today and the days before it, newest first, thirty at a time. A page is read from the store with the oldest day loaded as its upper bound, so pages never overlap; a day with nothing written is skipped, except today, whose entry is always first. v1.0 has no calendar, no search, no title index and no full-text table, so an older day is reached by scrolling.
 
 ## Failure modes
 
@@ -51,6 +51,7 @@ The page holds one day at a time: an arrow asks the backend for the day before o
 - **The clock moves.** A day can repeat or vanish; notes keep their dates.
 - **A second instance.** The running app comes forward, so two windows never write the same file.
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
+- **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **No network.** v1.0 makes no request of any kind, and the acceptance run is made with the network off.
 
 ## Planned, not built
@@ -64,7 +65,7 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, and a day across the turn of the year.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, and a page of days newest first that stops at the end.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 

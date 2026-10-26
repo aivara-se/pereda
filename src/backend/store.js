@@ -56,6 +56,12 @@ function store(db) {
     ON CONFLICT(day) DO UPDATE SET body = excluded.body, seq = excluded.seq
     WHERE excluded.seq > notes.seq
   `);
+  const recent = db.prepare(`
+    SELECT day, body, seq FROM notes
+    WHERE body <> '' AND day < ?
+    ORDER BY day DESC
+    LIMIT ?
+  `);
 
   return {
     // The stored row for a day, or null when nothing was ever written.
@@ -71,6 +77,12 @@ function store(db) {
       write.run(day, body, seq);
       const row = read.all(day)[0] ?? null;
       return { applied: row !== null && row.seq === seq && row.body === body, row };
+    },
+
+    // A page of the log: days that have a note, newest first, older than the
+    // upper bound.
+    page(upper, limit) {
+      return recent.all(upper, limit);
     },
 
     close() {
