@@ -10,7 +10,7 @@ v1.0 carries one flow: **the live day**. The app opens today's note, writes it, 
 
 - One window, one person, one machine. There is no account and no sign-in: the notes belong to the operating system's user.
 - It runs on macOS 15 or later (Apple silicon and Intel), Windows 10 or 11, and a Linux desktop with WebKitGTK 4.1. A build is about 6 MB and needs no runtime beyond the OS's webview.
-- It is downloaded, not signed up for. There is no hosted version and nothing to self-host.
+- It is downloaded, not signed up for: anyone can download it, and there is no hosted version and nothing to self-host.
 - It opens on today with the cursor in the note.
 
 ## The day
