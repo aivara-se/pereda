@@ -11,8 +11,8 @@ Its version is a bump: it adds one to the version already in `tinyjs.json` and o
 ## Decision
 
 - A release is a commit on `main` whose message starts `release: v`, tagged `v<version>` with the version read from `tinyjs.json`, holding the builds as assets of a GitHub release. No build is made on a person's machine.
-- The assets are `pereda-<version>-macos-arm64.zip` and `pereda-<version>-macos-x86_64.zip`, each holding `Pereda.app`; `pereda-<version>-windows-x86_64.zip`, holding the build folder with `pereda.exe` and its launcher; and `pereda-<version>-linux-x86_64.tar.gz`, holding the Linux build folder. The tag is created only after every build succeeds.
-- v1.0.0 ships first, and it is not a bump: the version in `tinyjs.json` is already 1.0.0, so its release is started by a `release: v1.0.0` commit on `main`. A bump run produces v1.0.1, and every version after it.
+- The assets are `pereda-<version>-macos-arm64.zip` and `pereda-<version>-macos-x86_64.zip`, each holding `Pereda.app`; `pereda-<version>-windows-x86_64.zip`, holding the build folder's contents, with `pereda.exe` and its launcher at the archive root; and `pereda-<version>-linux-x86_64.tar.gz`, holding the Linux build folder's contents. The tag is created only after every build succeeds.
+- v1.0.0 ships first, and it is not a bump: the version in `tinyjs.json` is already 1.0.0, so its release is started by a `release: v1.0.0` commit that reaches `main` by pull request, like every other change. A bump run produces v1.0.1, and every version after it.
 - macOS is signed with a Developer ID and notarized when the signing and notary secrets are set, and ad-hoc signed when they are not. The release that first ships v1.0 needs them: a macOS build Gatekeeper blocks on another Mac is not a v1.0 build.
 
 This overrides [004](004-distribution-without-an-update-channel.md):
@@ -30,5 +30,5 @@ This overrides [004](004-distribution-without-an-update-channel.md):
 - The files live on the release page, so the site has to link them; until it does, v1.0 is reached only through GitHub.
 - Nothing publishes a checksum, so a person checking a Windows or Linux archive has none: the sha256 [004](004-distribution-without-an-update-channel.md) promised is a gap this record leaves open.
 - A release now needs the signing and notary secrets set before it runs, or the macOS build is the one that gets blocked; the run still publishes it.
-- v1.0.0 bypasses the bump pull request, so its number is the only version no diff reviewed.
+- v1.0.0 skips the workflow's bump pull request, not review: `main` admits no commit without one, so the `release: v1.0.0` commit arrives through an ordinary reviewed pull request too.
 - The caller pins the shared workflow at that repository's `main`, so a change there changes the build of every release, in this repository too.
