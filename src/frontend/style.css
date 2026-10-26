@@ -1,24 +1,30 @@
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("fonts/instrument-sans-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
   color-scheme: light dark;
-  --bg: #fdfcf9;
-  --panel: #f5f2ea;
-  --hover: #ece7dc;
-  --ink: #24211c;
-  --muted: #8b8377;
-  --line: #e7e1d5;
+  --bg: #faf9f6;
+  --ink: #26231f;
+  --muted: #7d756a;
+  --icon: #6a6155;
+  --hover: rgba(38, 35, 31, 0.06);
   --accent: #a9541c;
-  --accent-soft: #f1e2d1;
+  --accent-soft: #f0e0cf;
   --error: #a5342c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #121110;
-    --panel: #191816;
-    --hover: #24221f;
     --ink: #ece7dd;
-    --muted: #8b8478;
-    --line: #2b2825;
+    --muted: #958d80;
+    --icon: #a79e90;
+    --hover: rgba(236, 231, 221, 0.07);
     --accent: #dda36c;
     --accent-soft: #2a231b;
     --error: #e59a92;
@@ -38,8 +44,19 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Instrument Sans", ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-optical-sizing: auto;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
 }
 
 button {
@@ -57,42 +74,57 @@ button:disabled {
 
 .app {
   display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
-/* Sidebar: the calendar is the index. */
+/* The date and the controls sit at the edges of the text column, nothing else. */
 
-.sidebar {
+.bar {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 264px;
-  flex: none;
-  padding: 28px 20px 20px;
-  border-right: 1px solid var(--line);
-}
-
-.calendar-head {
-  display: grid;
-  grid-template-columns: 28px 1fr 28px;
   align-items: center;
-  margin-bottom: 18px;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(100% - 64px, 40rem);
+  margin: 0 auto;
+  padding-top: 26px;
 }
 
-.calendar-head h2 {
+.date {
   margin: 0;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tools {
+  display: flex;
+  flex: none;
+  gap: 2px;
 }
 
 .icon {
-  height: 28px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
-  color: var(--muted);
-  font-size: 18px;
-  line-height: 1;
+  color: var(--icon);
+}
+
+.icon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .icon:hover:not(:disabled) {
@@ -101,159 +133,61 @@ button:disabled {
 }
 
 .icon:disabled {
-  opacity: 0.3;
+  opacity: 0.28;
 }
 
-.weekdays,
-.days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.weekdays {
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.weekdays span {
-  text-align: center;
-}
-
-.day {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 9px;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-
-.day:hover:not(:disabled) {
-  background: var(--hover);
-}
-
-.day.is-future {
-  color: var(--muted);
-  opacity: 0.4;
-}
-
-.day.is-today {
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.day.is-selected {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-  box-shadow: none;
-}
-
-/* A dot is the whole mark: the day has a note. */
-.day.is-marked::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 5px;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.sidebar-foot {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.quiet {
-  padding: 5px 9px;
-  margin-left: -9px;
-  border-radius: 8px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.quiet:hover:not(:disabled) {
-  background: var(--hover);
-  color: var(--ink);
-}
-
-.danger:hover:not(:disabled) {
+.icon.danger:hover:not(:disabled) {
   color: var(--error);
 }
 
-/* The page: one date, one note, nothing else. */
-
 .page {
-  display: flex;
-  flex-direction: column;
   flex: 1;
-  min-width: 0;
-}
-
-.page-head,
-#note,
-.page-foot {
-  width: 100%;
-  max-width: 52rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.page-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 30px 44px 0;
-}
-
-.page-head h1 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.tools {
-  display: flex;
-  gap: 4px;
+  min-height: 0;
 }
 
 #note {
-  flex: 1;
-  padding: 26px 44px 40px;
+  display: block;
+  height: 100%;
+  width: min(100% - 64px, 40rem);
+  margin: 0 auto;
+  padding: 34px 0 84px;
   border: 0;
   outline: 0;
   resize: none;
   background: transparent;
   color: var(--ink);
   caret-color: var(--accent);
-  font: 17px/1.75 ui-serif, Georgia, "Times New Roman", serif;
+  font-family: inherit;
+  font-size: 19px;
+  line-height: 1.65;
+  letter-spacing: -0.003em;
 }
 
 #note::placeholder {
   color: var(--muted);
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
-.page-foot {
-  padding: 0 44px 14px;
-  min-height: 30px;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-#status[data-kind="error"] {
+.status {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  margin: 0;
+  max-width: min(90vw, 46rem);
+  transform: translateX(-50%);
   color: var(--error);
+  font-size: 12px;
+  pointer-events: none;
 }
 
-#status[data-kind="saved"] {
-  color: var(--muted);
+.status:empty {
+  display: none;
+}
+
+.status:not(:empty) {
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: var(--bg);
 }
 
 /* The one screen that stops the app: the notes file is named, not touched. */
@@ -275,11 +209,11 @@ button:disabled {
   margin: 0 0 14px;
   font-size: 20px;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .fatal p {
   margin: 0 0 10px;
-  color: var(--ink);
   overflow-wrap: anywhere;
 }
 

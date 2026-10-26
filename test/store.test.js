@@ -20,7 +20,6 @@ describe('the notes store', () => {
   test('leaves no row for a day that was never written', () => {
     const store = memoryStore();
     expect(store.day('2026-10-26')).toBeNull();
-    expect(store.marked('2026-10')).toEqual([]);
     store.close();
   });
 
@@ -32,7 +31,6 @@ describe('the notes store', () => {
       row: { body, seq: 1 },
     });
     expect(store.day('2026-10-26')).toEqual({ body, seq: 1 });
-    expect(store.marked('2026-10')).toEqual(['2026-10-26']);
     expect(store.exported()).toEqual([{ day: '2026-10-26', body }]);
     store.close();
   });
@@ -72,32 +70,19 @@ describe('the notes store', () => {
     store.close();
   });
 
-  test('keeps a cleared day as an unmarked tombstone, and no older save resurrects it', () => {
+  test('keeps a cleared day as an empty tombstone, and no older save resurrects it', () => {
     const store = memoryStore();
     store.save('2026-10-26', 'a note', 1);
     expect(store.save('2026-10-26', '', 2)).toEqual({
       applied: true,
       row: { body: '', seq: 2 },
     });
-    expect(store.marked('2026-10')).toEqual([]);
     expect(store.exported()).toEqual([]);
 
     expect(store.save('2026-10-26', 'a late save', 1)).toEqual({
       applied: false,
       row: { body: '', seq: 2 },
     });
-    expect(store.marked('2026-10')).toEqual([]);
-    store.close();
-  });
-
-  test('reads a month across the turn of the year', () => {
-    const store = memoryStore();
-    store.save('2025-12-31', 'last', 1);
-    store.save('2026-01-01', 'first', 1);
-    store.save('2026-02-01', 'later', 1);
-    expect(store.marked('2025-12')).toEqual(['2025-12-31']);
-    expect(store.marked('2026-01')).toEqual(['2026-01-01']);
-    expect(store.marked('2026-02')).toEqual(['2026-02-01']);
     store.close();
   });
 

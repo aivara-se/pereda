@@ -1,7 +1,7 @@
-// The page: the calendar is the index, the note is the page's only state, and
-// every character reaches the backend through one debounced, ordered save.
+// The page: one day, one note, and every character reaching the backend through
+// one debounced, ordered save.
 
-import { daysInMonth, firstWeekday, monthOf, nextMonth, previousMonth } from '../shared/day.js';
+import { addDays } from '../shared/day.js';
 
 const DEBOUNCE = 300;
 
@@ -9,14 +9,10 @@ const $ = (id) => document.getElementById(id);
 const note = $('note');
 const statusLine = $('status');
 const deleteButton = $('delete');
-const monthLabel = $('month');
 const dateLabel = $('date');
-const dayGrid = $('days');
 
 let todayKey = null; // the backend's idea of today, refreshed on every open
 let openKey = null; // the day in the editor
-let shownMonth = null; // the month the calendar draws
-let marked = new Set(); // the days in shownMonth that have a note
 
 let seq = 0; // the counter of the last save attempted
 let savedBody = ''; // the body the backend has confirmed
@@ -25,74 +21,17 @@ let runner = null; // the save in flight, if any
 let timer = 0;
 let loadToken = 0; // the newest open, so a slow one cannot win
 
-function setStatus(text, kind) {
+function setStatus(text) {
   statusLine.textContent = text;
-  if (kind === undefined) delete statusLine.dataset.kind;
-  else statusLine.dataset.kind = kind;
 }
 
 function count(n, word) {
   return `${n} ${word}${n === 1 ? '' : 's'}`;
 }
 
-function clock() {
-  return new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-}
-
 function dayDate(day) {
   const [year, month, date] = day.split('-').map(Number);
   return new Date(year, month - 1, date);
-}
-
-function labels() {
-  const day = dayDate(openKey);
-  dateLabel.textContent = day.toLocaleDateString(undefined, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-  const month = dayDate(`${shownMonth}-01`);
-  monthLabel.textContent = month.toLocaleDateString(undefined, {
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
-// The calendar draws every day of the month, with the future disabled and a dot
-// on each day that has a note.
-function renderCalendar() {
-  labels();
-  const cells = [];
-  for (let blank = 0; blank < firstWeekday(shownMonth); blank += 1) {
-    cells.push(document.createElement('span'));
-  }
-  for (let date = 1; date <= daysInMonth(shownMonth); date += 1) {
-    const day = `${shownMonth}-${String(date).padStart(2, '0')}`;
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'day';
-    button.textContent = String(date);
-    button.dataset.day = day;
-    button.setAttribute('aria-label', dayDate(day).toLocaleDateString(undefined, { dateStyle: 'full' }));
-    if (marked.has(day)) button.classList.add('is-marked');
-    if (day === todayKey) button.classList.add('is-today');
-    if (day === openKey) button.classList.add('is-selected');
-    if (day > todayKey) {
-      button.classList.add('is-future');
-      button.disabled = true;
-    } else {
-      button.addEventListener('click', () => load(day));
-    }
-    cells.push(button);
-  }
-  dayGrid.replaceChildren(...cells);
-  $('next').disabled = shownMonth >= monthOf(todayKey);
-}
-
-async function loadMarks() {
-  const result = await tiny.api.call('month', { month: shownMonth });
-  marked = new Set(result.days);
 }
 
 // One save at a time: a newer body replaces the one waiting, and the whole body
@@ -105,13 +44,12 @@ async function run() {
     try {
       await tiny.api.call('saveDay', { day: openKey, body, seq: stamp });
     } catch (message) {
-      setStatus(`Not saved — ${message}`, 'error');
+      setStatus(`Not saved — ${message}`);
       return false;
     }
     seq = stamp;
     savedBody = body;
-    mark(openKey, body !== '');
-    setStatus(`Saved ${clock()}`, 'saved');
+    setStatus();
   }
   return true;
 }
@@ -144,13 +82,6 @@ function schedule() {
   timer = setTimeout(flush, DEBOUNCE);
 }
 
-function mark(day, has) {
-  if (monthOf(day) !== shownMonth) return;
-  if (has) marked.add(day);
-  else marked.delete(day);
-  renderCalendar();
-}
-
 function fatal(message) {
   $('app').hidden = true;
   $('fatal-message').textContent = message;
@@ -178,34 +109,28 @@ async function load(day) {
   note.value = opened.body;
   note.disabled = false;
   deleteButton.hidden = opened.body === '';
+  $('next').disabled = openKey >= todayKey;
   setStatus();
-  if (monthOf(openKey) !== shownMonth) {
-    shownMonth = monthOf(openKey);
-    try {
-      await loadMarks();
-    } catch (message) {
-      fatal(message);
-      return;
-    }
-  }
-  renderCalendar();
+  dateLabel.textContent = dayDate(openKey).toLocaleDateString(undefined, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   tiny.win.setTitle(`Pereda — ${openKey}`);
   note.focus();
 }
 
-async function showMonth(month) {
-  shownMonth = month;
-  try {
-    await loadMarks();
-  } catch (message) {
-    fatal(message);
-    return;
-  }
-  renderCalendar();
+// Walk to another day with the arrows. A day after today is never asked for.
+function step(delta) {
+  if (openKey === null) return;
+  const wanted = addDays(openKey, delta);
+  if (wanted > todayKey) return;
+  load(wanted);
 }
 
 // Clearing a note and deleting one are the same write: an empty body leaves the
-// tombstone that keeps the day unmarked.
+// tombstone that keeps the day empty.
 async function remove() {
   if (!(await flush())) return;
   const sure = await tiny.dialog.confirm('Delete this note?', {
@@ -218,7 +143,7 @@ async function remove() {
   try {
     await tiny.api.call('saveDay', { day: openKey, body: '', seq: stamp });
   } catch (message) {
-    setStatus(`Not deleted — ${message}`, 'error');
+    setStatus(`Not deleted — ${message}`);
     return;
   }
   seq = stamp;
@@ -226,7 +151,6 @@ async function remove() {
   pending = '';
   note.value = '';
   deleteButton.hidden = true;
-  mark(openKey, false);
   setStatus();
   note.focus();
 }
@@ -239,32 +163,42 @@ async function exportAll() {
   try {
     result = await tiny.api.call('exportNotes', { dir });
   } catch (message) {
-    setStatus('Export failed', 'error');
+    setStatus('Export failed');
     await tiny.dialog.alert('Export failed', { detail: message });
     return;
   }
   if (result.ok) {
-    setStatus(result.written === 0 ? 'Nothing to export' : `Exported ${count(result.written, 'note')}`);
+    setStatus();
     await tiny.dialog.alert(
       result.written === 0 ? 'Nothing to export' : `Exported ${count(result.written, 'note')}`,
       { detail: result.written === 0 ? 'No day has a note yet.' : dir },
     );
     return;
   }
-  setStatus(`Export stopped at ${result.day}`, 'error');
+  setStatus(`Export stopped at ${result.day}`);
   await tiny.dialog.alert(`Export stopped at ${result.day}`, {
     detail: `${result.reason}. ${count(result.written, 'note')} written before it stopped.`,
   });
 }
 
-$('previous').addEventListener('click', () => showMonth(previousMonth(shownMonth)));
-$('next').addEventListener('click', () => showMonth(nextMonth(shownMonth)));
+$('previous').addEventListener('click', () => step(-1));
+$('next').addEventListener('click', () => step(1));
 $('today').addEventListener('click', () => load(null));
 $('delete').addEventListener('click', remove);
 $('export').addEventListener('click', exportAll);
 note.addEventListener('input', () => {
   deleteButton.hidden = note.value === '';
   schedule();
+});
+document.addEventListener('keydown', (event) => {
+  if (!event.altKey || event.metaKey || event.ctrlKey) return;
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    step(-1);
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    step(1);
+  }
 });
 note.addEventListener('blur', () => flush());
 document.addEventListener('visibilitychange', () => {

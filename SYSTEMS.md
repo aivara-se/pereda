@@ -34,13 +34,13 @@ The store never deletes, recreates or repairs the database over the notes. If it
 
 The day is the machine's local calendar day, read by the backend; the page never computes it from its own clock.
 
-- The app opens today, and the calendar opens any day up to today. A future day is refused in the page and again at the backend.
+- The app opens today, and the arrows open any day up to today. A future day is refused in the page and again at the backend.
 - A window left open across midnight keeps the day it loaded; Today asks the backend again and loads the new day.
 - A sleep or a timezone change can skip or repeat a day; no existing note changes its date.
 
 ## Reading
 
-The calendar is the index: a month at a time, with the days that have a note returned marked, and any marked day opening its note. v1.0 has no search, no title index and no full-text table, so a day is found by its date.
+The page holds one day at a time: an arrow asks the backend for the day before or after it, and Today asks for the current day. v1.0 has no calendar, no search, no title index and no full-text table, so a day is found by stepping to its date.
 
 ## Export
 
@@ -71,7 +71,7 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no mark and no export, a save that cannot resurrect a tombstone, a month across a year boundary, and export names and contents.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note and no export, a save that cannot resurrect a tombstone, a day across the turn of the year, and export names and contents.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
