@@ -8,10 +8,6 @@ Pereda is being rebuilt as an Aivara project, and its first documents decide how
 
 We record one significant architectural decision per file in `docs/adrs`, as Markdown. A decision is **Accepted** when its file is merged into `main`, and **In Review** while its pull request is open. An accepted record is not edited: a decision that contradicts it is a new record that names the clauses it overrides, and the old file stays as the account of what was believed then.
 
-A record cites only ADRs with a lower number. A later decision is not a premise an earlier record can know, and a forward reference makes a record depend on a file written after it.
-
-A record does not cite `PRODUCT.md` either: the product document moves with every version, and a record that pointed at it would describe a moving target. The Context states the product premise the decision needs in its own words, and `PRODUCT.md` may link to the record, never the other way.
-
 An ADR is written before the code that depends on it, and it says what the choice costs, not only what it buys.
 
 ## Consequences

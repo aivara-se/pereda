@@ -13,7 +13,7 @@ Cloud sync is not a v1.x candidate. If it comes, it is a v2 decision that syncs 
 ## Consequences
 
 - One machine holds the notes. A second machine starts empty; v1.0 has no import or sync, and the data folder is the only way to move them.
-- A lost disk loses the notes unless the person backs up the file or exports. The path is in `SYSTEMS.md`, and the export is the readable copy.
+- A lost disk loses the notes unless the person backs up the data folder or exports. The export is the readable copy.
 - No automatic updates: a security fix reaches a user when they download the new build. The site is the update channel.
 - No telemetry and no crash reports: a failure is reported by the person who saw it.
 - The app can be checked with the network off, and every request that would exist has to be justified.
