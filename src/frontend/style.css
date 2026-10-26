@@ -93,7 +93,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  width: min(100% - 64px, 40rem);
+  width: min(100% - 64px, 34rem);
   margin: 0 auto;
   padding-top: 26px;
 }
@@ -156,7 +156,7 @@ button:disabled {
 #note {
   display: block;
   height: 100%;
-  width: min(100% - 64px, 40rem);
+  width: min(100% - 64px, 34rem);
   margin: 0 auto;
   padding: 34px 0 84px;
   border: 0;
