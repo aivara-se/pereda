@@ -1,4 +1,4 @@
-name: checks
+name: validate
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  checks:
+  validate:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
