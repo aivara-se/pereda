@@ -8,7 +8,7 @@ name: publish
 # every repository (aivara-se/.github contains docs/RELEASES.md, the standard),
 # and the packaging is not, so each repository carries the workflow for its
 # artifact. Nothing is dispatched by hand, and the run creates no commit and no
-# pull request.
+# pull request. The decision is docs/adrs/008-releases-are-built-here.md.
 
 on:
   push:
