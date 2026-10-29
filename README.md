@@ -13,3 +13,9 @@ tinyjs dev      # the app, with hot reload
 bun test        # the store and the day
 tinyjs build    # the app for this OS
 ```
+
+## Release
+
+`.github/workflows/publish.yml` runs on a push to `main`: it reads the version in `tinyjs.json`, builds macOS, Windows and Linux, tags `v<version>` once every build succeeds, and publishes the GitHub release with the three archives. A push that leaves the version alone does nothing ([007](docs/adrs/007-releases-follow-the-version-file.md)).
+
+The macOS build is signed and notarized when these secrets are set, and ad-hoc signed without them: `MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PASSWORD`, `MACOS_KEYCHAIN_PASSWORD`, `MACOS_SIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`, `MACOS_APPLE_ID`, `MACOS_TEAM_ID`, `MACOS_APP_PASSWORD`.
