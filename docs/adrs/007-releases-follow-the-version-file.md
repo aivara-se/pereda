@@ -16,7 +16,9 @@ This overrides [006](006-releases-come-from-the-shared-workflow.md):
 
 - Its Decision: "A release is a commit on `main` whose message starts `release: v`" — any commit on `main` whose version is unreleased is a release.
 - Its Decision: "v1.0.0 ships first, and it is not a bump: … so its release is started by a `release: v1.0.0` commit" — the workflow's first run tags it.
+- The rest of that Decision bullet: "A bump run produces v1.0.1, and every version after it" — nothing bumps, so no run produces a version.
 - Context: "Its version is a bump: it adds one to the version already in `tinyjs.json` and opens the release pull request with the result."
+- Context: "The version in the file, 1.0.0, is the one it cannot produce" — a push with that version in the file is the release.
 - Consequences: "v1.0.0 skips the workflow's bump pull request, not review…"
 
 Everything else in 006 stands, the assets and the signing included, and so does its rule that the tag waits for the builds.
