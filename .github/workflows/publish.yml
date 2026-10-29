@@ -1,11 +1,14 @@
 name: publish
 
-# Optional: the version in tinyjs.json on main is the release. A push that
-# changes it builds the three platforms, tags the commit and publishes the
-# release; a push that does not is a run that reads the file and stops.
+# The version in tinyjs.json on main is the release. A push that changes it
+# builds the three platforms, tags the commit and publishes the release; a push
+# that does not change it reads the file and stops.
 #
-# The workflow itself lives in aivara-se/.github, whose docs/RELEASES.md is the
-# standard and lists the signing and notary secrets.
+# This workflow is this repository's own: the release process is the same in
+# every repository (aivara-se/.github contains docs/RELEASES.md, the standard),
+# and the packaging is not, so each repository carries the workflow for its
+# artifact. Nothing is dispatched by hand, and the run creates no commit and no
+# pull request.
 
 on:
   push:
@@ -14,7 +17,241 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: publish-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
-  publish:
-    uses: aivara-se/.github/.github/workflows/tinyjs-publish.yml@main
-    secrets: inherit
+  meta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.read.outputs.version }}
+      tag: ${{ steps.read.outputs.tag }}
+      title: ${{ steps.read.outputs.title }}
+      build: ${{ steps.read.outputs.build }}
+      ref: ${{ steps.read.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - name: Read the version, the tag and the release
+        id: read
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.version // empty' tinyjs.json)
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'; then
+            echo "tinyjs.json carries no version: '$version'" >&2
+            exit 1
+          fi
+          title=$(jq -r '.title // .name' tinyjs.json)
+          tag="v$version"
+          git fetch --tags --force --quiet
+          ref="$GITHUB_SHA"
+          tagged=false
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            tagged=true
+            ref="$tag"
+          fi
+          released=false
+          if gh release view "$tag" >/dev/null 2>&1; then
+            released=true
+          fi
+          build=true
+          if [ "$tagged" = true ] && [ "$released" = true ]; then
+            build=false
+            echo "$tag is already tagged and released; nothing to publish"
+          fi
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "title=$title"
+            echo "build=$build"
+            echo "ref=$ref"
+          } >> "$GITHUB_OUTPUT"
+
+  macos:
+    needs: meta
+    if: needs.meta.outputs.build == 'true'
+    runs-on: macos-15
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x86_64]
+    env:
+      ARCH: ${{ matrix.arch }}
+      VERSION: ${{ needs.meta.outputs.version }}
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+      MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+      MACOS_NOTARY_PROFILE: ${{ secrets.MACOS_NOTARY_PROFILE }}
+      MACOS_APPLE_ID: ${{ secrets.MACOS_APPLE_ID }}
+      MACOS_TEAM_ID: ${{ secrets.MACOS_TEAM_ID }}
+      MACOS_APP_PASSWORD: ${{ secrets.MACOS_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
+
+      - name: Install tinyjs
+        run: |
+          curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.tinyjs" >> "$GITHUB_PATH"
+
+      - name: Read the app name
+        run: |
+          echo "APP=$(jq -r .name tinyjs.json)" >> "$GITHUB_ENV"
+          echo "TITLE=$(jq -r .title tinyjs.json)" >> "$GITHUB_ENV"
+
+      - name: Import the signing certificate
+        if: env.MACOS_CERTIFICATE != ''
+        run: |
+          set -euo pipefail
+          echo "$MACOS_CERTIFICATE" | openssl base64 -d -A > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$MACOS_KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" build.keychain
+          security import "$RUNNER_TEMP/cert.p12" -k build.keychain \
+            -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$MACOS_KEYCHAIN_PASSWORD" build.keychain
+          security list-keychains -d user -s build.keychain
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          if [ -n "$MACOS_SIGN_IDENTITY" ]; then
+            export TINYJS_SIGN_IDENTITY="$MACOS_SIGN_IDENTITY"
+          fi
+          tinyjs build --arch "$ARCH"
+
+      - name: Notarize
+        if: env.MACOS_NOTARY_PROFILE != ''
+        run: |
+          set -euo pipefail
+          xcrun notarytool store-credentials "$MACOS_NOTARY_PROFILE" \
+            --apple-id "$MACOS_APPLE_ID" \
+            --team-id "$MACOS_TEAM_ID" \
+            --password "$MACOS_APP_PASSWORD"
+          TINYJS_NOTARY_PROFILE="$MACOS_NOTARY_PROFILE" tinyjs notarize --arch "$ARCH"
+
+      - name: Package
+        run: ditto -c -k --keepParent "dist/$TITLE.app" "$APP-$VERSION-macos-$ARCH.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: ${{ env.APP }}-${{ env.VERSION }}-macos-${{ matrix.arch }}.zip
+          if-no-files-found: error
+
+  windows:
+    needs: meta
+    if: needs.meta.outputs.build == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
+
+      - name: Install tinyjs
+        shell: pwsh
+        run: |
+          irm https://tinyjs.app/install.ps1 | iex
+          "$env:LOCALAPPDATA\tinyjs" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Build
+        run: tinyjs build
+
+      - name: Package
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          $app = node -p "require('./tinyjs.json').name"
+          "APP=$app" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Compress-Archive -Path dist\* -DestinationPath "$app-$env:VERSION-windows-x86_64.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86_64
+          path: ${{ env.APP }}-${{ needs.meta.outputs.version }}-windows-x86_64.zip
+          if-no-files-found: error
+
+  linux:
+    needs: meta
+    if: needs.meta.outputs.build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
+
+      - name: Install tinyjs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-0
+          curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.tinyjs" >> "$GITHUB_PATH"
+
+      - name: Build
+        run: tinyjs build
+
+      - name: Package
+        run: |
+          app=$(jq -r .name tinyjs.json)
+          echo "APP=$app" >> "$GITHUB_ENV"
+          tar -czf "$app-$VERSION-linux-x86_64.tar.gz" -C dist .
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x86_64
+          path: ${{ env.APP }}-${{ needs.meta.outputs.version }}-linux-x86_64.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: [meta, macos, windows, linux]
+    if: needs.meta.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Tag the commit and publish the release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          TAG: ${{ needs.meta.outputs.tag }}
+          TITLE: ${{ needs.meta.outputs.title }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "tag $TAG already exists"
+          else
+            git tag "$TAG" "$GITHUB_SHA"
+            git push origin "$TAG"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" artifacts/* --clobber
+          else
+            gh release create "$TAG" --verify-tag \
+              --title "$TITLE $TAG" --generate-notes artifacts/*
+          fi
