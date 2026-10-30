@@ -10,6 +10,7 @@
 		type ShadowNode
 	} from 'gpuix-svelte';
 	import Portal from 'gpuix-svelte/components/Portal.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { api, type OpenedDay } from './src/api.ts';
 	import { register_app_fonts } from './src/fonts.ts';
 	import { noteRows } from './src/measure.ts';
@@ -57,7 +58,9 @@
 	let loadToken = 0;
 	let focusedDay = $state<string | null>(null);
 	let logError = $state('');
-	let saveFailures = $state(new Map<string, string>());
+	// `$state` holds a plain `Map` without proxying it, so `.set()` would change
+	// nothing the template can see; `SvelteMap` is the reactive one.
+	const saveFailures = new SvelteMap<string, string>();
 	let fatal = $state('');
 	let confirmDay = $state<string | null>(null);
 	let fontsReady = $state(false);
@@ -112,7 +115,7 @@
 
 	function status(): string {
 		const failure = saveFailures.values().next().value;
-		return failure ?? logError;
+		return failure === undefined ? logError : `Not saved — ${failure}`;
 	}
 
 	function showDelete(): boolean {
@@ -216,7 +219,7 @@
 		more = result.more;
 		focusedDay = entries[0]?.day ?? null;
 		logError = '';
-		saveFailures = new Map();
+		saveFailures.clear();
 		if (entries[0] !== undefined) void focusEntry(entries[0]);
 		void new Promise((resolve) => setTimeout(resolve, 0)).then(scrollTop);
 	}
