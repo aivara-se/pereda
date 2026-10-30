@@ -40,6 +40,22 @@ jobs:
       - name: Build the app
         run: bun run build:app
 
+      # The addon ships beside the executable, so a missing or unloadable one only
+      # shows up at launch: run it, wait for the tree to mount, then end it.
+      - name: Run the app
+        run: |
+          log=$(mktemp)
+          ./dist/Pereda.app/Contents/MacOS/Pereda >"$log" 2>&1 &
+          pid=$!
+          for _ in $(seq 1 30); do
+            grep -q 'mount complete' "$log" && break
+            sleep 1
+          done
+          kill "$pid" 2>/dev/null || true
+          wait "$pid" 2>/dev/null || true
+          cat "$log"
+          grep -q 'mount complete' "$log" || { echo 'the app did not mount'; exit 1; }
+
       - name: Package
         run: ditto -c -k --keepParent dist/Pereda.app Pereda-1.0.0-macos-arm64.zip
 

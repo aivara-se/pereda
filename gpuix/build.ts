@@ -3,11 +3,20 @@
 // Svelte and the GPUI addon. `--app` wraps it as Pereda.app on macOS.
 
 import { spawnSync } from 'node:child_process';
-import { chmodSync, copyFileSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+	chmodSync,
+	copyFileSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	statSync,
+	writeFileSync
+} from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { BunPlugin } from 'bun';
-import { load_module, load_svelte, resolve_native_cjs, resolve_svelte } from 'gpuix-svelte/plugin';
+import { load_module, load_svelte, resolve_svelte } from 'gpuix-svelte/plugin';
 
 const root = fileURLToPath(new URL('./', import.meta.url));
 const dist = join(root, 'dist');
@@ -62,11 +71,30 @@ const ENTITLEMENTS = `<?xml version="1.0" encoding="UTF-8"?>
 `;
 
 const conditions = ['custom-renderer', 'production'];
+
+// Bun cannot carry the addon inside the executable: it embeds a `.node` and
+// extracts it into the temp directory at launch, where a noexec or missing TMPDIR
+// fails the dlopen, and marking it `external` makes Bun resolve the package from
+// the cwd rather than from beside the binary. So the addon is copied next to the
+// executable and the entry loads it from there, by absolute path.
+const addon = platform_addon();
+
 let components = 0;
 const plugin: BunPlugin = {
 	name: 'gpuix-svelte',
 	setup(build) {
-		build.onResolve({ filter: /^@gpuix\/native$/ }, resolve_native_cjs);
+		build.onResolve({ filter: /^@gpuix\/native(\/|$)/ }, (args) =>
+			args.path === '@gpuix/native' ? { path: 'gpuix-native', namespace: 'addon' } : undefined
+		);
+		build.onLoad({ filter: /^gpuix-native$/, namespace: 'addon' }, () => ({
+			contents: `import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+const binding = createRequire(process.execPath)(join(dirname(process.execPath), ${JSON.stringify(addon.name)}));
+export const { AvailableUpdate, GpuixRenderer, TestGpuixRenderer, checkUpdate, hasTestGpuixRenderer, isTerminal } = binding;
+export const __napiBindingTarget = 'native';
+`,
+			loader: 'js'
+		}));
 		build.onResolve({ filter: /^svelte(\/|$)/ }, resolve_svelte(conditions));
 		build.onLoad({ filter: /\.svelte\.[jt]s$/ }, load_module);
 		build.onLoad({ filter: /\.svelte$/ }, (args) => {
@@ -103,7 +131,8 @@ if (!result.success || components === 0) {
 }
 
 const size = statSync(binary).size;
-console.log(`[build] ${relative(root, binary)} (${(size / 1048576).toFixed(1)} MB)`);
+copyFileSync(addon.source, join(dist, addon.name));
+console.log(`[build] ${relative(root, binary)} (${(size / 1048576).toFixed(1)} MB) + ${addon.name}`);
 
 if (app) {
 	const macos = join(bundle, 'Contents', 'MacOS');
@@ -112,6 +141,7 @@ if (app) {
 	mkdirSync(resources, { recursive: true });
 	copyFileSync(binary, join(macos, 'Pereda'));
 	chmodSync(join(macos, 'Pereda'), 0o755);
+	copyFileSync(addon.source, join(macos, addon.name));
 	writeFileSync(join(bundle, 'Contents', 'Info.plist'), PLIST);
 	write_icns(icon, join(resources, 'AppIcon.icns'));
 	// No Developer ID in this POC: an ad-hoc signature is enough for the app to
@@ -119,6 +149,52 @@ if (app) {
 	run('codesign', ['--force', '--deep', '--sign', '-', bundle]);
 	run('codesign', ['--verify', '--strict', bundle]);
 	console.log(`[build] ${relative(root, bundle)} (ad-hoc signed)`);
+}
+
+// The addon npm installed for this host: the one `@gpuix/native-*` package whose
+// os, cpu and libc match the machine that runs the build.
+function platform_addon(): { name: string; source: string } {
+	const base = join(root, 'node_modules', '@gpuix');
+	const installed = readdirSync(base)
+		.filter((name) => name.startsWith('native-'))
+		.map((name) => {
+			const dir = join(base, name);
+			const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as {
+				os?: string[];
+				cpu?: string[];
+				libc?: string[];
+			};
+			return { name, dir, manifest };
+		})
+		.filter(
+			({ manifest }) =>
+				manifest.os?.includes(process.platform) === true &&
+				manifest.cpu?.includes(process.arch) === true &&
+				(manifest.libc === undefined || manifest.libc.includes(is_musl() ? 'musl' : 'glibc'))
+		);
+	if (installed.length !== 1) {
+		console.error(
+			`[build] expected one @gpuix/native-* addon for ${process.platform}-${process.arch}, found ${installed.length}`
+		);
+		process.exit(1);
+	}
+	const { name, dir } = installed[0];
+	const files = readdirSync(dir).filter((file) => file.endsWith('.node'));
+	if (files.length !== 1) {
+		console.error(`[build] expected one .node in @gpuix/${name}, found ${files.length}`);
+		process.exit(1);
+	}
+	return { name: files[0], source: join(dir, files[0]) };
+}
+
+// musl hosts are the ones whose ldd is musl's; everything else the addon ships
+// for is glibc.
+function is_musl(): boolean {
+	try {
+		return readFileSync('/usr/bin/ldd', 'utf8').includes('musl');
+	} catch {
+		return false;
+	}
 }
 
 function write_icns(png: string, out: string): void {
