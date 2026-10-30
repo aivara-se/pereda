@@ -1,0 +1,23 @@
+{
+	"name": "pereda-gpuix",
+	"private": true,
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"start": "gpuix-svelte --bun app.ts",
+		"test": "bun test test",
+		"build": "bun build.ts",
+		"build:app": "bun build.ts --app",
+		"typecheck": "tsc --noEmit && svelte-check --diagnostic-sources js,svelte --fail-on-warnings"
+	},
+	"dependencies": {
+		"fontkit": "^2.0.4",
+		"gpuix-svelte": "^0.3.0"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.4.3",
+		"@types/node": "^26.6.5",
+		"svelte-check": "^4.7.6",
+		"typescript": "^5.9.3"
+	}
+}

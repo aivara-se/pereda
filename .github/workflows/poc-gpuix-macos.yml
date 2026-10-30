@@ -1,0 +1,50 @@
+name: poc-gpuix-macos
+
+# The POC build: the gpuix-svelte port of Pereda, as one macOS arm64 .app.
+# Dispatch it by hand, or let a push to the POC branch rebuild it.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [poc/gpuix-svelte]
+    paths:
+      - 'gpuix/**'
+      - '.github/workflows/poc-gpuix-macos.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  macos-arm64:
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: gpuix
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test the store and the day
+        run: bun test
+
+      - name: Build the app
+        run: bun run build:app
+
+      - name: Package
+        run: ditto -c -k --keepParent dist/Pereda.app Pereda-1.0.0-macos-arm64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pereda-gpuix-macos-arm64
+          path: gpuix/Pereda-1.0.0-macos-arm64.zip
+          if-no-files-found: error
