@@ -25,7 +25,7 @@ The choice is reopened only if tinyjs stops being maintained, a release needs so
 
 ## Consequences
 
-- The 8 MB build, the three-platform release and the backend tests stay as they are.
+- The build, the three-platform release and the backend tests stay as they are.
 - The test gap stays: the store and the day are covered by `bun test`; the window is still checked by hand on each release, because tinyjs has no packaged E2E harness.
 - No Rust, Dart or C# toolchain enters the project, and there is no second UI to keep in step.
 - Reopening the decision costs a new ADR measured against a built artifact, not a rewrite now.
