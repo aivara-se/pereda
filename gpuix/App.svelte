@@ -176,7 +176,7 @@
 			if (entry.body === entry.savedBody) continue;
 			if (entry.timer !== null) clearTimeout(entry.timer);
 			try {
-				saveNow({ day: entry.day, body: entry.body, seq: entry.seq + 1 });
+				saveNow({ day: entry.day, body: entry.body });
 			} catch (error) {
 				// No window is left to say it in; the row keeps what it had, and the next
 				// launch shows it.

@@ -54,27 +54,30 @@ export type OpenLogResult = { today: string; days: OpenedDay[]; more: boolean };
 // A save as the page describes it: a whole body, under the counter the page holds.
 export type Save = { day?: string; body?: string; seq?: number };
 
-function write(notes: Notes, params: Save): { day: string; seq: number } {
-	const current = today();
+// The day and the body of a save, once they are what the store can take.
+function content(params: { day?: string; body?: string }): { day: string; body: string } {
 	const day = params?.day;
-	assertWritableDay(day, current);
+	assertWritableDay(day, today());
 	if (typeof params?.body !== 'string') throw new Error('A note is plain text.');
-	if (!Number.isSafeInteger(params?.seq) || (params.seq as number) < 1) {
-		throw new Error('A save needs a counter.');
-	}
-	const saved = notes.save(day as string, params.body, params.seq as number);
+	return { day: day as string, body: params.body };
+}
+
+function write(notes: Notes, day: string, body: string, seq: number): { day: string; seq: number } {
+	const saved = notes.save(day, body, seq);
 	if (!saved.applied) {
 		throw new Error('This note was written somewhere else.');
 	}
-	return { day: day as string, seq: (saved.row as { seq: number }).seq };
+	return { day, seq: (saved.row as { seq: number }).seq };
 }
 
 // The same save, without the promise: a quit ends the process before a microtask
-// runs, so the page flushes its unsaved bodies through this one. It writes to the
-// store the calls above opened, and refuses when there is none.
-export function saveNow(params: Save): { day: string; seq: number } {
+// runs, so the page flushes its unsaved bodies through this one. The counter is the
+// store's, not the page's, because a save the page started may have committed while
+// the page had not advanced its own copy yet — and that counter would be refused.
+export function saveNow(params: { day?: string; body?: string }): { day: string; seq: number } {
 	if (opened === null) throw new Error('The notes are not open yet.');
-	return write(opened, params);
+	const { day, body } = content(params);
+	return write(opened, day, body, (opened.day(day)?.seq ?? 0) + 1);
 }
 
 export const api = {
@@ -103,6 +106,12 @@ export const api = {
 	// Save a whole body with the page's counter. An older counter loses the
 	// comparison in the store and is reported instead of pretending to save.
 	async saveDay(params: Save): Promise<{ day: string; seq: number }> {
-		return write(await store(), params);
+		const notes = await store();
+		const { day, body } = content(params);
+		const seq = params?.seq;
+		if (!Number.isSafeInteger(seq) || (seq as number) < 1) {
+			throw new Error('A save needs a counter.');
+		}
+		return write(notes, day, body, seq as number);
 	}
 };
