@@ -2,7 +2,9 @@
 
 ## Where it runs
 
-A tinyjs desktop app: the operating system's webview draws the window and plain JavaScript behind it owns the notes. That shape buys three things the product leans on — a build of about 9.5 MB, native chrome without a native UI layer, and no server to run ([`001`](docs/adrs/001-a-desktop-app-on-tinyjs.md)). macOS 15 or later, Windows 10 and 11, and a Linux desktop with WebKitGTK 4.1.
+A tinyjs desktop app: the operating system's webview draws the window and plain JavaScript behind it owns the notes. That shape buys three things the product leans on — a build of about 9.5 MB, no native UI layer to maintain, and no server to run ([`001`](docs/adrs/001-a-desktop-app-on-tinyjs.md)). macOS 15 or later, Windows 10 and 11, and a Linux desktop with WebKitGTK 4.1.
+
+The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame.
 
 One window, one OS user, one data folder. There is no account and no server ([`002`](docs/adrs/002-local-only-in-v1.md)), and the only channel the app has is inside the machine, so the network is absent by construction rather than by policy. There is no update channel either: the app checks for nothing and a new version is a fresh download ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
@@ -56,7 +58,13 @@ The log is the index: the first page holds today and the days before it, newest 
 
 ## Planned, not built
 
-Every mechanism above is v1.0's. The roadmap's candidates are not designed here: v1.1 search, v1.2 the assistant, v1.3 the global shortcut. Cloud sync is not a v1.x mechanism: v1.0 has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+Every mechanism above is v1.1's. Three versions are decided and none is built; each ADR is the design and the code follows it.
+
+- **v1.2 search** ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)): a `notes_fts` FTS5 table in the same file at schema version 2, kept in step by three triggers on `notes`, and one backend call returning matching days newest first with a snippet. The index is derived and rebuildable from `notes`, which stays the only authority.
+- **v1.3 the shortcut** ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)): one hotkey id registered at launch by the backend; a press shows the window and takes the Today path. No state, no stored preference, no second window.
+- **v1.4 the assistant** ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)): `availability()` then `generate()` in the backend, the note on screen as the whole request, the reply marked in a panel and never written to `notes`; the on/off preference is the app's, not the database's. Absent on Windows and Linux.
+
+Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Checks
 

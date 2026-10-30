@@ -2,7 +2,7 @@
 
 Pereda is a real-time daily note app for the desktop. It opens on today, one note per day, and everything typed is written to disk as it is typed: there is no save button, no draft state and no sync step. It is a local app — no account, no server, no network. The notes are one database on the computer, and the app works with the network off.
 
-v1.0 carries one flow: **the live day**. The app opens on today's entry at the top of one log, writes it, and older entries follow as you scroll.
+v1.1 carries one flow: **the live day**. The app opens on today's entry at the top of one log, writes it, and older entries follow as you scroll.
 
 **Live is the promise.** The note is not a document that is saved; it is written as it is made. The app never asks whether to keep the work, because it already has. A quit a moment after typing loses nothing, and a crash can lose only the last moment before it.
 
@@ -12,6 +12,7 @@ v1.0 carries one flow: **the live day**. The app opens on today's entry at the t
 - It runs on macOS 15 or later (Apple silicon and Intel), Windows 10 or 11, and a Linux desktop with WebKitGTK 4.1. A build is about 9.5 MB and needs no runtime beyond the OS's webview.
 - It is downloaded, not signed up for: anyone can download it, and there is no hosted version and nothing to self-host.
 - It opens on today with the cursor in the note.
+- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today and delete at its right, and a paper translucent enough to read the desktop through.
 
 ## The day
 
@@ -53,7 +54,7 @@ v1.0 carries one flow: **the live day**. The app opens on today's entry at the t
 
 ## AI, later
 
-AI is not in v1.0. When it comes it is an assistant to the writer, never the author: it may summarize a day, answer a question about the notes, or suggest a next line, and every word it produces is marked until the writer accepts it. It is off until the person turns it on. If it uses a model over the network, the app names the model and sends only the note the person asked about — never the whole log — and a local model is preferred where the machine can run one.
+AI is not in the app yet. v1.4 decides it: a summariser that runs on this Mac, one note at a time, and never writes into a note ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). It is off until the person turns it on, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; the other platforms have no assistant, because a model over the network is not a v1.x decision. Questions across the log and suggested lines are not in v1.x.
 
 ## What v1.0 does not do
 
@@ -83,7 +84,7 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.1 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -99,14 +100,15 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.1** — the window draws its own frame: a frameless, translucent window with close, minimize and zoom in the page's bar.
 - **v1.0** — the live day: one note per day, written as it is typed, on the desktop; no account, server or network.
 
 ## Roadmap
 
-Candidates, not commitments: each is decided when the version before it is live, and each lands with its own ADR and an edit to this document.
+Decided, not built: the binary is v1.1, and each of these lands with the ADR beside it. No dates.
 
-- **v1.1** — search: find a note by what it says, instead of remembering the date.
-- **v1.2** — the assistant: AI summaries, questions and suggestions, on the terms above.
-- **v1.3** — the shortcut: a global hotkey opens today's note from anywhere.
+- **v1.2** — search: find a note by what it says, newest first, each word matched as a prefix ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)).
+- **v1.3** — the shortcut: ⌘⇧D summons the window on today while Pereda runs ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)).
+- **v1.4** — the assistant: summarise the note on screen with the on-device model, on macOS 26 or later with Apple Intelligence on ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)).
 
 Cloud sync is not a v1.x candidate. If it comes, it is a v2 decision that syncs the local store; it never turns the app into a cloud app.
