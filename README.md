@@ -2,7 +2,7 @@
 
 A real-time daily note app for the desktop: one note per day, written as you type. macOS, Windows and Linux, in about 9.5 MB, with no account, no server and no network.
 
-![Pereda: a log of days, today at the top](docs/screenshot.png)
+![Pereda open on today's note, at the top of the log](docs/screenshot.png)
 
 The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEMS.md); the decisions are in [docs/adrs](docs/adrs/).
 
