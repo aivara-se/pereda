@@ -16,7 +16,9 @@
 
 :root {
   color-scheme: light dark;
+  --bar: 44px;
   --bg: #faf9f6;
+  --window: rgba(250, 249, 246, 0.8);
   --ink: #26231f;
   --muted: #7d756a;
   --icon: #6a6155;
@@ -24,11 +26,15 @@
   --accent: #a9541c;
   --accent-soft: #f0e0cf;
   --error: #a5342c;
+  --close: #e0685c;
+  --minimize: #dfae52;
+  --zoom: #6fb073;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #121110;
+    --window: rgba(18, 17, 16, 0.8);
     --ink: #ece7dd;
     --muted: #958d80;
     --icon: #a79e90;
@@ -50,7 +56,9 @@ body {
 
 body {
   margin: 0;
-  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  background: var(--window);
   color: var(--ink);
   font-family: "Instrument Sans", ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
   font-size: 14px;
@@ -81,20 +89,72 @@ button:disabled {
 }
 
 .app {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
-/* Two controls float over the log; everything else is the note. */
+/* The window has no frame: this bar drags it and holds its controls. */
 
-.tools {
-  position: fixed;
-  top: 18px;
-  right: 20px;
-  z-index: 5;
+.bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: var(--bar);
+  padding: 0 12px 0 14px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.window-controls {
   display: flex;
   gap: 2px;
+}
+
+.dot {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+}
+
+.dot::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 120ms ease;
+}
+
+.dot:hover::before {
+  transform: scale(1.12);
+}
+
+.dot:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.dot.close {
+  color: var(--close);
+}
+
+.dot.minimize {
+  color: var(--minimize);
+}
+
+.dot.zoom {
+  color: var(--zoom);
+}
+
+/* Two controls sit at the right of the bar; everything else is the note. */
+
+.tools {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
 }
 
 .icon {
@@ -136,23 +196,10 @@ button:disabled {
   overscroll-behavior: none;
 }
 
-/* Text scrolling under the controls fades into the page. */
-.page::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 72px;
-  z-index: 4;
-  background: linear-gradient(var(--bg) 45%, transparent);
-  pointer-events: none;
-}
-
 .log {
   width: min(100% - 64px, 43rem);
   margin: 0 auto;
-  padding: 92px 0 45vh;
+  padding: 30px 0 45vh;
 }
 
 .entry {
@@ -207,7 +254,7 @@ button:disabled {
 @media (max-width: 620px) {
   .log {
     width: min(100% - 40px, 43rem);
-    padding-top: 78px;
+    padding-top: 22px;
   }
 
   .entry {
@@ -248,7 +295,7 @@ button:disabled {
 
 .fatal {
   position: fixed;
-  inset: 0;
+  inset: var(--bar) 0 0;
   display: grid;
   place-items: center;
   padding: 40px;
