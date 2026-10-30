@@ -11,7 +11,7 @@
 	} from 'gpuix-svelte';
 	import Portal from 'gpuix-svelte/components/Portal.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import { api, type OpenedDay } from './src/api.ts';
+	import { api, saveNow, type OpenedDay } from './src/api.ts';
 	import { register_app_fonts } from './src/fonts.ts';
 	import { noteRows } from './src/measure.ts';
 
@@ -167,6 +167,23 @@
 	function flushAll(): Promise<boolean> {
 		return Promise.all(entries.map(flushEntry)).then((results) => results.every(Boolean));
 	}
+
+	// A GPUI window has no blur or visibilitychange to flush on, and a quit ends the
+	// process under the debounce's timer and any save in flight, so what is typed is
+	// written here, synchronously, as the process goes.
+	process.on('exit', () => {
+		for (const entry of entries) {
+			if (entry.body === entry.savedBody) continue;
+			if (entry.timer !== null) clearTimeout(entry.timer);
+			try {
+				saveNow({ day: entry.day, body: entry.body, seq: entry.seq + 1 });
+			} catch (error) {
+				// No window is left to say it in; the row keeps what it had, and the next
+				// launch shows it.
+				console.error(`[pereda] ${entry.day} did not save on quit: ${(error as Error).message}`);
+			}
+		}
+	});
 
 	function maybeDrop(entry: Entry): void {
 		if (entry.day === todayKey) return;

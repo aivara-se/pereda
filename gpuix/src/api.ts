@@ -29,6 +29,7 @@ function dataFolder(): string {
 // The store is opened once and shared by every call, so a database that cannot
 // be opened reports the same reason to each of them for the life of the app.
 let opening: Promise<Notes> | null = null;
+let opened: Notes | null = null;
 
 export function databasePath(): string {
 	return join(dataFolder(), DB_NAME);
@@ -39,7 +40,8 @@ function store(): Promise<Notes> {
 		opening = (async () => {
 			const folder = dataFolder();
 			mkdirSync(folder, { recursive: true });
-			return openStore(join(folder, DB_NAME), (path) => new Database(path));
+			opened = openStore(join(folder, DB_NAME), (path) => new Database(path));
+			return opened;
 		})();
 	}
 	return opening;
@@ -48,6 +50,32 @@ function store(): Promise<Notes> {
 export type OpenedDay = { day: string; body: string; seq: number };
 
 export type OpenLogResult = { today: string; days: OpenedDay[]; more: boolean };
+
+// A save as the page describes it: a whole body, under the counter the page holds.
+export type Save = { day?: string; body?: string; seq?: number };
+
+function write(notes: Notes, params: Save): { day: string; seq: number } {
+	const current = today();
+	const day = params?.day;
+	assertWritableDay(day, current);
+	if (typeof params?.body !== 'string') throw new Error('A note is plain text.');
+	if (!Number.isSafeInteger(params?.seq) || (params.seq as number) < 1) {
+		throw new Error('A save needs a counter.');
+	}
+	const saved = notes.save(day as string, params.body, params.seq as number);
+	if (!saved.applied) {
+		throw new Error('This note was written somewhere else.');
+	}
+	return { day: day as string, seq: (saved.row as { seq: number }).seq };
+}
+
+// The same save, without the promise: a quit ends the process before a microtask
+// runs, so the page flushes its unsaved bodies through this one. It writes to the
+// store the calls above opened, and refuses when there is none.
+export function saveNow(params: Save): { day: string; seq: number } {
+	if (opened === null) throw new Error('The notes are not open yet.');
+	return write(opened, params);
+}
 
 export const api = {
 	// One page of the log: today on the first page, then the days before the
@@ -74,19 +102,7 @@ export const api = {
 
 	// Save a whole body with the page's counter. An older counter loses the
 	// comparison in the store and is reported instead of pretending to save.
-	async saveDay(params: { day?: string; body?: string; seq?: number }): Promise<{ day: string; seq: number }> {
-		const notes = await store();
-		const current = today();
-		const day = params?.day;
-		assertWritableDay(day, current);
-		if (typeof params?.body !== 'string') throw new Error('A note is plain text.');
-		if (!Number.isSafeInteger(params?.seq) || (params.seq as number) < 1) {
-			throw new Error('A save needs a counter.');
-		}
-		const saved = notes.save(day as string, params.body, params.seq as number);
-		if (!saved.applied) {
-			throw new Error('This note was written somewhere else.');
-		}
-		return { day: day as string, seq: (saved.row as { seq: number }).seq };
+	async saveDay(params: Save): Promise<{ day: string; seq: number }> {
+		return write(await store(), params);
 	}
 };
