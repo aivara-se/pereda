@@ -2,9 +2,18 @@
 
 ## Context
 
-[001](001-a-desktop-app-on-tinyjs.md) chose tinyjs, and the app has shipped on it. Since then the alternatives were measured rather than assumed. A gpuix-svelte port of this app built at 114.8 MB, 109 MB of it a bare Bun runtime, against Pereda's 8.2 MB, and it needed hand-built replacements for what the webview gives free — auto-growing text, font fallback, letter-spacing and the delete dialog. The other candidates are Tauri 2 at roughly 5–12 MB with a Rust backend, Electron at 150–200 MB, Flutter at 35–45 MB and SwiftUI at 1–2.5 MB but macOS only.
+[001](001-a-desktop-app-on-tinyjs.md) chose tinyjs, and the app has shipped on it. Two builds give the numbers, and each is quoted for its own platform.
 
-Pereda promises a small download on three platforms, and its work is text: a caret, selection, undo and IME that the system webview already provides. On size and effort, tinyjs is at the frontier; the alternatives either cost 4–20× the bytes or a rewrite of the UI for no measured gain.
+| Build | macOS arm64 | Linux x86_64 |
+| --- | --- | --- |
+| v1.0.0 release, built here | 8,243,461 B (`.app`) | 10,113,118 B (tree) |
+| gpuix-svelte port, built for #16 | 86.0 MB (`.app`) | 105.1 MB (binary) |
+
+Both rows were measured on unpacked artifacts. The Linux port figure is its binary alone — its addon ships beside it — so that ratio is a floor. The port costs about ten times the release on either OS, and it needed hand-built replacements for what the webview gives free — auto-growing text, font fallback, letter-spacing and the delete dialog.
+
+No Tauri, Electron, Flutter or SwiftUI build of this app exists, so their sizes are the published ones: Tauri 2 at roughly 5–12 MB with a Rust backend, Electron at 150–200 MB, Flutter at 35–45 MB, SwiftUI at 1–2.5 MB and macOS only.
+
+Pereda promises a small download on three platforms, and its work is text: a caret, selection, undo and IME that the system webview already provides. On size and effort, tinyjs is at the frontier: the alternatives cost 4–20× the bytes, a Rust backend, or a macOS-only toolchain, against no measured gain.
 
 ## Decision
 
@@ -12,7 +21,7 @@ Pereda stays on tinyjs for v1.x. No port to gpuix-svelte, Tauri or another stack
 
 The gpuix-svelte branch and its pull request remain as the measured record of that alternative, not as a pending migration.
 
-The choice is reopened only if tinyjs stops being maintained, a release needs something it cannot do on a target OS, or a measured problem appears in startup, typing or build size. Tauri 2 is the default alternative then, because it keeps the Svelte page and a comparable size.
+The choice is reopened only if tinyjs stops being maintained, a release needs something it cannot do on a target OS, or a measured problem appears in startup, typing or build size. Tauri 2 is the default alternative then: it keeps the page as it is — plain HTML, CSS and JavaScript, no framework and no bundler, as 001 chose — at a published size close to this build's.
 
 ## Consequences
 
