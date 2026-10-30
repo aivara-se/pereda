@@ -288,6 +288,15 @@ function fatal(message) {
 
 $('today').addEventListener('click', goToday);
 $('delete').addEventListener('click', removeFocused);
+
+// The window has no frame, so its controls live in the page. A close waits for
+// the saves in flight, then quits; a failed save is already on the status line.
+$('close').addEventListener('click', async () => {
+  await flushAll();
+  tiny.win.close();
+});
+$('minimize').addEventListener('click', () => tiny.win.minimize());
+$('zoom').addEventListener('click', () => tiny.win.zoom());
 pageEl.addEventListener(
   'scroll',
   () => {

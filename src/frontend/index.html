@@ -8,7 +8,13 @@
 <script type="module" src="app.js"></script>
 </head>
 <body>
-<div id="app" class="app">
+<header class="bar" data-tiny-drag>
+  <div class="window-controls">
+    <button id="close" class="dot close" type="button" title="Close" aria-label="Close the window"></button>
+    <button id="minimize" class="dot minimize" type="button" title="Minimize" aria-label="Minimize the window"></button>
+    <button id="zoom" class="dot zoom" type="button" title="Zoom" aria-label="Zoom the window"></button>
+  </div>
+
   <nav class="tools" aria-label="Notes">
     <button id="today" class="icon" type="button" title="Today" aria-label="Today">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
@@ -17,7 +23,9 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>
     </button>
   </nav>
+</header>
 
+<div id="app" class="app">
   <main id="page" class="page">
     <div id="log" class="log"></div>
   </main>
