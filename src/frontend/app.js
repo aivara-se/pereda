@@ -2,6 +2,7 @@
 
 import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
 import { ASSISTANT_EVENT } from '../shared/assistant.js';
+import { DATA_FOLDER_EVENT } from '../shared/menu.js';
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
@@ -31,6 +32,7 @@ let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
 let assistantBusy = false; // one summary at a time
 let commandError = ''; // a menu action that could not finish
+let commandSelectable = false; // the data folder's path is text to copy
 let jumpNotice = ''; // a date landed on an empty day
 const saveFailures = new Map(); // day -> the last reason its save failed
 
@@ -66,6 +68,10 @@ function renderStatus() {
     'info',
     problem === '' && (jumpNotice !== '' || shortcutMissing !== ''),
   );
+  statusLine.classList.toggle(
+    'selectable',
+    commandSelectable && problem !== '' && problem === commandError,
+  );
 }
 
 function resize(entry) {
@@ -96,17 +102,20 @@ async function summariseFocused() {
   const entry = searching ? null : (focused ?? entries[0] ?? null);
   if (entry === null) {
     commandError = 'Open a day to summarise it.';
+    commandSelectable = false;
     renderStatus();
     return;
   }
   if (entry.text.value.trim() === '') {
     commandError = 'There is nothing to summarise.';
+    commandSelectable = false;
     renderStatus();
     return;
   }
 
   assistantBusy = true;
   commandError = '';
+  commandSelectable = false;
   showAssistant('Summarising…', true);
   renderStatus();
   try {
@@ -115,6 +124,7 @@ async function summariseFocused() {
   } catch (message) {
     hideAssistant();
     commandError = message;
+    commandSelectable = false;
   } finally {
     assistantBusy = false;
     renderStatus();
@@ -262,6 +272,7 @@ async function loadLog(from) {
   if (token !== loadToken) return;
   todayKey = result.today;
   commandError = '';
+  commandSelectable = false;
   jumpNotice = '';
   hideAssistant();
   showLog(); // first: an entry measured while the log is hidden has no height
@@ -358,6 +369,7 @@ async function openDay(day) {
 // not in the log, so the newest day before it is shown and the status says why.
 function showJump({ day, days, more: hasMore }) {
   commandError = '';
+  commandSelectable = false;
   logError = '';
   searchError = '';
   showLog();
@@ -404,6 +416,7 @@ async function search(query) {
   if (token !== searchToken) return;
   searchError = '';
   commandError = '';
+  commandSelectable = false;
   if (result.refused !== undefined) {
     // A date after today: say so and leave the log where it is.
     searchError = result.refused;
@@ -490,6 +503,23 @@ tiny.hotkey.on((id) => {
 // menu itself is the backend's; the page only owns the reply panel.
 tiny.api.on(ASSISTANT_EVENT, summariseFocused);
 $('assistant-close').addEventListener('click', hideAssistant);
+
+// Show data folder: the backend opened it, or it could not and sent the path
+// back. The path is the fallback the person can copy.
+tiny.api.on(DATA_FOLDER_EVENT, ({ path, error }) => {
+  if (error === null) {
+    commandError = '';
+    commandSelectable = false;
+    renderStatus();
+    return;
+  }
+  commandError =
+    path === ''
+      ? `Could not open the data folder — ${error}`
+      : `Could not open ${path} — ${error}`;
+  commandSelectable = true;
+  renderStatus();
+});
 
 queryEl.addEventListener('input', () => {
   clearTimeout(searchTimer);

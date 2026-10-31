@@ -2,7 +2,7 @@
 
 Pereda is a real-time daily note app for the desktop. It opens on today, one note per day, and everything typed is written to disk as it is typed: there is no save button, no draft state and no sync step. It is a local app — no account, no server, no network. The notes are one database on the computer, and the app works with the network off.
 
-v1.5 carries two flows — **the live day**, which opens on today's entry at the top of one log and writes it as it is typed, and **the search**, which finds an older day by what it says or jumps to a day typed as a date — and one action beside them: a summary of the note on screen from the model on this Mac. A shortcut brings the window forward on today from whatever app is in front.
+Pereda has two flows — **the live day**, which opens on today's entry at the top of one log and writes it as it is typed, and **the search**, which finds an older day by what it says or jumps to a day typed as a date — and one action beside them: a summary of the note on screen from the model on this Mac. A shortcut brings the window forward on today from whatever app is in front.
 
 **Live is the promise.** The note is not a document that is saved; it is written as it is made. The app never asks whether to keep the work, because it already has. A quit a moment after typing loses nothing, and a crash can lose only the last moment before it.
 
@@ -14,6 +14,7 @@ v1.5 carries two flows — **the live day**, which opens on today's entry at the
 - It opens on today with the cursor in the note.
 - While the app runs, ⌘⇧D — Ctrl+Shift+D on Windows and Linux — brings it forward on today from any app. The combination is fixed: no setting, no second window, no tray.
 - A menu carries the assistant. It is off until the person turns it on; the summary appears in a panel marked as generated on this Mac, and never enters the note.
+- A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
 - The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today and delete at its right, and a paper translucent enough to read the desktop through.
 
 ## The day
@@ -43,14 +44,15 @@ v1.5 carries two flows — **the live day**, which opens on today's entry at the
 
 - The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder.
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
-- In v1.5 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
+- **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
+- In v1.6 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes it; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.5 has none.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.6 has none.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -59,7 +61,7 @@ v1.5 carries two flows — **the live day**, which opens on today's entry at the
 
 ## AI, on this Mac
 
-v1.4 has one action: summarise the note on screen with Apple's on-device model. It is off until the person turns it on from the app's menu, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; Windows and Linux have no assistant, because a model over the network is not a v1.x decision. Questions across the log and suggested lines are not in v1.x.
+The assistant has one action: summarise the note on screen with Apple's on-device model. It is off until the person turns it on from the app's menu, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; Windows and Linux have no assistant, because a model over the network is not a v1.x decision. Questions across the log and suggested lines are not in v1.x.
 
 ## What it does not do
 
@@ -89,7 +91,7 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.5 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.6 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -102,6 +104,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - A date typed as `YYYY-MM-DD` opens the log at that day; a day after today is refused in words, and a target with no note lands on the newest day at or before it, today included.
 - Clearing a note leaves the day empty; deleting asks once and cannot be undone.
 - The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
+- **Show data folder** opens that folder in the system's file manager; when it cannot, the status line shows the path as text.
 - A failed save is shown and the text stays on screen; no success is reported.
 - A corrupt database stops the app with its path and is not overwritten.
 - The macOS build is signed and notarized and opens without a Gatekeeper warning.
@@ -109,6 +112,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.6** — the data folder: one File menu item opens the folder the notes live in, so the backup is a copy the person can find.
 - **v1.5** — jump to a day: a date typed as `YYYY-MM-DD` into the search field opens that day; a day after today is refused, and an empty day lands on the newest day at or before it, today included.
 - **v1.4** — the assistant: summarise the note on screen with the model on this Mac, off until turned on, marked, and never written into the note.
 - **v1.3** — the shortcut: ⌘⇧D brings the window forward on today from any app while Pereda runs, and a system that will not give it up says so once.
@@ -118,9 +122,8 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Decided, not built: the binary is v1.5, and each of these lands with the ADR beside it. No dates.
+Decided, not built: the binary is v1.6, and each of these lands with the ADR beside it. No dates.
 
-- **v1.6** — the data folder: one menu item opens it, so the backup is a copy the person can find ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)).
 - **v1.7** — the keys: ⌘F, Esc, ⌘T and ⌘↑/⌘↓, with nothing to configure ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)).
 - **v1.8** — midnight said: the status line names the day the text is going to, and nothing moves ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)).
 

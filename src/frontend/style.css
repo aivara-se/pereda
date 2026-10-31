@@ -467,6 +467,13 @@ button:disabled {
   color: var(--muted);
 }
 
+/* The data folder could not open: its path is the fallback, so it is text the
+   person can read and copy. */
+.status.selectable {
+  pointer-events: auto;
+  user-select: text;
+}
+
 /* The one screen that stops the app: the notes file is named, not touched. */
 
 .fatal {
