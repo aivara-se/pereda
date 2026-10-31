@@ -19,14 +19,15 @@
     <button id="today" class="icon" type="button" title="Today" aria-label="Today">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
     </button>
-    <button id="delete" class="icon danger" type="button" title="Delete this note" aria-label="Delete this note" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>
+    <button id="search" class="icon" type="button" title="Search" aria-label="Search" aria-expanded="false">
+      <svg class="find" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+      <svg class="close" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 7 7 17"/></svg>
     </button>
   </nav>
 </header>
 
 <div id="app" class="app">
-  <div class="search">
+  <div id="searchbar" class="search" hidden>
     <label class="date" for="query">Search</label>
     <input id="query" class="field" type="search" placeholder="Any word in a note" autocomplete="off" spellcheck="false">
   </div>

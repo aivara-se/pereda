@@ -21,6 +21,9 @@ function dayAt(offset) {
   return new Date(Date.UTC(2026, 0, 1 + offset)).toISOString().slice(0, 10);
 }
 
+// Most cases care about the words, not the bound; the bound has its own case.
+const search = (store, query) => store.search(query, '2099-12-31');
+
 // A file as v1.1 left it: one notes table at schema version 1, no index.
 function versionOneFile() {
   const path = temporaryFile();
@@ -140,10 +143,10 @@ describe('the notes store', () => {
     const store = memoryStore();
     store.save('2026-10-01', 'Äpplet föll i gräset, nära hjärtat.', 1);
 
-    expect(store.search('äpp').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('ÄPP').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('hjärt').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('hjart')).toEqual([]);
+    expect(search(store, 'äpp').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'ÄPP').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'hjärt').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'hjart')).toEqual([]);
     store.close();
   });
 
@@ -151,9 +154,9 @@ describe('the notes store', () => {
     const store = memoryStore();
     store.save('2026-10-01', 'An apple pie with cinnamon.', 1);
 
-    expect(store.search('appl cinn').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('cinn appl').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('appl pear')).toEqual([]);
+    expect(search(store, 'appl cinn').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'cinn appl').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'appl pear')).toEqual([]);
     store.close();
   });
 
@@ -163,9 +166,22 @@ describe('the notes store', () => {
     store.save('2026-09-29', 'A lantern in the fog.', 1);
     store.save('2026-09-30', 'Nothing about the word.', 1);
 
-    const found = store.search('lantern');
+    const found = search(store, 'lantern');
     expect(found.map((entry) => entry.day)).toEqual(['2026-10-01', '2026-09-29']);
     expect(found[0].snippet).toContain('lantern');
+    store.close();
+  });
+
+  test('never returns today from a text search', () => {
+    const store = memoryStore();
+    store.save('2026-10-25', 'A lantern by the door.', 1);
+    store.save('2026-10-26', 'A lantern upstairs.', 1);
+
+    expect(store.search('lantern', '2026-10-26').map((found) => found.day)).toEqual(['2026-10-25']);
+    expect(store.search('lantern', '2026-10-27').map((found) => found.day)).toEqual([
+      '2026-10-26',
+      '2026-10-25',
+    ]);
     store.close();
   });
 
@@ -174,11 +190,11 @@ describe('the notes store', () => {
     store.save('2026-10-01', 'the first words', 1);
     store.save('2026-10-01', 'other words now', 2);
 
-    expect(store.search('first')).toEqual([]);
-    expect(store.search('other').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'first')).toEqual([]);
+    expect(search(store, 'other').map((found) => found.day)).toEqual(['2026-10-01']);
 
     store.save('2026-10-01', '', 3);
-    expect(store.search('other')).toEqual([]);
+    expect(search(store, 'other')).toEqual([]);
     store.close();
   });
 
@@ -186,12 +202,12 @@ describe('the notes store', () => {
     const store = memoryStore();
     store.save('2026-10-01', 'The OR gate, a "quoted" word, star* and 100% of it.', 1);
 
-    expect(store.search('OR').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('"quoted"').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('star*').map((found) => found.day)).toEqual(['2026-10-01']);
-    expect(store.search('NEAR(gate word)')).toEqual([]);
-    expect(store.search('"')).toEqual([]);
-    expect(store.search('   ')).toEqual([]);
+    expect(search(store, 'OR').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, '"quoted"').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'star*').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'NEAR(gate word)')).toEqual([]);
+    expect(search(store, '"')).toEqual([]);
+    expect(search(store, '   ')).toEqual([]);
     store.close();
   });
 
@@ -201,7 +217,7 @@ describe('the notes store', () => {
       store.save(dayAt(offset), `paper number ${offset}`, 1);
     }
 
-    const found = store.search('paper');
+    const found = search(store, 'paper');
     expect(found.length).toBe(50);
     expect(found[0].day).toBe(dayAt(50));
     expect(found[49].day).toBe(dayAt(1));
@@ -213,11 +229,11 @@ describe('the notes store', () => {
     const store = openStore(path, openDatabase);
 
     expect(store.day('2026-09-30')).toEqual({ body: 'Äpplet föll i gräset.', seq: 1 });
-    expect(store.search('äpp').map((found) => found.day)).toEqual(['2026-09-30']);
-    expect(store.search('pears').map((found) => found.day)).toEqual(['2026-10-01']);
+    expect(search(store, 'äpp').map((found) => found.day)).toEqual(['2026-09-30']);
+    expect(search(store, 'pears').map((found) => found.day)).toEqual(['2026-10-01']);
 
     store.save('2026-10-02', 'A note written after the lift.', 1);
-    expect(store.search('lift').map((found) => found.day)).toEqual(['2026-10-02']);
+    expect(search(store, 'lift').map((found) => found.day)).toEqual(['2026-10-02']);
     store.close();
 
     const db = new Database(path);

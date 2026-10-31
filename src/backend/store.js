@@ -117,7 +117,7 @@ function store(db) {
     SELECT notes.day AS day, snippet(notes_fts, 1, '', '', '…', 12) AS snippet
     FROM notes_fts
     JOIN notes ON notes.day = notes_fts.day
-    WHERE notes_fts MATCH ?
+    WHERE notes_fts MATCH ? AND notes.day < ?
     ORDER BY notes.day DESC
     LIMIT ?
   `);
@@ -144,13 +144,14 @@ function store(db) {
       return recent.all(upper, limit);
     },
 
-    // The days whose text holds every word, newest first, each with the text
-    // around the first match. The index names the days; the note is read from
-    // notes, never from the index alone.
-    search(query) {
+    // The days before `before` whose text holds every word, newest first, each
+    // with the text around the first match. The bound is how today stays out of
+    // a text search. The index names the days; the note is read from notes,
+    // never from the index alone.
+    search(query, before) {
       const expression = matchExpression(query);
       if (expression === '') return [];
-      return found.all(expression, LIMIT);
+      return found.all(expression, before, LIMIT);
     },
 
     close() {

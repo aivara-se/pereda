@@ -15,9 +15,10 @@ const $ = (id) => document.getElementById(id);
 const logEl = $('log');
 const resultsEl = $('results');
 const pageEl = $('page');
+const searchBar = $('searchbar');
+const searchButton = $('search');
 const queryEl = $('query');
 const statusLine = $('status');
-const deleteButton = $('delete');
 const assistantPanel = $('assistant');
 const assistantText = $('assistant-text');
 
@@ -26,11 +27,11 @@ let entries = []; // the days on screen, newest first
 let more = false; // is there a page before the oldest day loaded?
 let loading = false;
 let loadToken = 0; // the newest load, so a slow one cannot win
-let focused = null; // the entry the delete button acts on
+let focused = null; // the entry with the caret, and the one the keys move from
 let logError = '';
 let searchError = '';
 let shortcutMissing = ''; // said once when the system would not give the combination
-let searching = false; // the results are on screen, not the log
+let searchOpen = false; // the log is replaced by the field and the results
 let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
 let assistantBusy = false; // one summary at a time
@@ -104,7 +105,7 @@ function setCaretToEnd(text) {
 // ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
 // older, and the caret lands at the end of the note reached.
 function moveDay(delta) {
-  if (searching || entries.length === 0) return;
+  if (searchOpen || entries.length === 0) return;
   const index = focused === null ? 0 : entries.indexOf(focused);
   const from = index === -1 ? 0 : index;
   const target = entries[Math.min(entries.length - 1, Math.max(0, from + delta))];
@@ -129,7 +130,7 @@ function showAssistant(text, busy) {
 // The reply is marked in the panel and never touches the textarea.
 async function summariseFocused() {
   if (assistantBusy) return;
-  const entry = searching ? null : (focused ?? entries[0] ?? null);
+  const entry = searchOpen ? null : (focused ?? entries[0] ?? null);
   if (entry === null) {
     commandError = 'Open a day to summarise it.';
     commandSelectable = false;
@@ -161,8 +162,16 @@ async function summariseFocused() {
   }
 }
 
-function updateDelete() {
-  deleteButton.hidden = searching || focused === null || focused.text.value === '';
+// The only state the fade has is the caret: today's note, and only while the
+// window holds focus. A summary or a status message never fades with it.
+function updateFade() {
+  const writing =
+    !searchOpen &&
+    document.hasFocus() &&
+    focused !== null &&
+    focused.day === todayKey &&
+    document.activeElement === focused.text;
+  document.body.classList.toggle('writing', writing);
 }
 
 async function run(entry) {
@@ -228,7 +237,7 @@ function dropEntry(entry) {
   if (focused === entry) {
     focused = entries[index] ?? entries[index - 1] ?? null;
     if (focused !== null) focused.text.focus();
-    updateDelete();
+    updateFade();
   }
 }
 
@@ -237,9 +246,13 @@ function makeEntry(day, body, seq) {
   article.className = 'entry';
   if (day === todayKey) article.classList.add('today');
 
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+
   const label = document.createElement('p');
   label.className = 'date';
   label.textContent = day === todayKey ? 'Today' : shortDate(day);
+  meta.append(label);
 
   const text = document.createElement('textarea');
   text.className = 'note';
@@ -260,24 +273,38 @@ function makeEntry(day, body, seq) {
     text,
   };
 
+  // Delete belongs to the note it removes, under its date. Today's note has no
+  // row: clearing its last character is how it goes.
+  if (day !== todayKey) {
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'action';
+    action.title = 'Delete this note';
+    action.setAttribute('aria-label', `Delete the note for ${longDate(day)}`);
+    action.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>';
+    action.addEventListener('click', () => removeEntry(entry));
+    meta.append(action);
+  }
+
   text.addEventListener('input', () => {
     resize(entry);
     entry.pending = text.value;
     clearTimeout(entry.timer);
     entry.timer = setTimeout(() => flushEntry(entry), DEBOUNCE);
-    updateDelete();
   });
   text.addEventListener('focus', () => {
     focused = entry;
-    updateDelete();
+    updateFade();
   });
   text.addEventListener('blur', () => {
+    updateFade();
     flushEntry(entry).then((ok) => {
       if (ok) maybeDrop(entry);
     });
   });
 
-  article.append(label, text);
+  article.append(meta, text);
   return entry;
 }
 
@@ -320,13 +347,13 @@ async function loadLog(from) {
   pageEl.scrollTop = 0;
   logError = '';
   searchError = '';
-  updateDelete();
+  updateFade();
   renderStatus();
 }
 
 // Ask for the days before the oldest one on screen.
 async function loadOlder() {
-  if (!more || loading || searching || entries.length === 0) return;
+  if (!more || loading || searchOpen || entries.length === 0) return;
   loading = true;
   const token = loadToken;
   try {
@@ -348,21 +375,54 @@ async function loadOlder() {
   }
 }
 
-// Show the log or the results; one of them is on screen.
+// The log is the default view: no field and no results. Leaving a search empties
+// the field and puts the log back at today.
 function showLog() {
-  searching = false;
+  searchOpen = false;
+  searchBar.hidden = true;
   resultsEl.hidden = true;
   resultsEl.replaceChildren();
   logEl.hidden = false;
-  updateDelete();
+  searchButton.setAttribute('aria-expanded', 'false');
+  searchButton.setAttribute('aria-label', 'Search');
+  searchButton.title = OS === 'macos' ? 'Search (⌘F)' : 'Search (Ctrl+F)';
+  updateFade();
 }
 
 function showResults() {
-  searching = true;
-  hideAssistant();
   logEl.hidden = true;
   resultsEl.hidden = false;
-  updateDelete();
+}
+
+function showPrompt() {
+  resultsEl.replaceChildren();
+  const prompt = document.createElement('p');
+  prompt.className = 'empty';
+  prompt.textContent = 'Type a word, or a date.';
+  resultsEl.append(prompt);
+  showResults();
+}
+
+// Search is a mode opened from the bar: the field takes the caret and the log
+// leaves the screen until the mode is closed.
+function openSearch() {
+  if (!searchOpen) {
+    searchOpen = true;
+    hideAssistant();
+    clearTimeout(searchTimer);
+    queryEl.value = '';
+    searchBar.hidden = false;
+    logEl.hidden = true;
+    searchButton.setAttribute('aria-expanded', 'true');
+    searchButton.setAttribute('aria-label', 'Close search');
+    searchButton.title = 'Close search';
+    showPrompt();
+    pageEl.scrollTop = 0;
+    renderStatus();
+  }
+  queryEl.focus();
+  queryEl.select();
+  updateFade();
 }
 
 function renderResults(days) {
@@ -407,6 +467,8 @@ function showJump({ day, days, more: hasMore }) {
   commandSelectable = false;
   logError = '';
   searchError = '';
+  clearTimeout(searchTimer);
+  queryEl.value = '';
   showLog();
   hideAssistant();
   renderLog(days, hasMore);
@@ -423,20 +485,25 @@ function showJump({ day, days, more: hasMore }) {
   } else {
     jumpNotice = '';
   }
-  updateDelete();
+  updateFade();
   renderStatus();
 }
 
-// The field above the log: every word must be in the note, as a prefix, in any
-// order. An exact date opens its day before that rule. An empty field goes back
-// to the log at today, where the app opens.
+// The search mode: every word must be in a note, as a prefix, in any order, and
+// a text search never reaches today. An exact date opens its day before that
+// rule. An empty field shows the prompt and stays open.
 async function search(query) {
+  if (!searchOpen) return;
   if (query.trim() === '') {
-    await goToday();
+    searchToken += 1;
+    searchError = '';
+    jumpNotice = '';
+    showPrompt();
+    renderStatus();
     return;
   }
-  if (!(await flushAll())) return;
   const token = ++searchToken;
+  if (!(await flushAll())) return;
   let result;
   try {
     result = await tiny.api.call('searchNotes', { query });
@@ -475,17 +542,24 @@ async function goToday() {
   await loadLog();
 }
 
-async function removeFocused() {
-  const target = focused;
-  if (target === null) return;
-  const sure = await tiny.dialog.confirm(
-    target.day === todayKey ? "Delete today's note?" : `Delete the note for ${shortDate(target.day)}?`,
-    {
-      detail: 'The text is gone for good. There is no undo.',
-      ok: 'Delete',
-      cancel: 'Keep',
-    },
-  );
+// Leaving the search empties the field and puts the log back at today. A save
+// that cannot finish keeps the mode open, because the text has not landed yet.
+async function closeSearch() {
+  clearTimeout(searchTimer);
+  searchToken += 1;
+  if (!(await flushAll())) return;
+  queryEl.value = '';
+  await loadLog();
+}
+
+// An older day's delete: one question, the day named, and no undo. Today has
+// no button; clearing its last character is how it goes.
+async function removeEntry(target) {
+  const sure = await tiny.dialog.confirm(`Delete the note for ${shortDate(target.day)}?`, {
+    detail: 'The text is gone for good. There is no undo.',
+    ok: 'Delete',
+    cancel: 'Keep',
+  });
   if (!sure) return;
 
   // The dialog's blur can start a save; let it settle, or the delete and that
@@ -508,15 +582,7 @@ async function removeFocused() {
   saveFailures.delete(target.day);
   midnight = null;
   renderStatus();
-
-  if (target.day === todayKey) {
-    resize(target);
-    target.text.focus();
-    setCaretToEnd(target.text);
-    updateDelete();
-  } else {
-    dropEntry(target);
-  }
+  dropEntry(target);
 }
 
 function fatal(message) {
@@ -528,7 +594,7 @@ function fatal(message) {
 
 $('today').addEventListener('click', goToday);
 $('today').title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
-$('delete').addEventListener('click', removeFocused);
+searchButton.addEventListener('click', () => (searchOpen ? closeSearch() : openSearch()));
 
 // The backend registers the shortcut at launch and brings the window forward on
 // a press; the press reaches this page too, and it takes the Today path.
@@ -560,6 +626,10 @@ tiny.api.on(DATA_FOLDER_EVENT, ({ path, error }) => {
 
 queryEl.addEventListener('input', () => {
   clearTimeout(searchTimer);
+  if (queryEl.value.trim() === '') {
+    search('');
+    return;
+  }
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
 });
 
@@ -570,18 +640,15 @@ document.addEventListener('keydown', (event) => {
   if (action === null) return;
 
   if (action === 'escape') {
-    if (document.activeElement !== queryEl) return;
+    if (!searchOpen || document.activeElement !== queryEl) return;
     event.preventDefault();
-    clearTimeout(searchTimer);
-    queryEl.value = '';
-    goToday();
+    closeSearch();
     return;
   }
 
   event.preventDefault();
   if (action === 'search') {
-    queryEl.focus();
-    queryEl.select();
+    openSearch();
     return;
   }
   if (action === 'today') {
@@ -612,7 +679,11 @@ window.addEventListener('resize', () => entries.forEach(resize));
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) flushAll();
 });
-window.addEventListener('blur', () => flushAll());
+window.addEventListener('blur', () => {
+  flushAll();
+  updateFade();
+});
+window.addEventListener('focus', updateFade);
 
 // One ask says whether the system gave the app its shortcut; a missing one is
 // said once in the status line, and everything else works without it.
