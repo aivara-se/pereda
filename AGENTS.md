@@ -6,22 +6,16 @@ This file is the `aivara-se` agent convention: the rules that hold in every repo
 
 ## Where a fact lives
 
-- `PRODUCT.md` — what the app is, who it serves, what it must not do, what the work is on now, and what would make it done.
+- `PRODUCT.md` — what the product is, who it serves, what it must not do, what the work is on now, and what would make it done.
 - `SYSTEMS.md` — how it is served, built and checked.
 - `docs/adrs/` — a decision per file, written before the code it decides.
 - `README.md` — how to run it locally.
 
-One fact, one home: link to a document, never restate it.
+One fact, one home: link to a document, never restate it. A sentence here that starts describing the work instead of how work is done belongs in `PRODUCT.md`.
 
 ## House rules
 
-- **Never** add a network call: a request exists only when the person starts a feature that needs one, and no version yet has one.
-- **Never** ask for a save: no save button, no dirty state, no "unsaved changes" dialog. The backend confirms every write.
-- **Never** let the page reach the database or the filesystem: the backend is the only authority.
-- **Never** merge text or write a diff: a save is the whole note, ordered and atomic.
-- **Never** delete, recreate or repair the database over the notes: if it cannot be opened, every write is refused and the app names the file.
-- **Always** keep a cleared day's tombstone and skip it on read, so a late save cannot resurrect a day the person cleared.
-- **Never** put AI output into a note unmarked and unaccepted.
+- **Never** break a rule `PRODUCT.md` or `SYSTEMS.md` fixes: a change implements them, and one that would contradict them stops for the operator and an ADR.
 - **Always** record a significant technology choice as an ADR before the code that depends on it lands.
 
 ## Tooling
