@@ -40,6 +40,7 @@ The day is the machine's local calendar day, read by the backend; the page never
 
 - The app opens on today's entry, and scrolling asks for the days before the oldest one loaded. A future day is refused at the backend; a past day with nothing written is not in the log.
 - A window left open across midnight keeps the day it loaded; Today asks the backend again and loads the new day.
+- A save reply carries the day written and the backend's `today`. While the loaded day is behind, the status line names both — "Writing to 31 October — today is 1 November." — and nothing moves; a failed save replaces the line ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)).
 - A sleep or a timezone change can skip or repeat a day; no existing note changes its date.
 
 ## Reading
@@ -85,20 +86,17 @@ A folder that will not open is pushed back with its path, and the status line sh
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
-- **No network.** v1.7 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.8 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** The action is disabled with the reason; a request that arrives anyway is refused, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
 - **The data folder will not open.** The status line says so and shows the path as selectable text; nothing is copied or changed.
 - **A key does nothing.** The webview or the system kept it; every key has a mouse control that still works, and nothing else is lost.
+- **The day is behind.** The status line names the day being written; a failed save replaces it, because a save that did not happen outranks a date notice.
 
-## Planned, not built
+## Not in v1.x
 
-Every mechanism above is v1.7's. One version is decided and it is not built; its ADR is the design and the code follows it.
-
-- **v1.8 midnight said** ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)): the save reply also carries the backend's `today`, and the status line names the day being written while it is behind; no timer, no auto-switch.
-
-Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+Every version decided for v1.x is in the app above. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Checks
 
@@ -107,7 +105,7 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, and each fixed key on each platform.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 

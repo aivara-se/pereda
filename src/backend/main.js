@@ -172,7 +172,7 @@ export const api = {
     if (!saved.applied) {
       throw new Error('This note was written somewhere else.');
     }
-    return { day, seq: saved.row.seq };
+    return { day, seq: saved.row.seq, today: current };
   },
 
   // Search the notes by their words: every word, in any order, each as a

@@ -4,6 +4,7 @@ import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
 import { ASSISTANT_EVENT } from '../shared/assistant.js';
 import { DATA_FOLDER_EVENT } from '../shared/menu.js';
 import { keyAction } from '../shared/keys.js';
+import { writingNotice } from '../shared/midnight.js';
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
@@ -36,6 +37,7 @@ let assistantBusy = false; // one summary at a time
 let commandError = ''; // a menu action that could not finish
 let commandSelectable = false; // the data folder's path is text to copy
 let jumpNotice = ''; // a date landed on an empty day
+let midnight = null; // the loaded day is behind the backend's today
 const saveFailures = new Map(); // day -> the last reason its save failed
 
 function dayDate(day) {
@@ -60,15 +62,29 @@ function longDate(day) {
   });
 }
 
+// A day and a month for the midnight line; the year appears only when the two
+// days are in different years.
+function noticeDate(day, today) {
+  return dayDate(day).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'long',
+    ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),
+  });
+}
+
 function renderStatus() {
   const failure = saveFailures.values().next().value;
   const problem = failure ? `Not saved — ${failure}` : commandError || logError || searchError;
+  const behind =
+    midnight === null
+      ? ''
+      : writingNotice(midnight.day, midnight.today, (day) => noticeDate(day, midnight.today));
   // A notice is said once: a real problem replaces it and it does not come back.
   if (problem !== '') shortcutMissing = '';
-  statusLine.textContent = problem || jumpNotice || shortcutMissing;
+  statusLine.textContent = problem || behind || jumpNotice || shortcutMissing;
   statusLine.classList.toggle(
     'info',
-    problem === '' && (jumpNotice !== '' || shortcutMissing !== ''),
+    problem === '' && (behind !== '' || jumpNotice !== '' || shortcutMissing !== ''),
   );
   statusLine.classList.toggle(
     'selectable',
@@ -154,8 +170,9 @@ async function run(entry) {
     const body = entry.pending;
     const stamp = entry.seq + 1;
     entry.pending = null;
+    let saved;
     try {
-      await tiny.api.call('saveDay', { day: entry.day, body, seq: stamp });
+      saved = await tiny.api.call('saveDay', { day: entry.day, body, seq: stamp });
     } catch (message) {
       saveFailures.set(entry.day, message);
       renderStatus();
@@ -164,6 +181,9 @@ async function run(entry) {
     entry.seq = stamp;
     entry.savedBody = body;
     saveFailures.delete(entry.day);
+    // The reply says which day was written and which day the backend is on.
+    // Only the save's own reply can raise this line; nothing polls.
+    midnight = saved.today > saved.day ? { day: saved.day, today: saved.today } : null;
     renderStatus();
   }
   return true;
@@ -288,6 +308,7 @@ async function loadLog(from) {
   commandError = '';
   commandSelectable = false;
   jumpNotice = '';
+  midnight = null;
   hideAssistant();
   showLog(); // first: an entry measured while the log is hidden has no height
   renderLog(result.days, result.more);
@@ -485,6 +506,7 @@ async function removeFocused() {
   target.savedBody = '';
   target.text.value = '';
   saveFailures.delete(target.day);
+  midnight = null;
   renderStatus();
 
   if (target.day === todayKey) {
