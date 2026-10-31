@@ -364,6 +364,82 @@ button:disabled {
   }
 }
 
+/* A generated summary is marked, read-only and never part of the note. */
+
+.assistant {
+  position: fixed;
+  right: 24px;
+  bottom: 56px;
+  z-index: 1;
+  width: min(28rem, calc(100% - 48px));
+  max-height: 42vh;
+  overflow-y: auto;
+  padding: 13px 16px 15px;
+  border: 1px solid var(--hover);
+  border-radius: 10px;
+  background: var(--bg);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.14),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  user-select: text;
+}
+
+.assistant-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assistant-mark {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.assistant-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.assistant-close:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.assistant-close:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.assistant-text {
+  margin: 8px 0 0;
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.assistant.busy .assistant-text {
+  color: var(--muted);
+}
+
+@media (max-width: 620px) {
+  .assistant {
+    right: 20px;
+    left: 20px;
+    width: auto;
+  }
+}
+
 .status {
   position: fixed;
   left: 50%;
