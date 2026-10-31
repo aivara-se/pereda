@@ -62,6 +62,12 @@ The model is the operating system's, reached through `app.macos.ai`; there is no
 
 The menu is the app's: an Assistant switch stored in `app.store` and a Summarise item enabled only when the switch is on and the model is available. A click on Summarise is pushed to the page as `assistant:summarise`; the page sends the focused note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers.
 
+## The menu
+
+The whole menu is built in the backend: the assistant's items on macOS and a File menu with **Show data folder** everywhere ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)). The item asks for `app.paths().data` and hands it to `app.shell.open`; the page never builds a path. It copies nothing, exports nothing and stores nothing.
+
+A folder that will not open is pushed back with its path, and the status line shows it as text the person can select. A folder that does open clears the line.
+
 ## Failure modes
 
 - **The database is unreadable.** Every write is refused and the app shows the file with the reason; it never deletes, recreates or repairs it over the notes.
@@ -73,16 +79,16 @@ The menu is the app's: an Assistant switch stored in `app.store` and a Summarise
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
-- **No network.** v1.5 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.6 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** The action is disabled with the reason; a request that arrives anyway is refused, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
+- **The data folder will not open.** The status line says so and shows the path as selectable text; nothing is copied or changed.
 
 ## Planned, not built
 
-Every mechanism above is v1.5's. Three versions are decided and none is built; each ADR is the design and the code follows it.
+Every mechanism above is v1.6's. Two versions are decided and none is built; each ADR is the design and the code follows it.
 
-- **v1.6 the data folder** ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)): one menu item opens `app.paths().data` in the OS file manager. It copies nothing and stores nothing.
 - **v1.7 the keys** ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)): four fixed keys handled in the page — ⌘F, Esc, ⌘T and ⌘↑/⌘↓ — with no stored combination; ⌘T reuses the Today path.
 - **v1.8 midnight said** ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)): the save reply also carries the backend's `today`, and the status line names the day being written while it is behind; no timer, no auto-switch.
 
@@ -95,7 +101,7 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, and a date resolved before the search and refused after today.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, and the File menu's one item.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 

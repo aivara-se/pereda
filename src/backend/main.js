@@ -14,6 +14,7 @@ import {
   assistantMenus,
   assistantUnavailable,
 } from '../shared/assistant.js';
+import { DATA_FOLDER_EVENT, SHOW_DATA_FOLDER, fileMenus } from '../shared/menu.js';
 
 const DB_NAME = 'pereda.db';
 const PAGE = 30;
@@ -73,9 +74,23 @@ async function assistantState(app) {
   return { availability, enabled: (await app.store.get(ASSISTANT_PREF)) === true };
 }
 
-async function setAssistantMenu(app) {
+async function setAppMenus(app) {
   const { availability, enabled } = await assistantState(app);
-  await app.menu.set(assistantMenus(availability, enabled));
+  await app.menu.set([...assistantMenus(availability, enabled), ...fileMenus()]);
+}
+
+// The folder is the backup, so the person has to be able to reach it. The
+// backend asks for the path; the page never builds one. Opening it copies
+// nothing, and a folder that will not open comes back with its path.
+async function openDataFolder(app) {
+  let path = '';
+  try {
+    path = (await app.paths()).data;
+    await app.shell.open(path);
+    app.push(DATA_FOLDER_EVENT, { path, error: null });
+  } catch (error) {
+    app.push(DATA_FOLDER_EVENT, { path, error: error.message });
+  }
 }
 
 // The menu is the app's, so it is built from the backend and its clicks are
@@ -85,24 +100,28 @@ export async function onMenu(id, app) {
   if (id === ASSISTANT_TOGGLE) {
     const { enabled } = await assistantState(app);
     await app.store.set(ASSISTANT_PREF, !enabled);
-    await setAssistantMenu(app);
+    await setAppMenus(app);
     return;
   }
-  if (id === ASSISTANT_SUMMARISE) app.push(ASSISTANT_EVENT);
+  if (id === ASSISTANT_SUMMARISE) {
+    app.push(ASSISTANT_EVENT);
+    return;
+  }
+  if (id === SHOW_DATA_FOLDER) await openDataFolder(app);
 }
 
 // One hotkey, while the app runs. The assistant's menu is put up at launch,
 // whether or not the model is ready; a window that regains focus rebuilds it.
 export async function init(app) {
   shortcutRegistration(app);
-  await setAssistantMenu(app);
+  await setAppMenus(app);
 }
 
 // Apple Intelligence can be turned on while the app runs. The runtime has no
 // menu-open event; a window that regains focus rebuilds the menu before the
 // next open, which is the closest moment there is.
 export function onWindowState(info, app) {
-  if (info.focused && info.win === 'main') setAssistantMenu(app);
+  if (info.focused && info.win === 'main') setAppMenus(app);
 }
 
 // A press brings the window forward; the page hears the same press and takes
