@@ -2,7 +2,9 @@
 // reaches them only through the calls below.
 
 import { Database } from 'tjs:sqlite';
+import path from 'tjs:path';
 import { openStore } from './store.js';
+import { writeExport } from './export.js';
 import { addDays, assertWritableDay, dayQuery, today, validDay } from '../shared/day.js';
 import { SHORTCUT_COMBO, SHORTCUT_ID } from '../shared/shortcut.js';
 import {
@@ -208,6 +210,23 @@ export const api = {
       return { jump: { day: jump.day, days, more } };
     }
     return { days: notes.search(params.query, current) };
+  },
+
+  // The export reads every note once and writes one Markdown file per day into
+  // the folder the page picked. The body is verbatim and the store is never
+  // written; the first failed write stops the run and what came before stays.
+  async exportNotes(params, app) {
+    const notes = await store(app);
+    const folder = params?.folder;
+    if (typeof folder !== 'string' || folder === '') {
+      throw new Error('Choose a folder to export to.');
+    }
+    const result = await writeExport(
+      notes.all(),
+      (day) => path.join(folder, `${day}.md`),
+      tjs.writeFile,
+    );
+    return { folder, ...result };
   },
 
   // Whether the system gave the app its shortcut, so the page can say a missing

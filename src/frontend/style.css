@@ -197,6 +197,11 @@ button:disabled {
   opacity: 0.28;
 }
 
+.icon[aria-pressed="true"] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
 .page {
   flex: 1;
   min-height: 0;
@@ -286,6 +291,114 @@ button:disabled {
   color: var(--muted);
   font-family: "Newsreader", ui-serif, Georgia, serif;
   font-size: 17px;
+}
+
+/* Settings is a page on the log's grid: a nav where the dates sit and a panel
+   where the notes sit. It replaces the log; it never loads another day. */
+
+.settings {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  align-content: start;
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+  padding: 30px 0 45vh;
+}
+
+.settings-nav {
+  padding-top: 7px;
+}
+
+.settings-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-link {
+  width: 100%;
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.settings-link[aria-current="page"] {
+  color: var(--ink);
+}
+
+.settings-link:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.settings-rule {
+  margin: 0;
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.settings-rule code {
+  white-space: nowrap;
+}
+
+.settings-button {
+  margin-top: 24px;
+  padding: 8px 13px;
+  border-radius: 7px;
+  background: var(--hover);
+  font-size: 13px;
+}
+
+.settings-button:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.settings-button:disabled {
+  opacity: 0.5;
+}
+
+.settings-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.settings-result {
+  max-width: 34rem;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.settings-result.error {
+  color: var(--error);
+}
+
+@media (max-width: 620px) {
+  .settings {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    width: min(100% - 40px, 43rem);
+    padding-top: 22px;
+  }
+
+  .settings-nav {
+    padding-top: 0;
+  }
+
+  .settings-link {
+    text-align: left;
+  }
 }
 
 .entry {

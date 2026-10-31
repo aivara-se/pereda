@@ -8,6 +8,8 @@ The window is frameless and the page draws its own chrome: a bar with close, min
 
 The focused entry's actions sit in its date column, outside the flow so the entry does not change height; delete is the only one, and today's note has none because clearing its last character removes it ([`020`](docs/adrs/020-actions-under-the-date.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
 
+Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the caret. The bar's right side reads Today, settings, search; the gear keeps a pressed state while the page is open.
+
 One window, one OS user, one data folder. There is no account and no server ([`002`](docs/adrs/002-local-only-in-v1.md)), and the only channel the app has is inside the machine, so the network is absent by construction rather than by policy. There is no update channel either: the app checks for nothing and a new version is a fresh download ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
 ## The shape
@@ -61,7 +63,7 @@ A press reaches the backend and every page. The backend shows and focuses the wi
 
 ## The keys
 
-Four fixed keys, handled in the page and read by `src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F opens the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and does nothing anywhere else; ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
+Four fixed keys, handled in the page and read by `src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F opens the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and Esc on the settings page closes it to the log it left; it does nothing anywhere else. ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
 
 Each key cancels the webview's default before taking the app's path. There is no palette, shortcut sheet, stored combination or rebinding screen: every key has a control that already does the same thing.
 
@@ -77,6 +79,12 @@ The whole menu is built in the backend: the assistant's items on macOS and a Fil
 
 A folder that will not open is pushed back with its path, and the status line shows it as text the person can select. A folder that does open clears the line.
 
+## Settings and export
+
+The page is the app's, not a window or a modal: the gear opens it over the log and closes it back. Opening ends a search, dismisses the assistant and leaves the log loaded; closing, or Esc, returns to the day and scroll it held and gives the caret back to the note that had it. Nothing is stored, so the app opens on today and never on settings ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)).
+
+**Export Data** is the page's first and only section. The page flushes every loaded note first and refuses to start if a save failed; the folder is chosen each time with the native folder picker and is not remembered. The backend reads every non-empty day in one store call, oldest first, and writes `YYYY-MM-DD.md` into that folder with the body verbatim, UTF-8, no newline added ([`024`](docs/adrs/024-export-writes-markdown.md)). A same-named file is replaced. A failed write stops the run; files already written stay, and the section names the count and folder or the first failed day, its reason and how many were written before it. One export runs at a time, and the button is disabled while it does.
+
 ## Failure modes
 
 - **The database is unreadable.** Every write is refused and the app shows the file with the reason; it never deletes, recreates or repairs it over the notes.
@@ -88,7 +96,8 @@ A folder that will not open is pushed back with its path, and the status line sh
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
-- **No network.** v1.9 makes no request of any kind, and the acceptance run is made with the network off.
+- **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
+- **No network.** v1.10 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** The action is disabled with the reason; a request that arrives anyway is refused, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
@@ -98,13 +107,7 @@ A folder that will not open is pushed back with its path, and the status line sh
 
 ## Not in v1.x
 
-The app above is v1.9. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
-
-## Planned, not built
-
-One version is decided and not built; its ADRs are the design and the code follows them.
-
-- **v1.10 settings and export** ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md), [`024`](docs/adrs/024-export-writes-markdown.md)): a page view in the same window with a fixed-width text-link nav; the store gains one read of every non-empty day, and the backend writes `YYYY-MM-DD.md` into the folder the page picked with the native picker. No new table and no stored preference.
+The app above is v1.10. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Checks
 
@@ -113,8 +116,8 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, every non-empty day read oldest first, an export that writes one file per day verbatim, replaces a same-named file, refuses a day that is not a date and stops at the first failed write, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-What no test reaches — the webview's drawing and input, the search mode's swap, the focus fade, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
+What no test reaches — the webview's drawing and input, the search mode's swap, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.

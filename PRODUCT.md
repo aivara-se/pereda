@@ -2,7 +2,7 @@
 
 Pereda is a real-time daily note app for the desktop. It opens on today, one note per day, and everything typed is written to disk as it is typed: there is no save button, no draft state and no sync step. It is a local app — no account, no server, no network. The notes are one database on the computer, and the app works with the network off.
 
-Pereda has two flows — **the live day**, which opens on today's entry at the top of one log and writes it as it is typed, and **the search**, which finds an older day by what it says or jumps to a day typed as a date — and one action beside them: a summary of the note on screen from the model on this Mac. A shortcut brings the window forward on today from whatever app is in front.
+Pereda has two flows — **the live day**, which opens on today's entry at the top of one log and writes it as it is typed, and **the search**, which finds an older day by what it says or jumps to a day typed as a date — one action beside them, a summary of the note on screen from the model on this Mac, and a settings page that exports the log. A shortcut brings the window forward on today from whatever app is in front.
 
 **Live is the promise.** The note is not a document that is saved; it is written as it is made. The app never asks whether to keep the work, because it already has. A quit a moment after typing loses nothing, and a crash can lose only the last moment before it.
 
@@ -15,8 +15,9 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - While the app runs, ⌘⇧D — Ctrl+Shift+D on Windows and Linux — brings it forward on today from any app. The combination is fixed: no setting, no second window, no tray.
 - A menu carries the assistant. It is off until the person turns it on; the summary appears in a panel marked as generated on this Mac, and never enters the note.
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
-- Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — opens the search, Esc closes it and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
-- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today and search at its right, and a paper translucent enough to read the desktop through.
+- Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — opens the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
+- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today, settings and search at its right, and a paper translucent enough to read the desktop through.
+- Settings is a page in the same window, opened from the bar's gear. It replaces the log, which stays loaded; closing it, or Esc, returns to the same day and scroll with the caret back in the note. Nothing is stored: the app always opens on today.
 
 ## The day
 
@@ -44,17 +45,18 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 
 ## Your data
 
-- The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder.
+- The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder, except the folder chosen for an export.
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
-- In v1.9 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
+- An export writes one Markdown file per day that has a note, named `YYYY-MM-DD.md`, into a folder chosen each time. The note's text is written verbatim; a file with the same name in that folder is replaced, and the section says so before the button. The app reports how many files it wrote and where, or the first day that failed and why.
+- In v1.10 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes it; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.9 has none.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.10 has none.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -72,7 +74,6 @@ The assistant has one action: summarise the note on screen with Apple's on-devic
 - Not rich text: no formatting, images, attachments, checkboxes, tables or backlinks.
 - Not mobile: no iOS or Android app.
 - Not an importer: notes from other apps, or from the old pereda.app, are not imported.
-- Not an exporter: the notes leave only as the data folder; it writes no Markdown files.
 - Not self-updating: a new version is a download.
 - Not an assistant beyond a summary: no questions across the log, no suggested lines, no chat.
 
@@ -90,11 +91,12 @@ Known, and deliberately not handled in this version.
 - **A full disk or a read-only data folder.** The save fails, the app says so and keeps the text on screen; it never reports a save that did not happen.
 - **A note past a book.** No pagination, so a very long note is slow to open.
 - **A restore from another machine.** The data folder can be copied in with the app closed; there is no import screen.
+- **An export folder of the same names.** A `YYYY-MM-DD.md` file already there is replaced without a second question; the section is the only warning.
 - **Two OS users on one machine.** Each has their own data folder and notes; there is no shared log.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.9 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.10 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -103,13 +105,15 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
-- ⌘F opens the search, Esc closes it and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
+- ⌘F opens the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
+- Settings opens from the bar as a page in the window; Esc closes it to the log it left, with the same day, scroll and caret.
 - While today's note has the caret, the bar and the other entries fade; blur restores the window.
 - On macOS 26 with Apple Intelligence on, a summary of the note on screen appears in a panel marked as generated on this Mac; it is off until turned on, and no word of it enters the note.
 - A search finds an older day by a word from its note, folded for case and for å, ä and ö, newest first; a result opens the log at its day, today is never a text result, and closing returns to today.
 - A date typed as `YYYY-MM-DD` opens the log at that day; a day after today is refused in words, and a target with no note lands on the newest day at or before it, today included.
 - Clearing a note leaves the day empty; deleting any other day asks once and cannot be undone.
-- The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
+- Export writes one Markdown file per day into the chosen folder, verbatim and UTF-8; a same-named file is replaced, and the result names the count and folder or the first day that failed.
+- The notes are one SQLite database in the app's data folder; the only other writes are an export's files, into the folder the person chose.
 - **Show data folder** opens that folder in the system's file manager on macOS and Linux; when it cannot, the status line shows the path as text.
 - A failed save is shown and the text stays on screen; no success is reported.
 - A corrupt database stops the app with its path and is not overwritten.
@@ -118,6 +122,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.10** — settings and export: a page in the window holds Export Data, which writes one Markdown file per day into a folder the person picks.
 - **v1.9** — focus: today's note fades the bar and the older log while it has the caret, search is a mode opened from the bar that never returns today, and an older note's delete sits under its date.
 - **v1.8** — midnight said: a status line names the day the text is going to when the window is behind, and nothing moves until Today.
 - **v1.7** — the keys: ⌘F, Esc, ⌘T and ⌘↑/⌘↓, fixed and with nothing to configure.
@@ -131,8 +136,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-One version is decided, not built: the binary is v1.9, and v1.10 lands with the records beside it.
-
-- **v1.10** — settings and export: a settings page opened from the bar, and Export Data writes every note as a Markdown file, one per day ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md), [`024`](docs/adrs/024-export-writes-markdown.md)).
-
-Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+Everything decided for v1.x is built; the binary is v1.10. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
