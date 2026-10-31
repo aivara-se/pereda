@@ -202,6 +202,84 @@ button:disabled {
   padding: 30px 0 45vh;
 }
 
+/* The field above the log: a row of it, in the note's own face. */
+
+.search {
+  flex: none;
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+}
+
+.search .field {
+  width: 100%;
+  padding: 0 0 5px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--accent);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.search .field::placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.search .field:focus {
+  border-bottom-color: var(--accent-soft);
+}
+
+.search:focus-within .date {
+  color: var(--ink);
+}
+
+.results {
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+  padding: 22px 0 45vh;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 0 0 26px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.result:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.result .snippet {
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.result:hover .date {
+  color: var(--ink);
+}
+
+.results .empty {
+  margin: 0;
+  color: var(--muted);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+}
+
 .entry {
   display: grid;
   grid-template-columns: 7.5rem 1fr;
@@ -209,9 +287,8 @@ button:disabled {
   padding-bottom: 48px;
 }
 
-.entry .date {
+.date {
   margin: 0;
-  padding-top: 7px;
   overflow: hidden;
   color: var(--muted);
   font-size: 11px;
@@ -221,6 +298,15 @@ button:disabled {
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.entry .date,
+.search .date {
+  padding-top: 7px;
+}
+
+.result .date {
+  padding-top: 6px;
 }
 
 .entry.today .date,
@@ -252,18 +338,27 @@ button:disabled {
 }
 
 @media (max-width: 620px) {
-  .log {
+  .log,
+  .search,
+  .results {
     width: min(100% - 40px, 43rem);
+  }
+
+  .log,
+  .results {
     padding-top: 22px;
   }
 
-  .entry {
+  .entry,
+  .result {
     grid-template-columns: 1fr;
     gap: 4px;
     padding-bottom: 40px;
   }
 
-  .entry .date {
+  .entry .date,
+  .result .date,
+  .search .date {
     padding-top: 0;
     text-align: left;
   }

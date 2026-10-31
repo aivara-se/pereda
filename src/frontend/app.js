@@ -1,11 +1,14 @@
 // The page: one log of days, newest first, every entry saved as it is typed.
 
 const DEBOUNCE = 300;
+const SEARCH_DEBOUNCE = 200;
 const LOAD_AT = 700; // pixels from the bottom that ask for the next page
 
 const $ = (id) => document.getElementById(id);
 const logEl = $('log');
+const resultsEl = $('results');
 const pageEl = $('page');
+const queryEl = $('query');
 const statusLine = $('status');
 const deleteButton = $('delete');
 
@@ -16,6 +19,10 @@ let loading = false;
 let loadToken = 0; // the newest load, so a slow one cannot win
 let focused = null; // the entry the delete button acts on
 let logError = '';
+let searchError = '';
+let searching = false; // the results are on screen, not the log
+let searchToken = 0; // the newest search, so a slow one cannot win
+let searchTimer = 0;
 const saveFailures = new Map(); // day -> the last reason its save failed
 
 function dayDate(day) {
@@ -46,7 +53,7 @@ function renderStatus() {
     statusLine.textContent = `Not saved — ${failure}`;
     return;
   }
-  statusLine.textContent = logError;
+  statusLine.textContent = logError || searchError;
 }
 
 function resize(entry) {
@@ -59,7 +66,7 @@ function setCaretToEnd(text) {
 }
 
 function updateDelete() {
-  deleteButton.hidden = focused === null || focused.text.value === '';
+  deleteButton.hidden = searching || focused === null || focused.text.value === '';
 }
 
 async function run(entry) {
@@ -184,18 +191,21 @@ function renderLog(days, hasMore) {
   more = hasMore;
 }
 
-// Load the first page again: today at the top, older days after it.
-async function loadLog() {
+// Load the first page again: today at the top, older days after it, or the log
+// from a day when a search result asked for it.
+async function loadLog(from) {
   const token = ++loadToken;
+  searchToken += 1; // a load ends any search still on its way
   let result;
   try {
-    result = await tiny.api.call('openLog');
+    result = await tiny.api.call('openLog', from === undefined ? undefined : { from });
   } catch (message) {
     fatal(message);
     return;
   }
   if (token !== loadToken) return;
   todayKey = result.today;
+  showLog(); // first: an entry measured while the log is hidden has no height
   renderLog(result.days, result.more);
   focused = entries[0] ?? null;
   if (focused !== null) {
@@ -204,13 +214,14 @@ async function loadLog() {
   }
   pageEl.scrollTop = 0;
   logError = '';
+  searchError = '';
   updateDelete();
   renderStatus();
 }
 
 // Ask for the days before the oldest one on screen.
 async function loadOlder() {
-  if (!more || loading || entries.length === 0) return;
+  if (!more || loading || searching || entries.length === 0) return;
   loading = true;
   const token = loadToken;
   try {
@@ -232,8 +243,88 @@ async function loadOlder() {
   }
 }
 
+// Show the log or the results; one of them is on screen.
+function showLog() {
+  searching = false;
+  resultsEl.hidden = true;
+  resultsEl.replaceChildren();
+  logEl.hidden = false;
+  updateDelete();
+}
+
+function showResults() {
+  searching = true;
+  logEl.hidden = true;
+  resultsEl.hidden = false;
+  updateDelete();
+}
+
+function renderResults(days) {
+  resultsEl.replaceChildren();
+  if (days.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'empty';
+    empty.textContent = 'No note says that.';
+    resultsEl.append(empty);
+    return;
+  }
+  for (const { day, snippet } of days) {
+    const result = document.createElement('button');
+    result.type = 'button';
+    result.className = 'result';
+
+    const date = document.createElement('span');
+    date.className = 'date';
+    date.textContent = day === todayKey ? 'Today' : shortDate(day);
+
+    const text = document.createElement('span');
+    text.className = 'snippet';
+    text.textContent = snippet;
+
+    result.append(date, text);
+    result.addEventListener('click', () => openDay(day));
+    resultsEl.append(result);
+  }
+}
+
+// A result opens the log at its day, so the note found can be read and written.
+async function openDay(day) {
+  if (!(await flushAll())) return;
+  queryEl.value = '';
+  await loadLog(day);
+}
+
+// The field above the log: every word must be in the note, as a prefix, in any
+// order. An empty field goes back to the log at today, where the app opens.
+async function search(query) {
+  if (query.trim() === '') {
+    await goToday();
+    return;
+  }
+  if (!(await flushAll())) return;
+  const token = ++searchToken;
+  let result;
+  try {
+    result = await tiny.api.call('searchNotes', { query });
+  } catch (message) {
+    if (token !== searchToken) return;
+    searchError = `Could not search — ${message}`;
+    resultsEl.replaceChildren();
+    showResults();
+    renderStatus();
+    return;
+  }
+  if (token !== searchToken) return;
+  searchError = '';
+  renderResults(result.days);
+  showResults();
+  pageEl.scrollTop = 0;
+  renderStatus();
+}
+
 async function goToday() {
   if (!(await flushAll())) return;
+  queryEl.value = '';
   await loadLog();
 }
 
@@ -288,6 +379,21 @@ function fatal(message) {
 
 $('today').addEventListener('click', goToday);
 $('delete').addEventListener('click', removeFocused);
+
+queryEl.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
+});
+queryEl.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (queryEl.value === '') {
+    if (focused !== null) focused.text.focus();
+    return;
+  }
+  queryEl.value = '';
+  clearTimeout(searchTimer);
+  search('');
+});
 
 // The window has no frame, so its controls live in the page. A close waits for
 // the saves in flight, then quits; a failed save is already on the status line.

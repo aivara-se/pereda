@@ -25,17 +25,21 @@ function store(app) {
 export const api = {
   // One page of the log: today on the first page, then the days before the
   // oldest one loaded, newest first. A day with nothing written is skipped,
-  // except today, which is the first entry even when it is empty.
+  // except today, which is the first entry even when it is empty. `from` opens
+  // the log at a day instead of at today, which is how a search result is read.
   async openLog(params, app) {
     const notes = await store(app);
     const current = today();
     const before = params?.before;
+    const from = params?.from;
     if (before !== undefined && !validDay(before)) throw new Error('That is not a date.');
+    if (from !== undefined && !validDay(from)) throw new Error('That is not a date.');
 
-    const rows = notes.page(before ?? addDays(current, 1), PAGE + 1);
+    const upper = from === undefined ? (before ?? addDays(current, 1)) : addDays(from, 1);
+    const rows = notes.page(upper, PAGE + 1);
     const more = rows.length > PAGE;
     let days = rows.slice(0, PAGE);
-    if (before === undefined) {
+    if (before === undefined && from === undefined) {
       const row = notes.day(current);
       const first = row
         ? { day: current, body: row.body, seq: row.seq }
@@ -61,5 +65,13 @@ export const api = {
       throw new Error('This note was written somewhere else.');
     }
     return { day, seq: saved.row.seq };
+  },
+
+  // Search the notes by their words: every word, in any order, each as a
+  // prefix, newest first. A result is a day and the text around the match.
+  async searchNotes(params, app) {
+    const notes = await store(app);
+    if (typeof params?.query !== 'string') throw new Error('A search needs words.');
+    return { days: notes.search(params.query) };
   },
 };

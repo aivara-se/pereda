@@ -26,7 +26,13 @@
 </header>
 
 <div id="app" class="app">
+  <div class="search">
+    <label class="date" for="query">Search</label>
+    <input id="query" class="field" type="search" placeholder="Any word in a note" autocomplete="off" spellcheck="false">
+  </div>
+
   <main id="page" class="page">
+    <div id="results" class="results" hidden></div>
     <div id="log" class="log"></div>
   </main>
 
