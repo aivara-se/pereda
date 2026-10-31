@@ -1,6 +1,7 @@
 // The page: one log of days, newest first, every entry saved as it is typed.
 
 import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
+import { ASSISTANT_EVENT } from '../shared/assistant.js';
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
@@ -13,6 +14,8 @@ const pageEl = $('page');
 const queryEl = $('query');
 const statusLine = $('status');
 const deleteButton = $('delete');
+const assistantPanel = $('assistant');
+const assistantText = $('assistant-text');
 
 let todayKey = null; // the backend's idea of today, refreshed on every load
 let entries = []; // the days on screen, newest first
@@ -26,6 +29,8 @@ let shortcutMissing = ''; // said once when the system would not give the combin
 let searching = false; // the results are on screen, not the log
 let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
+let assistantBusy = false; // one summary at a time
+let commandError = ''; // a menu action that could not finish
 const saveFailures = new Map(); // day -> the last reason its save failed
 
 function dayDate(day) {
@@ -52,7 +57,7 @@ function longDate(day) {
 
 function renderStatus() {
   const failure = saveFailures.values().next().value;
-  const problem = failure ? `Not saved — ${failure}` : logError || searchError;
+  const problem = failure ? `Not saved — ${failure}` : commandError || logError || searchError;
   // A notice is said once: a real problem replaces it and it does not come back.
   if (problem !== '') shortcutMissing = '';
   statusLine.textContent = problem || shortcutMissing;
@@ -66,6 +71,50 @@ function resize(entry) {
 
 function setCaretToEnd(text) {
   text.setSelectionRange(text.value.length, text.value.length);
+}
+
+function hideAssistant() {
+  assistantPanel.hidden = true;
+  assistantPanel.classList.remove('busy');
+  assistantText.textContent = '';
+}
+
+function showAssistant(text, busy) {
+  assistantText.textContent = text;
+  assistantPanel.classList.toggle('busy', busy);
+  assistantPanel.hidden = false;
+}
+
+// The note on screen is the one the caret is in; with none, the first entry.
+// The reply is marked in the panel and never touches the textarea.
+async function summariseFocused() {
+  if (assistantBusy) return;
+  const entry = searching ? null : (focused ?? entries[0] ?? null);
+  if (entry === null) {
+    commandError = 'Open a day to summarise it.';
+    renderStatus();
+    return;
+  }
+  if (entry.text.value.trim() === '') {
+    commandError = 'There is nothing to summarise.';
+    renderStatus();
+    return;
+  }
+
+  assistantBusy = true;
+  commandError = '';
+  showAssistant('Summarising…', true);
+  renderStatus();
+  try {
+    const { text } = await tiny.api.call('summariseNote', { body: entry.text.value });
+    showAssistant(text, false);
+  } catch (message) {
+    hideAssistant();
+    commandError = message;
+  } finally {
+    assistantBusy = false;
+    renderStatus();
+  }
 }
 
 function updateDelete() {
@@ -208,6 +257,8 @@ async function loadLog(from) {
   }
   if (token !== loadToken) return;
   todayKey = result.today;
+  commandError = '';
+  hideAssistant();
   showLog(); // first: an entry measured while the log is hidden has no height
   renderLog(result.days, result.more);
   focused = entries[0] ?? null;
@@ -257,6 +308,7 @@ function showLog() {
 
 function showResults() {
   searching = true;
+  hideAssistant();
   logEl.hidden = true;
   resultsEl.hidden = false;
   updateDelete();
@@ -319,6 +371,7 @@ async function search(query) {
   }
   if (token !== searchToken) return;
   searchError = '';
+  commandError = '';
   renderResults(result.days);
   showResults();
   pageEl.scrollTop = 0;
@@ -375,6 +428,7 @@ async function removeFocused() {
 }
 
 function fatal(message) {
+  hideAssistant();
   $('app').hidden = true;
   $('fatal-message').textContent = message;
   $('fatal').hidden = false;
@@ -388,6 +442,11 @@ $('delete').addEventListener('click', removeFocused);
 tiny.hotkey.on((id) => {
   if (id === SHORTCUT_ID) goToday();
 });
+
+// A menu click that needs the note on screen comes back as this event. The
+// menu itself is the backend's; the page only owns the reply panel.
+tiny.api.on(ASSISTANT_EVENT, summariseFocused);
+$('assistant-close').addEventListener('click', hideAssistant);
 
 queryEl.addEventListener('input', () => {
   clearTimeout(searchTimer);
