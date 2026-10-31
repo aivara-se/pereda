@@ -31,6 +31,7 @@ let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
 let assistantBusy = false; // one summary at a time
 let commandError = ''; // a menu action that could not finish
+let jumpNotice = ''; // a date landed on an empty day
 const saveFailures = new Map(); // day -> the last reason its save failed
 
 function dayDate(day) {
@@ -60,8 +61,11 @@ function renderStatus() {
   const problem = failure ? `Not saved — ${failure}` : commandError || logError || searchError;
   // A notice is said once: a real problem replaces it and it does not come back.
   if (problem !== '') shortcutMissing = '';
-  statusLine.textContent = problem || shortcutMissing;
-  statusLine.classList.toggle('info', problem === '' && shortcutMissing !== '');
+  statusLine.textContent = problem || jumpNotice || shortcutMissing;
+  statusLine.classList.toggle(
+    'info',
+    problem === '' && (jumpNotice !== '' || shortcutMissing !== ''),
+  );
 }
 
 function resize(entry) {
@@ -258,6 +262,7 @@ async function loadLog(from) {
   if (token !== loadToken) return;
   todayKey = result.today;
   commandError = '';
+  jumpNotice = '';
   hideAssistant();
   showLog(); // first: an entry measured while the log is hidden has no height
   renderLog(result.days, result.more);
@@ -349,8 +354,35 @@ async function openDay(day) {
   await loadLog(day);
 }
 
+// A date is answered with the page of the log at that day. An empty day is
+// not in the log, so the newest day before it is shown and the status says why.
+function showJump({ day, days, more: hasMore }) {
+  commandError = '';
+  logError = '';
+  searchError = '';
+  showLog();
+  hideAssistant();
+  renderLog(days, hasMore);
+  focused = entries[0] ?? null;
+  if (focused !== null) {
+    focused.text.focus();
+    setCaretToEnd(focused.text);
+  }
+  pageEl.scrollTop = 0;
+  if (days.length === 0) {
+    jumpNotice = `No note on or before ${shortDate(day)}.`;
+  } else if (days[0].day !== day) {
+    jumpNotice = `No note on ${shortDate(day)} — showing ${shortDate(days[0].day)}.`;
+  } else {
+    jumpNotice = '';
+  }
+  updateDelete();
+  renderStatus();
+}
+
 // The field above the log: every word must be in the note, as a prefix, in any
-// order. An empty field goes back to the log at today, where the app opens.
+// order. An exact date opens its day before that rule. An empty field goes back
+// to the log at today, where the app opens.
 async function search(query) {
   if (query.trim() === '') {
     await goToday();
@@ -372,6 +404,17 @@ async function search(query) {
   if (token !== searchToken) return;
   searchError = '';
   commandError = '';
+  if (result.refused !== undefined) {
+    // A date after today: say so and leave the log where it is.
+    searchError = result.refused;
+    renderStatus();
+    return;
+  }
+  if (result.jump !== undefined) {
+    showJump(result.jump);
+    return;
+  }
+  jumpNotice = '';
   renderResults(result.days);
   showResults();
   pageEl.scrollTop = 0;

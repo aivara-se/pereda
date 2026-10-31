@@ -60,3 +60,12 @@ export function assertWritableDay(day, current) {
   if (!validDay(day)) throw new Error('That is not a date.');
   if (day > current) throw new Error('A day after today cannot be written.');
 }
+
+// The day a search field is asking for, or null when the text is not one.
+// Only an exact YYYY-MM-DD that names a real day is a date; a day after today
+// is refused, and every other string stays a query.
+export function dayQuery(query, current) {
+  if (!validDay(query)) return null;
+  if (query > current) throw new Error('A day after today cannot be opened.');
+  return { day: query, upper: addDays(query, 1) };
+}
