@@ -18,6 +18,10 @@ const pageEl = $('page');
 const searchBar = $('searchbar');
 const searchButton = $('search');
 const queryEl = $('query');
+const settingsEl = $('settingspage');
+const settingsButton = $('settings');
+const exportButton = $('export');
+const exportResult = $('export-result');
 const statusLine = $('status');
 const assistantPanel = $('assistant');
 const assistantText = $('assistant-text');
@@ -34,6 +38,9 @@ let shortcutMissing = ''; // said once when the system would not give the combin
 let searchOpen = false; // the log is replaced by the field and the results
 let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
+let settingsOpen = false; // the settings page is over the log
+let settingsScroll = 0; // the log's scroll when the page opened
+let exporting = false; // one export at a time
 let assistantBusy = false; // one summary at a time
 let commandError = ''; // a menu action that could not finish
 let commandSelectable = false; // the data folder's path is text to copy
@@ -105,7 +112,7 @@ function setCaretToEnd(text) {
 // ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
 // older, and the caret lands at the end of the note reached.
 function moveDay(delta) {
-  if (searchOpen || entries.length === 0) return;
+  if (searchOpen || settingsOpen || entries.length === 0) return;
   const index = focused === null ? 0 : entries.indexOf(focused);
   const from = index === -1 ? 0 : index;
   const target = entries[Math.min(entries.length - 1, Math.max(0, from + delta))];
@@ -130,7 +137,7 @@ function showAssistant(text, busy) {
 // The reply is marked in the panel and never touches the textarea.
 async function summariseFocused() {
   if (assistantBusy) return;
-  const entry = searchOpen ? null : (focused ?? entries[0] ?? null);
+  const entry = searchOpen || settingsOpen ? null : (focused ?? entries[0] ?? null);
   if (entry === null) {
     commandError = 'Open a day to summarise it.';
     commandSelectable = false;
@@ -167,6 +174,7 @@ async function summariseFocused() {
 function updateFade() {
   const writing =
     !searchOpen &&
+    !settingsOpen &&
     document.hasFocus() &&
     focused !== null &&
     focused.day === todayKey &&
@@ -353,7 +361,7 @@ async function loadLog(from) {
 
 // Ask for the days before the oldest one on screen.
 async function loadOlder() {
-  if (!more || loading || searchOpen || entries.length === 0) return;
+  if (!more || loading || searchOpen || settingsOpen || entries.length === 0) return;
   loading = true;
   const token = loadToken;
   try {
@@ -375,17 +383,36 @@ async function loadOlder() {
   }
 }
 
-// The log is the default view: no field and no results. Leaving a search empties
-// the field and puts the log back at today.
-function showLog() {
+// The search leaves the screen without deciding where the log is: the log, the
+// settings page and a jump all come back to it.
+function hideSearch() {
   searchOpen = false;
+  searchToken += 1;
+  clearTimeout(searchTimer);
+  queryEl.value = '';
   searchBar.hidden = true;
   resultsEl.hidden = true;
   resultsEl.replaceChildren();
-  logEl.hidden = false;
   searchButton.setAttribute('aria-expanded', 'false');
   searchButton.setAttribute('aria-label', 'Search');
   searchButton.title = OS === 'macos' ? 'Search (⌘F)' : 'Search (Ctrl+F)';
+}
+
+// Settings is over the loaded log, never a reload of it.
+function hideSettings() {
+  settingsOpen = false;
+  settingsEl.hidden = true;
+  settingsButton.setAttribute('aria-pressed', 'false');
+  pageEl.hidden = false;
+  exportResult.textContent = '';
+  exportResult.classList.remove('error');
+}
+
+// The log is the default view: no field, no settings and no results.
+function showLog() {
+  hideSearch();
+  hideSettings();
+  logEl.hidden = false;
   updateFade();
 }
 
@@ -404,10 +431,10 @@ function hideResults() {
 // leaves the screen until the mode is closed.
 function openSearch() {
   if (!searchOpen) {
+    hideSearch();
+    hideSettings();
     searchOpen = true;
     hideAssistant();
-    clearTimeout(searchTimer);
-    queryEl.value = '';
     searchBar.hidden = false;
     logEl.hidden = true;
     searchButton.setAttribute('aria-expanded', 'true');
@@ -420,6 +447,36 @@ function openSearch() {
   queryEl.focus();
   queryEl.select();
   updateFade();
+}
+
+// Settings replaces the log or the search below the bar. The log stays loaded,
+// so closing returns to the day and scroll it held and gives the note its caret
+// back. It is not stored: the app always opens on today.
+function openSettings() {
+  if (settingsOpen) {
+    closeSettings();
+    return;
+  }
+  hideSearch();
+  hideAssistant();
+  settingsScroll = pageEl.scrollTop;
+  settingsOpen = true;
+  pageEl.hidden = true;
+  settingsEl.hidden = false;
+  settingsButton.setAttribute('aria-pressed', 'true');
+  exportResult.textContent = '';
+  exportResult.classList.remove('error');
+  updateFade();
+  renderStatus();
+  flushAll();
+}
+
+function closeSettings() {
+  if (!settingsOpen) return;
+  showLog();
+  if (focused !== null) focused.text.focus();
+  pageEl.scrollTop = settingsScroll;
+  renderStatus();
 }
 
 function renderResults(days) {
@@ -582,6 +639,46 @@ async function removeEntry(target) {
   dropEntry(target);
 }
 
+// Export is one-way: the folder is chosen every time, every loaded note is
+// flushed first, and the backend writes the files. A failure names the first day
+// that did not write; the files before it stay.
+async function runExport() {
+  if (exporting) return;
+  exporting = true;
+  exportButton.disabled = true;
+  exportResult.textContent = '';
+  exportResult.classList.remove('error');
+  try {
+    if (!(await flushAll())) {
+      exportResult.textContent = 'Not exported — a note could not be saved.';
+      exportResult.classList.add('error');
+      return;
+    }
+    const folder = await tiny.dialog.pickFolder();
+    if (folder === null) return;
+    exportResult.textContent = 'Exporting…';
+    const result = await tiny.api.call('exportNotes', { folder });
+    if (result.failed !== null) {
+      const count = result.written === 1 ? '1 note' : `${result.written} notes`;
+      exportResult.textContent = `Wrote ${count} to ${result.folder} before ${result.failed.day} failed — ${result.failed.reason}`;
+      exportResult.classList.add('error');
+      return;
+    }
+    if (result.written === 0) {
+      exportResult.textContent = 'There are no notes to export.';
+      return;
+    }
+    const count = result.written === 1 ? '1 note' : `${result.written} notes`;
+    exportResult.textContent = `Wrote ${count} to ${result.folder}.`;
+  } catch (message) {
+    exportResult.textContent = `Could not export — ${message}`;
+    exportResult.classList.add('error');
+  } finally {
+    exporting = false;
+    exportButton.disabled = false;
+  }
+}
+
 function fatal(message) {
   hideAssistant();
   $('app').hidden = true;
@@ -591,7 +688,9 @@ function fatal(message) {
 
 $('today').addEventListener('click', goToday);
 $('today').title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
+settingsButton.addEventListener('click', openSettings);
 searchButton.addEventListener('click', () => (searchOpen ? closeSearch() : openSearch()));
+exportButton.addEventListener('click', runExport);
 
 // The backend registers the shortcut at launch and brings the window forward on
 // a press; the press reaches this page too, and it takes the Today path.
@@ -637,6 +736,11 @@ document.addEventListener('keydown', (event) => {
   if (action === null) return;
 
   if (action === 'escape') {
+    if (settingsOpen) {
+      event.preventDefault();
+      closeSettings();
+      return;
+    }
     if (!searchOpen || document.activeElement !== queryEl) return;
     event.preventDefault();
     closeSearch();
