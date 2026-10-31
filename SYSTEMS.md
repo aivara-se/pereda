@@ -48,6 +48,12 @@ The log is the index: the first page holds today and the days before it, newest 
 
 The field above the log asks the backend for the days whose text holds every word, in any order, each as a prefix; the SQL never leaves the backend. The index folds case and keeps å, ä and ö apart, and a query is words — a quote, an operator and a phrase are not syntax. At most fifty days come back, newest first, each with the text around the match, and a result opens the log at its day.
 
+## The shortcut
+
+One hotkey, id `today`, combination `cmd+shift+d` — ⌘⇧D on macOS, Ctrl+Shift+D elsewhere — registered by the backend in `init` for the life of the process ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)). The registration is asked for once and its answer kept: a system with no global hotkeys, or one that will not give the combination up, answers `false`, and the page says that once in the status line. Nothing is stored and nothing waits for the shortcut.
+
+A press reaches the backend and every page. The backend shows and focuses the window; the page takes the Today path — flush, ask the backend for today, load — which is the call the button makes. There is no second window, no toggle and no tray.
+
 ## Failure modes
 
 - **The database is unreadable.** Every write is refused and the app shows the file with the reason; it never deletes, recreates or repairs it over the notes.
@@ -59,13 +65,13 @@ The field above the log asks the backend for the days whose text holds every wor
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
-- **No network.** v1.2 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.3 makes no request of any kind, and the acceptance run is made with the network off.
+- **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 
 ## Planned, not built
 
-Every mechanism above is v1.2's. Six versions are decided and none is built; each ADR is the design and the code follows it.
+Every mechanism above is v1.3's. Five versions are decided and none is built; each ADR is the design and the code follows it.
 
-- **v1.3 the shortcut** ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)): one hotkey id registered at launch by the backend; a press shows the window and takes the Today path. No state, no stored preference, no second window.
 - **v1.4 the assistant** ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)): `availability()` then `generate()` in the backend, the note on screen as the whole request, the reply marked in a panel and never written to `notes`; the on/off preference is the app's, not the database's. Absent on Windows and Linux.
 - **v1.5 jump to a day** ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)): the search field resolves an exact `YYYY-MM-DD` in the backend, which refuses a day after today and answers with the page of the log bounded by the day after the target; no picker and no second field.
 - **v1.6 the data folder** ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)): one menu item opens `app.paths().data` in the OS file manager. It copies nothing and stores nothing.
@@ -81,8 +87,8 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, and a version 1 file lifted to version 2 with its notes indexed.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, and the shortcut's refusal named for each platform.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-What no test reaches — the webview's drawing and input, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
+What no test reaches — the webview's drawing and input, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.

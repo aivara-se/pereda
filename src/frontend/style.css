@@ -386,6 +386,11 @@ button:disabled {
   background: var(--bg);
 }
 
+/* A fact said once is not an error: the shortcut, when the system refused it. */
+.status.info {
+  color: var(--muted);
+}
+
 /* The one screen that stops the app: the notes file is named, not touched. */
 
 .fatal {
