@@ -23,3 +23,42 @@ jobs:
           curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
       - name: Build
         run: ~/.tinyjs/tinyjs build
+
+  # The .app a reviewer runs before the merge: the build the release makes, for
+  # both Macs, kept as a workflow artifact rather than published. The signing
+  # secrets are not used here, so it is ad-hoc signed and the first open is a
+  # right click, then Open.
+  macos:
+    needs: validate
+    if: github.event_name == 'pull_request'
+    runs-on: macos-15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tinyjs
+        run: |
+          curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.tinyjs" >> "$GITHUB_PATH"
+
+      - name: Build
+        run: tinyjs build --arch "${{ matrix.arch }}"
+
+      - name: Package
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          name=$(jq -r .name tinyjs.json)
+          title=$(jq -r '.title // .name' tinyjs.json)
+          ditto -c -k --keepParent "dist/$title.app" "$name-pr-$PR-macos-${{ matrix.arch }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: '*.zip'
+          if-no-files-found: error
