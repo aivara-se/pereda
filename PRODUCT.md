@@ -85,6 +85,7 @@ Known, and deliberately not handled in this version.
 - **A deleted note.** It is gone; there is no undo and no trash.
 - **A corrupt database.** The app stops and names the file; it never recreates it over the notes.
 - **The assistant.** It exists only on macOS 26 with Apple Intelligence on; when the model is off or still downloading, the action is disabled with the reason.
+- **The File menu on Windows.** The runtime draws no menu bar on a frameless, transparent window, so **Show data folder** is not there and the folder stays a path the person is told ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)).
 - **A full disk or a read-only data folder.** The save fails, the app says so and keeps the text on screen; it never reports a save that did not happen.
 - **A note past a book.** No pagination, so a very long note is slow to open.
 - **A restore from another machine.** The data folder can be copied in with the app closed; there is no import screen.
@@ -107,7 +108,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - A date typed as `YYYY-MM-DD` opens the log at that day; a day after today is refused in words, and a target with no note lands on the newest day at or before it, today included.
 - Clearing a note leaves the day empty; deleting asks once and cannot be undone.
 - The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
-- **Show data folder** opens that folder in the system's file manager; when it cannot, the status line shows the path as text.
+- **Show data folder** opens that folder in the system's file manager on macOS and Linux; when it cannot, the status line shows the path as text.
 - A failed save is shown and the text stays on screen; no success is reported.
 - A corrupt database stops the app with its path and is not overwritten.
 - The macOS build is signed and notarized and opens without a Gatekeeper warning.
