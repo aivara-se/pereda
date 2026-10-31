@@ -1,5 +1,7 @@
 // The page: one log of days, newest first, every entry saved as it is typed.
 
+import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
+
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
 const LOAD_AT = 700; // pixels from the bottom that ask for the next page
@@ -20,6 +22,7 @@ let loadToken = 0; // the newest load, so a slow one cannot win
 let focused = null; // the entry the delete button acts on
 let logError = '';
 let searchError = '';
+let shortcutMissing = ''; // said once when the system would not give the combination
 let searching = false; // the results are on screen, not the log
 let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
@@ -49,11 +52,11 @@ function longDate(day) {
 
 function renderStatus() {
   const failure = saveFailures.values().next().value;
-  if (failure) {
-    statusLine.textContent = `Not saved — ${failure}`;
-    return;
-  }
-  statusLine.textContent = logError || searchError;
+  const problem = failure ? `Not saved — ${failure}` : logError || searchError;
+  // A notice is said once: a real problem replaces it and it does not come back.
+  if (problem !== '') shortcutMissing = '';
+  statusLine.textContent = problem || shortcutMissing;
+  statusLine.classList.toggle('info', problem === '' && shortcutMissing !== '');
 }
 
 function resize(entry) {
@@ -380,6 +383,12 @@ function fatal(message) {
 $('today').addEventListener('click', goToday);
 $('delete').addEventListener('click', removeFocused);
 
+// The backend registers the shortcut at launch and brings the window forward on
+// a press; the press reaches this page too, and it takes the Today path.
+tiny.hotkey.on((id) => {
+  if (id === SHORTCUT_ID) goToday();
+});
+
 queryEl.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
@@ -417,5 +426,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) flushAll();
 });
 window.addEventListener('blur', () => flushAll());
+
+// One ask says whether the system gave the app its shortcut; a missing one is
+// said once in the status line, and everything else works without it.
+tiny.api.call('readShortcut').then(({ registered }) => {
+  shortcutMissing = shortcutNotice(tiny.system.os(), registered);
+  renderStatus();
+});
 
 loadLog();

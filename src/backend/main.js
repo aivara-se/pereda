@@ -4,6 +4,7 @@
 import { Database } from 'tjs:sqlite';
 import { openStore } from './store.js';
 import { addDays, assertWritableDay, today, validDay } from '../shared/day.js';
+import { SHORTCUT_COMBO, SHORTCUT_ID } from '../shared/shortcut.js';
 
 const DB_NAME = 'pereda.db';
 const PAGE = 30;
@@ -20,6 +21,32 @@ function store(app) {
     })();
   }
   return opening;
+}
+
+// The shortcut is asked for once for the life of the process: init asks at
+// launch, and a page that asks first still gets the same answer.
+let registering = null;
+
+async function registerShortcut(app) {
+  const { globalHotkeys } = await app.system.capabilities();
+  if (globalHotkeys === false) return false;
+  return app.hotkey.register(SHORTCUT_ID, SHORTCUT_COMBO);
+}
+
+function shortcutRegistration(app) {
+  if (registering === null) registering = registerShortcut(app);
+  return registering;
+}
+
+// One hotkey, while the app runs. Nothing else is set up at launch.
+export function init(app) {
+  shortcutRegistration(app);
+}
+
+// A press brings the window forward; the page hears the same press and takes
+// the Today path, so the shortcut does what the button does, not a second thing.
+export function onHotkey(id, app) {
+  if (id === SHORTCUT_ID) app.win.show();
 }
 
 export const api = {
@@ -73,5 +100,12 @@ export const api = {
     const notes = await store(app);
     if (typeof params?.query !== 'string') throw new Error('A search needs words.');
     return { days: notes.search(params.query) };
+  },
+
+  // Whether the system gave the app its shortcut, so the page can say a missing
+  // one once and work on without it. A registration that failed to answer is
+  // the same answer as a refusal: no shortcut.
+  async readShortcut(params, app) {
+    return { registered: await shortcutRegistration(app).catch(() => false) };
   },
 };
