@@ -4,8 +4,9 @@
 export const SHOW_DATA_FOLDER = 'show-data-folder';
 export const DATA_FOLDER_EVENT = 'data-folder';
 
-// The File menu is on every platform; the assistant's own items sit in the
-// macOS application menu and are added beside this one.
+// The File menu is declared on every platform and drawn where the window has a
+// menu bar; the assistant's own items sit in the macOS application menu and are
+// added beside this one.
 export function fileMenus() {
   return [
     {

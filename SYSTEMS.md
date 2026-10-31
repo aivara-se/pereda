@@ -71,7 +71,7 @@ The menu is the app's: an Assistant switch stored in `app.store` and a Summarise
 
 ## The menu
 
-The whole menu is built in the backend: the assistant's items on macOS and a File menu with **Show data folder** everywhere ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)). The item asks for `app.paths().data` and hands it to `app.shell.open`; the page never builds a path. It copies nothing, exports nothing and stores nothing.
+The whole menu is built in the backend: the assistant's items on macOS and a File menu with **Show data folder** on macOS and Linux ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)). The item is declared on every platform, but Windows draws no menu bar on a frameless, transparent window, so it never appears there ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)). The item asks for `app.paths().data` and hands it to `app.shell.open`; the page never builds a path. It copies nothing, exports nothing and stores nothing.
 
 A folder that will not open is pushed back with its path, and the status line shows it as text the person can select. A folder that does open clears the line.
 
