@@ -176,6 +176,18 @@ button:disabled {
   stroke-linejoin: round;
 }
 
+.icon .close {
+  display: none;
+}
+
+.icon[aria-expanded="true"] .find {
+  display: none;
+}
+
+.icon[aria-expanded="true"] .close {
+  display: block;
+}
+
 .icon:hover:not(:disabled) {
   background: var(--hover);
   color: var(--ink);
@@ -183,10 +195,6 @@ button:disabled {
 
 .icon:disabled {
   opacity: 0.28;
-}
-
-.icon.danger:hover:not(:disabled) {
-  color: var(--error);
 }
 
 .page {
@@ -287,6 +295,50 @@ button:disabled {
   padding-bottom: 48px;
 }
 
+/* The date column carries the entry's actions without making the entry taller:
+   the row is out of the flow and only its own entry can show it. */
+.entry .meta {
+  position: relative;
+  align-self: start;
+  min-width: 0;
+}
+
+.entry .action {
+  position: absolute;
+  top: calc(100% + 1px);
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--muted);
+  visibility: hidden;
+}
+
+.entry:focus-within .action {
+  visibility: visible;
+}
+
+.entry .action svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.entry .action:hover {
+  background: var(--hover);
+  color: var(--error);
+}
+
+.entry .action:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
 .date {
   margin: 0;
   overflow: hidden;
@@ -361,6 +413,10 @@ button:disabled {
   .search .date {
     padding-top: 0;
     text-align: left;
+  }
+
+  .entry .action {
+    top: 0;
   }
 }
 
@@ -472,6 +528,20 @@ button:disabled {
 .status.selectable {
   pointer-events: auto;
   user-select: text;
+}
+
+/* Today's note dims the window while the caret is in it. The status line and
+   the assistant panel are read, not navigated, so they stay at full strength. */
+.bar,
+.entry:not(.today),
+.entry.today .date {
+  transition: opacity 150ms ease;
+}
+
+body.writing .bar,
+body.writing .entry:not(.today),
+body.writing .entry.today .date {
+  opacity: 0.25;
 }
 
 /* The one screen that stops the app: the notes file is named, not touched. */

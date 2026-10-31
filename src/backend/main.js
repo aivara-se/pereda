@@ -207,7 +207,7 @@ export const api = {
       }
       return { jump: { day: jump.day, days, more } };
     }
-    return { days: notes.search(params.query) };
+    return { days: notes.search(params.query, current) };
   },
 
   // Whether the system gave the app its shortcut, so the page can say a missing

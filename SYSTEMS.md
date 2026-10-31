@@ -6,6 +6,8 @@ A tinyjs desktop app: the operating system's webview draws the window and plain 
 
 The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame.
 
+The focused entry's actions sit in its date column, outside the flow so the entry does not change height; delete is the only one, and today's note has none because clearing its last character removes it ([`020`](docs/adrs/020-actions-under-the-date.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
+
 One window, one OS user, one data folder. There is no account and no server ([`002`](docs/adrs/002-local-only-in-v1.md)), and the only channel the app has is inside the machine, so the network is absent by construction rather than by policy. There is no update channel either: the app checks for nothing and a new version is a fresh download ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
 ## The shape
@@ -47,9 +49,9 @@ The day is the machine's local calendar day, read by the backend; the page never
 
 The log is the index: the first page holds today and the days before it, newest first, thirty at a time. A page is read from the store with the oldest day loaded as its upper bound, so pages never overlap; a day with nothing written is skipped, except today, whose entry is always first. An older day is reached by scrolling, or by the search.
 
-The field above the log asks the backend for the days whose text holds every word, in any order, each as a prefix; the SQL never leaves the backend. The index folds case and keeps å, ä and ö apart, and a query is words — a quote, an operator and a phrase are not syntax. At most fifty days come back, newest first, each with the text around the match, and a result opens the log at its day.
+The field in search mode asks the backend for the days before today whose text holds every word, in any order, each as a prefix; the bound is how today stays out of a text search, and the SQL never leaves the backend ([`021`](docs/adrs/021-search-is-a-mode.md)). The index folds case and keeps å, ä and ö apart, and a query is words — a quote, an operator and a phrase are not syntax. At most fifty days come back, newest first, each with the text around the match, and a result opens the log at its day. Closing the mode empties the field and loads the log at today; an empty field shows the prompt and stays open.
 
-A query that is exactly `YYYY-MM-DD` is resolved before that rule, in the backend ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)). It must name a real day; one after today is refused in words and the log does not move. Otherwise the same page of the log is read, bounded by the day after the target, so a day with no note lands on the newest day at or before it — today is in the log even when empty — and the status says so once.
+A query that is exactly `YYYY-MM-DD` is resolved before that rule, in the backend ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)). It must name a real day; one after today is refused in words and the log does not move. Otherwise the same page of the log is read, bounded by the day after the target, so a day with no note lands on the newest day at or before it — today is in the log even when empty — and the status says so once. The jump closes the mode and empties the field.
 
 ## The shortcut
 
@@ -59,7 +61,7 @@ A press reaches the backend and every page. The backend shows and focuses the wi
 
 ## The keys
 
-Four fixed keys, handled in the page and read by `src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F focuses the search field and selects what is in it; Esc in the field clears it and takes the Today path, and does nothing anywhere else; ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
+Four fixed keys, handled in the page and read by `src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F opens the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and does nothing anywhere else; ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
 
 Each key cancels the webview's default before taking the app's path. There is no palette, shortcut sheet, stored combination or rebinding screen: every key has a control that already does the same thing.
 
@@ -86,7 +88,7 @@ A folder that will not open is pushed back with its path, and the status line sh
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
-- **No network.** v1.8 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.9 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** The action is disabled with the reason; a request that arrives anyway is refused, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
@@ -96,13 +98,12 @@ A folder that will not open is pushed back with its path, and the status line sh
 
 ## Not in v1.x
 
-The app above is v1.8. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.9. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Planned, not built
 
-Two versions are decided and not built; their ADRs are the design and the code follows them.
+One version is decided and not built; its ADRs are the design and the code follows them.
 
-- **v1.9 focus** ([`020`](docs/adrs/020-actions-under-the-date.md), [`021`](docs/adrs/021-search-is-a-mode.md), [`022`](docs/adrs/022-today-dims-the-window.md)): the page derives the fade and the action row from the focused note, draws delete in the focused entry's date column, and swaps the log for a search mode; the backend's search query gains a bound to the days before today. No new table, store call or saved state.
 - **v1.10 settings and export** ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md), [`024`](docs/adrs/024-export-writes-markdown.md)): a page view in the same window with a fixed-width text-link nav; the store gains one read of every non-empty day, and the backend writes `YYYY-MM-DD.md` into the folder the page picked with the native picker. No new table and no stored preference.
 
 ## Checks
@@ -112,8 +113,8 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-What no test reaches — the webview's drawing and input, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
+What no test reaches — the webview's drawing and input, the search mode's swap, the focus fade, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.

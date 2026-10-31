@@ -15,8 +15,8 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - While the app runs, ⌘⇧D — Ctrl+Shift+D on Windows and Linux — brings it forward on today from any app. The combination is fixed: no setting, no second window, no tray.
 - A menu carries the assistant. It is off until the person turns it on; the summary appears in a panel marked as generated on this Mac, and never enters the note.
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
-- Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — focuses the search, Esc in it clears and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
-- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today and delete at its right, and a paper translucent enough to read the desktop through.
+- Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — opens the search, Esc closes it and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
+- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today and search at its right, and a paper translucent enough to read the desktop through.
 
 ## The day
 
@@ -30,15 +30,16 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - A note is plain text with paragraphs: no title, formatting, checkboxes, tags, attachments, images or structured links.
 - One person writes it. There is no sharing, no second writer and no public link.
 - Clearing every character of a note removes it; the day remains empty.
-- Deleting a day asks once and cannot be undone.
+- Deleting any day but today asks once and cannot be undone; today goes by clearing its last character.
+- While today's note has the caret, the bar and the rest of the log fade to a quarter; the text, the status line and a summary stay legible.
 
 ## Reading back
 
 - The log is the index: every day with a note, newest first, with today at the top.
 - The note shows its date beside the text; there is no title to remember.
-- A field above the log finds a day by its words: every word must be in the note, in any order, and a word may be only its beginning, so "appl" finds "apple". Case does not matter, and å, ä and ö are their own letters.
+- The bar's search opens a mode: the log and today's entry leave the screen, and a field finds a day by its words — every word must be in the note, in any order, and a word may be only its beginning, so "appl" finds "apple". Case does not matter, and å, ä and ö are their own letters. A text search never returns today.
 - The results are the matching days newest first, each with its date and the text around the match, at most fifty. There is no ranking and no summary.
-- Scrolling down reaches older days, a page at a time, and a result opens the log at its day. An empty field returns to today. There is no calendar and no picker; a date is named by typing it.
+- Scrolling down reaches older days, a page at a time, and a result opens the log at its day. Closing the search returns to today. There is no calendar and no picker; a date is named by typing it.
 - A date typed as `YYYY-MM-DD` opens the log at that day. A day after today is refused, and a day with nothing written lands on the newest day at or before it — today included, even when empty — with that said once in the status line.
 
 ## Your data
@@ -46,14 +47,14 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder.
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
-- In v1.8 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
+- In v1.9 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes it; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.8 has none.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.9 has none.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -93,7 +94,7 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.8 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.9 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -102,11 +103,12 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
-- ⌘F focuses the search, Esc clears it and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
+- ⌘F opens the search, Esc closes it and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
+- While today's note has the caret, the bar and the other entries fade; blur restores the window.
 - On macOS 26 with Apple Intelligence on, a summary of the note on screen appears in a panel marked as generated on this Mac; it is off until turned on, and no word of it enters the note.
-- A search finds a day by a word from its note, folded for case and for å, ä and ö, newest first; a result opens the log at its day, and an empty field returns to today.
+- A search finds an older day by a word from its note, folded for case and for å, ä and ö, newest first; a result opens the log at its day, today is never a text result, and closing returns to today.
 - A date typed as `YYYY-MM-DD` opens the log at that day; a day after today is refused in words, and a target with no note lands on the newest day at or before it, today included.
-- Clearing a note leaves the day empty; deleting asks once and cannot be undone.
+- Clearing a note leaves the day empty; deleting any other day asks once and cannot be undone.
 - The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
 - **Show data folder** opens that folder in the system's file manager on macOS and Linux; when it cannot, the status line shows the path as text.
 - A failed save is shown and the text stays on screen; no success is reported.
@@ -116,6 +118,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.9** — focus: today's note fades the bar and the older log while it has the caret, search is a mode opened from the bar that never returns today, and an older note's delete sits under its date.
 - **v1.8** — midnight said: a status line names the day the text is going to when the window is behind, and nothing moves until Today.
 - **v1.7** — the keys: ⌘F, Esc, ⌘T and ⌘↑/⌘↓, fixed and with nothing to configure.
 - **v1.6** — the data folder: one File menu item opens the folder the notes live in, so the backup is a copy the person can find.
@@ -128,9 +131,8 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Two versions are decided, not built: the binary is v1.8, and v1.9 and v1.10 land in that order with their records.
+One version is decided, not built: the binary is v1.9, and v1.10 lands with the records beside it.
 
-- **v1.9** — focus: today's note dims the window while it has the caret, search opens from the bar and leaves today out of its results, and an older note's actions sit under its date ([`020`](docs/adrs/020-actions-under-the-date.md), [`021`](docs/adrs/021-search-is-a-mode.md), [`022`](docs/adrs/022-today-dims-the-window.md)).
 - **v1.10** — settings and export: a settings page opened from the bar, and Export Data writes every note as a Markdown file, one per day ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md), [`024`](docs/adrs/024-export-writes-markdown.md)).
 
 Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
