@@ -23,7 +23,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - One note per day. A day is the computer's local calendar day, and it starts at midnight.
 - The app opens on today. A note begins with its first character, so a day with nothing written leaves nothing behind.
 - Every day with a note is in the log and can be written to; today is there even when it is empty. A future day cannot be written, and a past day with nothing written is not in the log. A note is never closed.
-- A window left open across midnight keeps the entry it opened; Today moves the log to the new day.
+- A window left open across midnight keeps the entry it opened; Today moves the log. While the loaded day is behind, the status line says where the text is going — “Writing to 31 October — today is 1 November.” — and nothing moves on its own.
 
 ## The note
 
@@ -46,14 +46,14 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder.
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
-- In v1.7 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
+- In v1.8 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes it; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.7 has none.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.8 has none.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -81,7 +81,7 @@ Known, and deliberately not handled in this version.
 
 - **A crash inside the save window.** The last edit before the crash, at most a moment, can be lost; nothing older is.
 - **The clock or timezone changes.** Existing notes keep their dates; near the change, a day can be skipped or written twice.
-- **A window left open past midnight.** It keeps writing to the day it opened until Today is pressed or the app is reopened.
+- **A window left open past midnight.** It keeps writing to the day it opened until Today is pressed or the app is reopened; the status line names that day while it does.
 - **A deleted note.** It is gone; there is no undo and no trash.
 - **A corrupt database.** The app stops and names the file; it never recreates it over the notes.
 - **The assistant.** It exists only on macOS 26 with Apple Intelligence on; when the model is off or still downloading, the action is disabled with the reason.
@@ -92,13 +92,14 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.7 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.8 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
 - Typing a paragraph, waiting a moment, quitting normally and reopening leaves every character.
 - The app has no save button, no dirty state and no unsaved-changes dialog.
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
+- A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
 - ⌘F focuses the search, Esc clears it and returns to today, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
 - On macOS 26 with Apple Intelligence on, a summary of the note on screen appears in a panel marked as generated on this Mac; it is off until turned on, and no word of it enters the note.
@@ -114,6 +115,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.8** — midnight said: a status line names the day the text is going to when the window is behind, and nothing moves until Today.
 - **v1.7** — the keys: ⌘F, Esc, ⌘T and ⌘↑/⌘↓, fixed and with nothing to configure.
 - **v1.6** — the data folder: one File menu item opens the folder the notes live in, so the backup is a copy the person can find.
 - **v1.5** — jump to a day: a date typed as `YYYY-MM-DD` into the search field opens that day; a day after today is refused, and an empty day lands on the newest day at or before it, today included.
@@ -125,8 +127,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Decided, not built: the binary is v1.7, and each of these lands with the ADR beside it. No dates.
-
-- **v1.8** — midnight said: the status line names the day the text is going to, and nothing moves ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)).
-
-Cloud sync is not a v1.x candidate. If it comes, it is a v2 decision that syncs the local store; it never turns the app into a cloud app.
+Everything decided for v1.x is built; the binary is v1.8. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
