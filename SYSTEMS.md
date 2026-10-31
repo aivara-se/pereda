@@ -58,11 +58,16 @@ The log is the index: the first page holds today and the days before it, newest 
 
 ## Planned, not built
 
-Every mechanism above is v1.1's. Three versions are decided and none is built; each ADR is the design and the code follows it.
+Every mechanism above is v1.1's. Eight versions are decided and none is built; each ADR is the design and the code follows it.
 
 - **v1.2 search** ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)): a `notes_fts` FTS5 table in the same file at schema version 2, kept in step by three triggers on `notes`, and one backend call returning matching days newest first with a snippet. The index is derived and rebuildable from `notes`, which stays the only authority.
 - **v1.3 the shortcut** ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)): one hotkey id registered at launch by the backend; a press shows the window and takes the Today path. No state, no stored preference, no second window.
 - **v1.4 the assistant** ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)): `availability()` then `generate()` in the backend, the note on screen as the whole request, the reply marked in a panel and never written to `notes`; the on/off preference is the app's, not the database's. Absent on Windows and Linux.
+- **v1.5 jump to a day** ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)): the search field resolves an exact `YYYY-MM-DD` in the backend, which refuses a day after today and answers with the page of the log bounded by the day after the target; no picker and no second field.
+- **v1.6 the data folder** ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)): one menu item opens `app.paths().data` in the OS file manager. It copies nothing and stores nothing.
+- **v1.7 the keys** ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)): four fixed keys handled in the page — ⌘F, Esc, ⌘T and ⌘↑/⌘↓ — with no stored combination; ⌘T reuses the Today path.
+- **v1.8 midnight said** ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)): the save reply also carries the backend's `today`, and the status line names the day being written while it is behind; no timer, no auto-switch.
+- **v1.9 the accepted line** ([`017`](docs/adrs/017-an-accepted-line-becomes-the-notes-text.md)): a suggested continuation is a candidate in the panel; one action appends it as a paragraph through the ordered, whole-body save. Summaries stay read-only.
 
 Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 

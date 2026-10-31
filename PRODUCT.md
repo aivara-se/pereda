@@ -110,5 +110,10 @@ Decided, not built: the binary is v1.1, and each of these lands with the ADR bes
 - **v1.2** — search: find a note by what it says, newest first, each word matched as a prefix ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)).
 - **v1.3** — the shortcut: ⌘⇧D summons the window on today while Pereda runs ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)).
 - **v1.4** — the assistant: summarise the note on screen with the on-device model, on macOS 26 or later with Apple Intelligence on ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)).
+- **v1.5** — jump to a day: a date typed into the search field opens that day, with no calendar and no second field ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)).
+- **v1.6** — the data folder: one menu item opens it, so the backup is a copy the person can find ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)).
+- **v1.7** — the keys: ⌘F, Esc, ⌘T and ⌘↑/⌘↓, with nothing to configure ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)).
+- **v1.8** — midnight said: the status line names the day the text is going to, and nothing moves ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)).
+- **v1.9** — the accepted line: the assistant suggests a continuation, the person accepts it, and the paragraph lands in the note ([`017`](docs/adrs/017-an-accepted-line-becomes-the-notes-text.md)).
 
 Cloud sync is not a v1.x candidate. If it comes, it is a v2 decision that syncs the local store; it never turns the app into a cloud app.
