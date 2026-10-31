@@ -96,7 +96,13 @@ A folder that will not open is pushed back with its path, and the status line sh
 
 ## Not in v1.x
 
-Every version decided for v1.x is in the app above. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.8. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+
+## Planned, not built
+
+One version is decided and not built; its ADRs are the design and the code follows them.
+
+- **v1.9 focus** ([`020`](docs/adrs/020-actions-under-the-date.md), [`021`](docs/adrs/021-search-is-a-mode.md), [`022`](docs/adrs/022-today-dims-the-window.md)): the page derives the fade and the action row from the focused note, draws delete in the focused entry's date column, and swaps the log for a search mode; the backend's search query gains a bound to the days before today. No new table, store call or saved state.
 
 ## Checks
 

@@ -128,4 +128,8 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built; the binary is v1.8. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+One version is decided, not built: the binary is v1.8, and v1.9 lands with the records beside it.
+
+- **v1.9** — focus: today's note dims the window while it has the caret, search opens from the bar and leaves today out of its results, and an older note's actions sit under its date ([`020`](docs/adrs/020-actions-under-the-date.md), [`021`](docs/adrs/021-search-is-a-mode.md), [`022`](docs/adrs/022-today-dims-the-window.md)).
+
+Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
