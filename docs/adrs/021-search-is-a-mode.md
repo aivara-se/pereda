@@ -9,11 +9,11 @@ The search is a place the person goes to find an older day, not a permanent row.
 ## Decision
 
 - The log view draws no field. The slot delete left holds one magnifier button.
-- A click on it, or ⌘F / Ctrl+F, opens search mode: the log is replaced, today's entry with it; the field takes focus, and the results area reads "Type a word, or a date." until the first character.
+- A click on it, or ⌘F / Ctrl+F, opens search mode: the log is replaced, today's entry with it, and the field takes focus.
 - Typing searches as [010](010-search-reads-an-index-over-the-notes.md) decided, with one bound: a text query never returns today.
 - The results are the older days that match, newest first, at most fifty; a query that matches none says so.
 - A query that is exactly `YYYY-MM-DD` still opens the log at that day before the word rule, today included ([013](013-a-date-in-the-search-field-jumps-to-the-day.md)). The jump closes the mode and empties the field.
-- An empty field shows the placeholder and stays open.
+- An empty field stays open.
 - Esc in the field, or the magnifier, which becomes a close button while the mode is open, closes it: the field empties and the log returns at today.
 
 ## Consequences
