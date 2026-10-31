@@ -4,7 +4,7 @@
   "title": "Pereda",
   "size": "1080x720",
   "id": "se.aivara.pereda",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "minTinyjsVersion": "0.66.2",
   "chrome": {
     "frame": false,

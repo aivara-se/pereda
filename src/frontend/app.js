@@ -3,10 +3,12 @@
 import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
 import { ASSISTANT_EVENT } from '../shared/assistant.js';
 import { DATA_FOLDER_EVENT } from '../shared/menu.js';
+import { keyAction } from '../shared/keys.js';
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
 const LOAD_AT = 700; // pixels from the bottom that ask for the next page
+const OS = tiny.system.os();
 
 const $ = (id) => document.getElementById(id);
 const logEl = $('log');
@@ -81,6 +83,18 @@ function resize(entry) {
 
 function setCaretToEnd(text) {
   text.setSelectionRange(text.value.length, text.value.length);
+}
+
+// ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
+// older, and the caret lands at the end of the note reached.
+function moveDay(delta) {
+  if (searching || entries.length === 0) return;
+  const index = focused === null ? 0 : entries.indexOf(focused);
+  const from = index === -1 ? 0 : index;
+  const target = entries[Math.min(entries.length - 1, Math.max(0, from + delta))];
+  if (target === undefined) return;
+  target.text.focus();
+  setCaretToEnd(target.text);
 }
 
 function hideAssistant() {
@@ -491,6 +505,7 @@ function fatal(message) {
 }
 
 $('today').addEventListener('click', goToday);
+$('today').title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
 $('delete').addEventListener('click', removeFocused);
 
 // The backend registers the shortcut at launch and brings the window forward on
@@ -525,15 +540,33 @@ queryEl.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
 });
-queryEl.addEventListener('keydown', (event) => {
-  if (event.key !== 'Escape') return;
-  if (queryEl.value === '') {
-    if (focused !== null) focused.text.focus();
+
+// The four fixed keys. Escape acts only in the field; the others cancel the
+// webview's own meaning before taking the app's path. Nothing is configurable.
+document.addEventListener('keydown', (event) => {
+  const action = keyAction(event, OS);
+  if (action === null) return;
+
+  if (action === 'escape') {
+    if (document.activeElement !== queryEl) return;
+    event.preventDefault();
+    clearTimeout(searchTimer);
+    queryEl.value = '';
+    goToday();
     return;
   }
-  queryEl.value = '';
-  clearTimeout(searchTimer);
-  search('');
+
+  event.preventDefault();
+  if (action === 'search') {
+    queryEl.focus();
+    queryEl.select();
+    return;
+  }
+  if (action === 'today') {
+    goToday();
+    return;
+  }
+  moveDay(action === 'previous' ? -1 : 1);
 });
 
 // The window has no frame, so its controls live in the page. A close waits for
