@@ -1,5 +1,6 @@
 {
   "name": "pereda",
   "private": true,
+  "license": "MIT",
   "type": "module"
 }
