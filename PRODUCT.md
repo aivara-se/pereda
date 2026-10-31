@@ -2,7 +2,7 @@
 
 Pereda is a real-time daily note app for the desktop. It opens on today, one note per day, and everything typed is written to disk as it is typed: there is no save button, no draft state and no sync step. It is a local app — no account, no server, no network. The notes are one database on the computer, and the app works with the network off.
 
-v1.1 carries one flow: **the live day**. The app opens on today's entry at the top of one log, writes it, and older entries follow as you scroll.
+v1.2 carries two flows: **the live day**, which opens on today's entry at the top of one log and writes it as it is typed, and **the search**, which finds an older day by what it says.
 
 **Live is the promise.** The note is not a document that is saved; it is written as it is made. The app never asks whether to keep the work, because it already has. A quit a moment after typing loses nothing, and a crash can lose only the last moment before it.
 
@@ -32,20 +32,22 @@ v1.1 carries one flow: **the live day**. The app opens on today's entry at the t
 
 - The log is the index: every day with a note, newest first, with today at the top.
 - The note shows its date beside the text; there is no title to remember.
-- Scrolling down reaches older days, a page at a time. v1.0 has no search, no calendar and no jump to a date.
+- A field above the log finds a day by its words: every word must be in the note, in any order, and a word may be only its beginning, so "appl" finds "apple". Case does not matter, and å, ä and ö are their own letters.
+- The results are the matching days newest first, each with its date and the text around the match, at most fifty. There is no ranking and no summary.
+- Scrolling down reaches older days, a page at a time, and a result opens the log at its day. An empty field returns to today. There is no calendar and no way to name a date.
 
 ## Your data
 
 - The notes are one SQLite database in the app's data folder. The app writes nothing outside that folder.
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
-- In v1.0 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
+- In v1.2 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes it; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.0 has none.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.2 has none.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -56,19 +58,18 @@ v1.1 carries one flow: **the live day**. The app opens on today's entry at the t
 
 AI is not in the app yet. v1.4 decides it: a summariser that runs on this Mac, one note at a time, and never writes into a note ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). It is off until the person turns it on, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; the other platforms have no assistant, because a model over the network is not a v1.x decision. Questions across the log and suggested lines are not in v1.x.
 
-## What v1.0 does not do
+## What it does not do
 
 - Not a cloud app: no account, no sync, no collaboration, no sharing.
 - Not a service: no hosted version, no self-hosted server, nothing to deploy.
-- Not a search: a day is found by its date.
 - Not rich text: no formatting, images, attachments, checkboxes, tables or backlinks.
 - Not mobile: no iOS or Android app.
 - Not an importer: notes from other apps, or from the old pereda.app, are not imported.
-- Not an exporter: the notes leave only as the data folder; v1.0 writes no Markdown files.
+- Not an exporter: the notes leave only as the data folder; it writes no Markdown files.
 - Not self-updating: a new version is a download.
 - Not AI: no summaries, suggestions, questions or chat.
 
-## Edge cases v1.0 leaves unhandled
+## Edge cases left unhandled
 
 Known, and deliberately not handled in this version.
 
@@ -84,13 +85,14 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.1 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.2 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
 - Typing a paragraph, waiting a moment, quitting normally and reopening leaves every character.
 - The app has no save button, no dirty state and no unsaved-changes dialog.
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
+- A search finds a day by a word from its note, folded for case and for å, ä and ö, newest first; a result opens the log at its day, and an empty field returns to today.
 - Clearing a note leaves the day empty; deleting asks once and cannot be undone.
 - The notes are one SQLite database in the app's data folder; the app writes nothing outside that folder.
 - A failed save is shown and the text stays on screen; no success is reported.
@@ -100,14 +102,14 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.2** — search: a field above the log finds a day by its words, newest first, each word matched as a prefix; a result opens the log at its day.
 - **v1.1** — the window draws its own frame: a frameless, translucent window with close, minimize and zoom in the page's bar.
 - **v1.0** — the live day: one note per day, written as it is typed, on the desktop; no account, server or network.
 
 ## Roadmap
 
-Decided, not built: the binary is v1.1, and each of these lands with the ADR beside it. No dates.
+Decided, not built: the binary is v1.2, and each of these lands with the ADR beside it. No dates.
 
-- **v1.2** — search: find a note by what it says, newest first, each word matched as a prefix ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)).
 - **v1.3** — the shortcut: ⌘⇧D summons the window on today while Pereda runs ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)).
 - **v1.4** — the assistant: summarise the note on screen with the on-device model, on macOS 26 or later with Apple Intelligence on ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)).
 - **v1.5** — jump to a day: a date typed into the search field opens that day, with no calendar and no second field ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)).

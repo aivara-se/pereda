@@ -22,6 +22,8 @@ One row per day, keyed by the machine's local date, holding the whole note; a da
 
 Each save carries the counter of the page's last write and applies only when it is newer than the stored one; an older save changes nothing. A write is ordered, whole and atomic — never a diff, and the backend never merges text.
 
+A second table, `notes_fts`, indexes the bodies with SQLite's FTS5 and the `unicode61` tokenizer, so case folds in every script while å, ä and ö stay their own letters ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)). Three triggers keep it in step inside the same transaction as the note; it is derived and rebuildable from `notes`, a match is joined back to the row, and `notes` remains the only authority. The schema version is 2, and a version 1 file is lifted to it in one transaction when it opens.
+
 The store never deletes, recreates or repairs the database over the notes. If it cannot be opened or fails its own integrity check, every write is refused and the app names the file.
 
 ## A keystroke becomes a row
@@ -42,7 +44,9 @@ The day is the machine's local calendar day, read by the backend; the page never
 
 ## Reading
 
-The log is the index: the first page holds today and the days before it, newest first, thirty at a time. A page is read from the store with the oldest day loaded as its upper bound, so pages never overlap; a day with nothing written is skipped, except today, whose entry is always first. v1.0 has no calendar, no search, no title index and no full-text table, so an older day is reached by scrolling.
+The log is the index: the first page holds today and the days before it, newest first, thirty at a time. A page is read from the store with the oldest day loaded as its upper bound, so pages never overlap; a day with nothing written is skipped, except today, whose entry is always first. An older day is reached by scrolling, or by the search.
+
+The field above the log asks the backend for the days whose text holds every word, in any order, each as a prefix; the SQL never leaves the backend. The index folds case and keeps å, ä and ö apart, and a query is words — a quote, an operator and a phrase are not syntax. At most fifty days come back, newest first, each with the text around the match, and a result opens the log at its day.
 
 ## Failure modes
 
@@ -54,13 +58,13 @@ The log is the index: the first page holds today and the days before it, newest 
 - **A second instance.** The running app comes forward, so two windows never write the same file.
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
-- **No network.** v1.0 makes no request of any kind, and the acceptance run is made with the network off.
+- **A search fails.** The status names the reason, and the words stay in the field.
+- **No network.** v1.2 makes no request of any kind, and the acceptance run is made with the network off.
 
 ## Planned, not built
 
-Every mechanism above is v1.1's. Seven versions are decided and none is built; each ADR is the design and the code follows it.
+Every mechanism above is v1.2's. Six versions are decided and none is built; each ADR is the design and the code follows it.
 
-- **v1.2 search** ([`010`](docs/adrs/010-search-reads-an-index-over-the-notes.md)): a `notes_fts` FTS5 table in the same file at schema version 2, kept in step by three triggers on `notes`, and one backend call returning matching days newest first with a snippet. The index is derived and rebuildable from `notes`, which stays the only authority.
 - **v1.3 the shortcut** ([`011`](docs/adrs/011-one-shortcut-summons-the-window.md)): one hotkey id registered at launch by the backend; a press shows the window and takes the Today path. No state, no stored preference, no second window.
 - **v1.4 the assistant** ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)): `availability()` then `generate()` in the backend, the note on screen as the whole request, the reply marked in a panel and never written to `notes`; the on/off preference is the app's, not the database's. Absent on Windows and Linux.
 - **v1.5 jump to a day** ([`013`](docs/adrs/013-a-date-in-the-search-field-jumps-to-the-day.md)): the search field resolves an exact `YYYY-MM-DD` in the backend, which refuses a day after today and answers with the page of the log bounded by the day after the target; no picker and no second field.
@@ -77,7 +81,7 @@ bun test
 tinyjs build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, and a page of days newest first that stops at the end.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, a search folded for case in any script, every word as a prefix in any order, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, and a version 1 file lifted to version 2 with its notes indexed.
 
 `tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
