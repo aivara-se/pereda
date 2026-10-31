@@ -85,7 +85,7 @@ Known, and deliberately not handled in this version.
 - **A deleted note.** It is gone; there is no undo and no trash.
 - **A corrupt database.** The app stops and names the file; it never recreates it over the notes.
 - **The assistant.** It exists only on macOS 26 with Apple Intelligence on; when the model is off or still downloading, the action is disabled with the reason.
-- **The File menu on Windows.** The runtime draws no menu bar on a frameless, transparent window, so **Show data folder** is not there and the folder stays a path the person is told ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)).
+- **The File menu on Windows.** The runtime draws no menu bar on a frameless, transparent window, so **Show data folder** is not there and the folder stays a path the person has to be told ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)).
 - **A full disk or a read-only data folder.** The save fails, the app says so and keeps the text on screen; it never reports a save that did not happen.
 - **A note past a book.** No pagination, so a very long note is slow to open.
 - **A restore from another machine.** The data folder can be copied in with the app closed; there is no import screen.
