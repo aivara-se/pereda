@@ -1,8 +1,9 @@
 import { beforeAll, describe, expect, mock, test } from 'bun:test';
 
-// The backend imports tjs:sqlite at the top; the summary handler never opens
-// it, so a stub is enough to load the module under bun.
+// The backend imports tjs:sqlite and tjs:path at the top; the summary handler
+// never opens either, so a stub is enough to load the module under bun.
 mock.module('tjs:sqlite', () => ({ Database: class {} }));
+mock.module('tjs:path', () => ({ default: { join: (...parts) => parts.join('/') } }));
 
 let api;
 

@@ -19,6 +19,9 @@
     <button id="today" class="icon" type="button" title="Today" aria-label="Today">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
     </button>
+    <button id="settings" class="icon" type="button" title="Settings" aria-label="Settings" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.61.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+    </button>
     <button id="search" class="icon" type="button" title="Search" aria-label="Search" aria-expanded="false">
       <svg class="find" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
       <svg class="close" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 7 7 17"/></svg>
@@ -36,6 +39,19 @@
     <div id="results" class="results" hidden></div>
     <div id="log" class="log"></div>
   </main>
+
+  <section id="settingspage" class="settings" hidden>
+    <nav class="settings-nav" aria-label="Settings">
+      <ul>
+        <li><button class="settings-link" type="button" aria-current="page">Export Data</button></li>
+      </ul>
+    </nav>
+    <div class="settings-panel">
+      <p class="settings-rule">Export writes one Markdown file per day that has a note, named <code>YYYY-MM-DD.md</code>, into the folder you choose. A file with the same name there is replaced.</p>
+      <button id="export" class="settings-button" type="button">Export to folder…</button>
+      <p id="export-result" class="settings-result" role="status"></p>
+    </div>
+  </section>
 
   <section id="assistant" class="assistant" aria-live="polite" hidden>
     <div class="assistant-head">

@@ -113,6 +113,11 @@ function store(db) {
     ORDER BY day DESC
     LIMIT ?
   `);
+  const every = db.prepare(`
+    SELECT day, body FROM notes
+    WHERE body <> ''
+    ORDER BY day ASC
+  `);
   const found = db.prepare(`
     SELECT notes.day AS day, snippet(notes_fts, 1, '', '', '…', 12) AS snippet
     FROM notes_fts
@@ -142,6 +147,12 @@ function store(db) {
     // upper bound.
     page(upper, limit) {
       return recent.all(upper, limit);
+    },
+
+    // Every day that has a note, oldest first, for the export. A tombstone is
+    // not a note and writes no file.
+    all() {
+      return every.all();
     },
 
     // The days before `before` whose text holds every word, newest first, each

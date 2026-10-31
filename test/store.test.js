@@ -124,6 +124,19 @@ describe('the notes store', () => {
     expect(store.page('2026-10-20', 2)).toEqual([]);
   });
 
+  test('reads every non-empty day oldest first for the export', () => {
+    const store = memoryStore();
+    store.save('2026-10-26', 'today', 1);
+    store.save('2026-10-25', '', 1);
+    store.save('2026-10-20', 'older', 1);
+
+    expect(store.all()).toEqual([
+      { day: '2026-10-20', body: 'older' },
+      { day: '2026-10-26', body: 'today' },
+    ]);
+    store.close();
+  });
+
   test('creates the schema at version 2, with the search index beside the notes', () => {
     const path = temporaryFile();
     openStore(path, openDatabase).close();
