@@ -100,9 +100,10 @@ The app above is v1.8. Cloud sync is not a v1.x mechanism: the app has no server
 
 ## Planned, not built
 
-One version is decided and not built; its ADRs are the design and the code follows them.
+Two versions are decided and not built; their ADRs are the design and the code follows them.
 
 - **v1.9 focus** ([`020`](docs/adrs/020-actions-under-the-date.md), [`021`](docs/adrs/021-search-is-a-mode.md), [`022`](docs/adrs/022-today-dims-the-window.md)): the page derives the fade and the action row from the focused note, draws delete in the focused entry's date column, and swaps the log for a search mode; the backend's search query gains a bound to the days before today. No new table, store call or saved state.
+- **v1.10 settings and export** ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md), [`024`](docs/adrs/024-export-writes-markdown.md)): a page view in the same window with a fixed-width text-link nav; the store gains one read of every non-empty day, and the backend writes `YYYY-MM-DD.md` into the folder the page picked with the native picker. No new table and no stored preference.
 
 ## Checks
 
