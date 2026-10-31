@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   addDays,
   assertWritableDay,
+  dayQuery,
   localDay,
   today,
   validDay,
@@ -62,6 +63,41 @@ describe('a day', () => {
   test('is refused when it is not a date at all', () => {
     expect(() => assertWritableDay('2026-02-30', '2026-10-26')).toThrow('That is not a date.');
     expect(() => assertWritableDay(undefined, '2026-10-26')).toThrow('That is not a date.');
+  });
+});
+
+describe('a date typed into the search field', () => {
+  test('is a day only when it is exactly YYYY-MM-DD and names a real date', () => {
+    expect(dayQuery('2026-10-26', '2026-10-31')).toEqual({
+      day: '2026-10-26',
+      upper: '2026-10-27',
+    });
+    expect(dayQuery('2024-02-29', '2026-10-31')).toEqual({
+      day: '2024-02-29',
+      upper: '2024-03-01',
+    });
+    const queries = [
+      '2026-1-1',
+      '31/10/2026',
+      'October 31',
+      '2026-02-30',
+      '2026-10-26 ',
+      '',
+      'today',
+    ];
+    for (const query of queries) {
+      expect([query, dayQuery(query, '2026-10-31')]).toEqual([query, null]);
+    }
+  });
+
+  test('is refused when it is after today', () => {
+    expect(() => dayQuery('2026-11-01', '2026-10-31')).toThrow(
+      'A day after today cannot be opened.',
+    );
+  });
+
+  test('bounds the page by the day after the target', () => {
+    expect(dayQuery('2026-12-31', '2027-01-05').upper).toBe('2027-01-01');
   });
 });
 

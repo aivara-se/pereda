@@ -3,7 +3,7 @@
 
 import { Database } from 'tjs:sqlite';
 import { openStore } from './store.js';
-import { addDays, assertWritableDay, today, validDay } from '../shared/day.js';
+import { addDays, assertWritableDay, dayQuery, today, validDay } from '../shared/day.js';
 import { SHORTCUT_COMBO, SHORTCUT_ID } from '../shared/shortcut.js';
 import {
   ASSISTANT_EVENT,
@@ -158,9 +158,36 @@ export const api = {
 
   // Search the notes by their words: every word, in any order, each as a
   // prefix, newest first. A result is a day and the text around the match.
+  // An exact date is answered before that rule: the page of the log bounded
+  // by the day after it, so a result is the log at that day.
   async searchNotes(params, app) {
     const notes = await store(app);
     if (typeof params?.query !== 'string') throw new Error('A search needs words.');
+    const current = today();
+    let jump;
+    try {
+      jump = dayQuery(params.query, current);
+    } catch (error) {
+      return { refused: error.message };
+    }
+    if (jump !== null) {
+      const rows = notes.page(jump.upper, PAGE + 1);
+      const more = rows.length > PAGE;
+      let days = rows.slice(0, PAGE);
+      // Today is in the log even when nothing is written. A jump to it must
+      // land there, not on the newest older day, or the next keystroke would
+      // be saved to the wrong date.
+      if (jump.day === current) {
+        const row = notes.day(current);
+        if (row === null || row.body === '') {
+          days = [
+            { day: current, body: '', seq: row === null ? 0 : row.seq },
+            ...days.filter((entry) => entry.day !== current),
+          ];
+        }
+      }
+      return { jump: { day: jump.day, days, more } };
+    }
     return { days: notes.search(params.query) };
   },
 
