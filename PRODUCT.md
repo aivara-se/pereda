@@ -54,7 +54,7 @@ v1.1 carries one flow: **the live day**. The app opens on today's entry at the t
 
 ## AI, later
 
-AI is not in the app yet. v1.4 decides it: a summariser that runs on this Mac, one note at a time, and never writes into a note ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). It is off until the person turns it on, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; the other platforms have no assistant, because a model over the network is not a v1.x decision. Questions across the log and suggested lines are not in v1.x.
+AI is not in the app yet. v1.4 decides it: a summariser that runs on this Mac, one note at a time, and writes nothing into the note ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). It is off until the person turns it on, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; the other platforms have no assistant, because a model over the network is not a v1.x decision. v1.9 adds a suggested line ([`017`](docs/adrs/017-an-accepted-line-becomes-the-notes-text.md)): it is marked until the person accepts it, acceptance makes it the note's text and the mark does not survive, and summaries stay read-only. Questions across the log are not in v1.x.
 
 ## What v1.0 does not do
 
