@@ -54,7 +54,7 @@ v1.1 carries one flow: **the live day**. The app opens on today's entry at the t
 
 ## AI, later
 
-AI is not in the app yet. v1.4 decides it: a summariser that runs on this Mac, one note at a time, and writes nothing into the note ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). It is off until the person turns it on, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; the other platforms have no assistant, because a model over the network is not a v1.x decision. v1.9 adds a suggested line ([`017`](docs/adrs/017-an-accepted-line-becomes-the-notes-text.md)): it is marked until the person accepts it, acceptance makes it the note's text and the mark does not survive, and summaries stay read-only. Questions across the log are not in v1.x.
+AI is not in the app yet. v1.4 decides it: a summariser that runs on this Mac, one note at a time, and never writes into a note ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). It is off until the person turns it on, every word it produces is marked, and nothing it produces leaves the computer. It exists only on macOS 26 or later with Apple Intelligence on; the other platforms have no assistant, because a model over the network is not a v1.x decision. Questions across the log and suggested lines are not in v1.x.
 
 ## What v1.0 does not do
 
@@ -114,6 +114,5 @@ Decided, not built: the binary is v1.1, and each of these lands with the ADR bes
 - **v1.6** — the data folder: one menu item opens it, so the backup is a copy the person can find ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)).
 - **v1.7** — the keys: ⌘F, Esc, ⌘T and ⌘↑/⌘↓, with nothing to configure ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)).
 - **v1.8** — midnight said: the status line names the day the text is going to, and nothing moves ([`016`](docs/adrs/016-midnight-is-said-not-taken.md)).
-- **v1.9** — the accepted line: the assistant suggests a continuation, the person accepts it, and the paragraph lands in the note ([`017`](docs/adrs/017-an-accepted-line-becomes-the-notes-text.md)).
 
 Cloud sync is not a v1.x candidate. If it comes, it is a v2 decision that syncs the local store; it never turns the app into a cloud app.
