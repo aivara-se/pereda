@@ -394,13 +394,10 @@ function showResults() {
   resultsEl.hidden = false;
 }
 
-function showPrompt() {
+// The results area is empty until the first character.
+function hideResults() {
   resultsEl.replaceChildren();
-  const prompt = document.createElement('p');
-  prompt.className = 'empty';
-  prompt.textContent = 'Type a word, or a date.';
-  resultsEl.append(prompt);
-  showResults();
+  resultsEl.hidden = true;
 }
 
 // Search is a mode opened from the bar: the field takes the caret and the log
@@ -416,7 +413,7 @@ function openSearch() {
     searchButton.setAttribute('aria-expanded', 'true');
     searchButton.setAttribute('aria-label', 'Close search');
     searchButton.title = 'Close search';
-    showPrompt();
+    hideResults();
     pageEl.scrollTop = 0;
     renderStatus();
   }
@@ -491,14 +488,14 @@ function showJump({ day, days, more: hasMore }) {
 
 // The search mode: every word must be in a note, as a prefix, in any order, and
 // a text search never reaches today. An exact date opens its day before that
-// rule. An empty field shows the prompt and stays open.
+// rule. An empty field stays open.
 async function search(query) {
   if (!searchOpen) return;
   if (query.trim() === '') {
     searchToken += 1;
     searchError = '';
     jumpNotice = '';
-    showPrompt();
+    hideResults();
     renderStatus();
     return;
   }
