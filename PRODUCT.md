@@ -128,8 +128,9 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-One version is decided, not built: the binary is v1.8, and v1.9 lands with the records beside it.
+Two versions are decided, not built: the binary is v1.8, and v1.9 and v1.10 land in that order with their records.
 
 - **v1.9** — focus: today's note dims the window while it has the caret, search opens from the bar and leaves today out of its results, and an older note's actions sit under its date ([`020`](docs/adrs/020-actions-under-the-date.md), [`021`](docs/adrs/021-search-is-a-mode.md), [`022`](docs/adrs/022-today-dims-the-window.md)).
+- **v1.10** — settings and export: a settings page opened from the bar, and Export Data writes every note as a Markdown file, one per day ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md), [`024`](docs/adrs/024-export-writes-markdown.md)).
 
 Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
