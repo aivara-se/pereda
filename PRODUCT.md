@@ -28,7 +28,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 
 ## The note
 
-- A note is plain text with paragraphs: no title, formatting, checkboxes, tags, attachments, images or structured links.
+- A note is Markdown source with paragraphs. Five forms render where they stand — `*italic*`, `**bold**`, `~~struck~~`, `` `code` `` and a fenced block — and each shows its markers again while the caret is inside it. Everything else is literal: no title, headings, lists, links, images, checkboxes, tags or tables ([`030`](docs/adrs/030-the-note-renders-its-markdown.md)).
 - One person writes it. There is no sharing, no second writer and no public link.
 - Clearing every character of a note removes it; the day remains empty.
 - Delete asks once on an older day and cannot be undone. Today has no delete: clearing its last character removes the text.
@@ -71,7 +71,7 @@ The assistant has one action: summarise an older note, with Apple's on-device mo
 
 - Not a cloud app: no account, no sync, no collaboration, no sharing.
 - Not a service: no hosted version, no self-hosted server, nothing to deploy.
-- Not rich text: no formatting, images, attachments, checkboxes, tables or backlinks.
+- Not rich text beyond the five forms above ([`030`](docs/adrs/030-the-note-renders-its-markdown.md)).
 - Not mobile: no iOS or Android app.
 - Not an importer: notes from other apps, or from the old pereda.app, are not imported.
 - Not self-updating: a new version is a download.
@@ -85,6 +85,7 @@ Known, and deliberately not handled in this version.
 - **The clock or timezone changes.** Existing notes keep their dates; near the change, a day can be skipped or written twice.
 - **A window left open past midnight.** It keeps writing to the day it opened until Today is pressed or the app is reopened; the status line names that day while it does.
 - **A deleted note.** It is gone; there is no undo and no trash.
+- **A note written before the markers.** Its bytes do not change, but a tight marker pair in it renders where it used to read as text.
 - **A corrupt database.** The app stops and names the file; it never recreates it over the notes.
 - **The assistant.** It exists only on macOS 26 with Apple Intelligence on; when the model is off or still downloading, the note's summarise button says why in the panel.
 - **The File menu on Windows.** The runtime draws no menu bar on a frameless, transparent window, so **Show data folder** is not there and the folder stays a path the person has to be told ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)).
@@ -101,6 +102,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
 - Typing a paragraph, waiting a moment, quitting normally and reopening leaves every character.
+- `**bold**` shows bold with its markers hidden, shows them again with the caret inside, and the export writes the same characters either way.
 - The app has no save button, no dirty state and no unsaved-changes dialog.
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
@@ -141,4 +143,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built; the binary is v1.13. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+One decision is recorded and not built: v1.14, the note renders its Markdown ([`030`](docs/adrs/030-the-note-renders-its-markdown.md)). Everything else decided for v1.x is built; the binary is v1.13. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
