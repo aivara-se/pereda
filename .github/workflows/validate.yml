@@ -14,6 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - name: Format
+        run: bun x prettier@3.9.10 --check .
       - name: Test
         run: bun test
       - name: Install tinyjs
@@ -62,5 +64,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos-${{ matrix.arch }}
-          path: '*.zip'
+          path: "*.zip"
           if-no-files-found: error

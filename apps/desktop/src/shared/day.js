@@ -9,7 +9,7 @@ const DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const LENGTHS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 function pad(value) {
-  return String(value).padStart(2, '0');
+  return String(value).padStart(2, "0");
 }
 
 function leap(year) {
@@ -25,7 +25,7 @@ function daysInMonth(year, month) {
 // True when day is a real date written YYYY-MM-DD; a leap day counts only in
 // a leap year.
 export function validDay(day) {
-  if (typeof day !== 'string') return false;
+  if (typeof day !== "string") return false;
   const match = DAY.exec(day);
   if (match === null) return false;
   const year = Number(match[1]);
@@ -57,8 +57,8 @@ export function addDays(day, delta) {
 // Refuse a day that cannot be written: an impossible date, or one after
 // today. Today and every day before it are open.
 export function assertWritableDay(day, current) {
-  if (!validDay(day)) throw new Error('That is not a date.');
-  if (day > current) throw new Error('A day after today cannot be written.');
+  if (!validDay(day)) throw new Error("That is not a date.");
+  if (day > current) throw new Error("A day after today cannot be written.");
 }
 
 // The day a search field is asking for, or null when the text is not one.
@@ -66,6 +66,6 @@ export function assertWritableDay(day, current) {
 // is refused, and every other string stays a query.
 export function dayQuery(query, current) {
   if (!validDay(query)) return null;
-  if (query > current) throw new Error('A day after today cannot be opened.');
+  if (query > current) throw new Error("A day after today cannot be opened.");
   return { day: query, upper: addDays(query, 1) };
 }

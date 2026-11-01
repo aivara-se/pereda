@@ -60,7 +60,12 @@ body {
   flex-direction: column;
   background: var(--window);
   color: var(--ink);
-  font-family: "Instrument Sans", ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Instrument Sans",
+    ui-sans-serif,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   font-size: 14px;
   line-height: 1.5;
   font-optical-sizing: auto;

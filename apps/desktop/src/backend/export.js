@@ -2,7 +2,7 @@
 // failure. The store and the filesystem belong to the caller, so this loop runs
 // under bun and in the app without a second implementation.
 
-import { validDay } from '../shared/day.js';
+import { validDay } from "../shared/day.js";
 
 // Write every row to target(day) with writeFile. A day that is not a real date
 // is refused before its path is built; a failed write keeps what came before.
@@ -10,7 +10,7 @@ export async function writeExport(rows, target, writeFile) {
   let written = 0;
   for (const { day, body } of rows) {
     if (!validDay(day)) {
-      return { written, failed: { day, reason: 'That is not a date.' } };
+      return { written, failed: { day, reason: "That is not a date." } };
     }
     try {
       await writeFile(target(day), body);

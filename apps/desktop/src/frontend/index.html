@@ -1,74 +1,152 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pereda</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="app.js"></script>
-</head>
-<body>
-<header class="bar" data-tiny-drag>
-  <div class="window-controls">
-    <button id="close" class="dot close" type="button" title="Close" aria-label="Close the window"></button>
-    <button id="minimize" class="dot minimize" type="button" title="Minimize" aria-label="Minimize the window"></button>
-    <button id="zoom" class="dot zoom" type="button" title="Zoom" aria-label="Zoom the window"></button>
-  </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pereda</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header class="bar" data-tiny-drag>
+      <div class="window-controls">
+        <button
+          id="close"
+          class="dot close"
+          type="button"
+          title="Close"
+          aria-label="Close the window"
+        ></button>
+        <button
+          id="minimize"
+          class="dot minimize"
+          type="button"
+          title="Minimize"
+          aria-label="Minimize the window"
+        ></button>
+        <button
+          id="zoom"
+          class="dot zoom"
+          type="button"
+          title="Zoom"
+          aria-label="Zoom the window"
+        ></button>
+      </div>
 
-  <nav class="tools" aria-label="Notes">
-    <button id="today" class="icon" type="button" title="Today" aria-label="Today">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
-    </button>
-    <button id="settings" class="icon" type="button" title="Settings" aria-label="Settings">
-      <svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.61.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-    </button>
-    <button id="back" class="icon" type="button" title="Back to the notes (Esc)" aria-label="Back to the notes" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
-    </button>
-  </nav>
-</header>
+      <nav class="tools" aria-label="Notes">
+        <button
+          id="today"
+          class="icon"
+          type="button"
+          title="Today"
+          aria-label="Today"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
+          </svg>
+        </button>
+        <button
+          id="settings"
+          class="icon"
+          type="button"
+          title="Settings"
+          aria-label="Settings"
+        >
+          <svg class="gear" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.61.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
+            />
+          </svg>
+        </button>
+        <button
+          id="back"
+          class="icon"
+          type="button"
+          title="Back to the notes (Esc)"
+          aria-label="Back to the notes"
+          hidden
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12" />
+            <path d="M18 6L6 18" />
+          </svg>
+        </button>
+      </nav>
+    </header>
 
-<div id="app" class="app">
-  <div id="searchbar" class="search" hidden>
-    <label class="date" for="query">Search</label>
-    <input id="query" class="field" type="search" placeholder="Any word in a note" autocomplete="off" spellcheck="false">
-  </div>
+    <div id="app" class="app">
+      <div id="searchbar" class="search" hidden>
+        <label class="date" for="query">Search</label>
+        <input
+          id="query"
+          class="field"
+          type="search"
+          placeholder="Any word in a note"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
 
-  <main id="page" class="page">
-    <div id="results" class="results" hidden></div>
-    <div id="log" class="log"></div>
-  </main>
+      <main id="page" class="page">
+        <div id="results" class="results" hidden></div>
+        <div id="log" class="log"></div>
+      </main>
 
-  <section id="settingspage" class="settings" hidden>
-    <nav class="settings-nav" aria-label="Settings">
-      <ul>
-        <li><button class="settings-link" type="button" aria-current="page">Export Data</button></li>
-      </ul>
-    </nav>
-    <div class="settings-panel">
-      <p class="settings-rule">Export writes one Markdown file per day that has a note, named <code>YYYY-MM-DD.md</code>, into the folder you choose. A file with the same name there is replaced.</p>
-      <button id="export" class="settings-button" type="button">Export to folder…</button>
-      <p id="export-result" class="settings-result" role="status"></p>
+      <section id="settingspage" class="settings" hidden>
+        <nav class="settings-nav" aria-label="Settings">
+          <ul>
+            <li>
+              <button class="settings-link" type="button" aria-current="page">
+                Export Data
+              </button>
+            </li>
+          </ul>
+        </nav>
+        <div class="settings-panel">
+          <p class="settings-rule">
+            Export writes one Markdown file per day that has a note, named
+            <code>YYYY-MM-DD.md</code>, into the folder you choose. A file with
+            the same name there is replaced.
+          </p>
+          <button id="export" class="settings-button" type="button">
+            Export to folder…
+          </button>
+          <p id="export-result" class="settings-result" role="status"></p>
+        </div>
+      </section>
+
+      <section id="assistant" class="assistant" aria-live="polite" hidden>
+        <div class="assistant-head">
+          <span id="assistant-mark" class="assistant-mark"
+            >Generated on this Mac</span
+          >
+          <button
+            id="assistant-close"
+            class="assistant-close"
+            type="button"
+            title="Close the summary"
+            aria-label="Close the summary"
+          >
+            ×
+          </button>
+        </div>
+        <p id="assistant-text" class="assistant-text"></p>
+      </section>
+
+      <p id="status" class="status" role="status"></p>
     </div>
-  </section>
 
-  <section id="assistant" class="assistant" aria-live="polite" hidden>
-    <div class="assistant-head">
-      <span id="assistant-mark" class="assistant-mark">Generated on this Mac</span>
-      <button id="assistant-close" class="assistant-close" type="button" title="Close the summary" aria-label="Close the summary">×</button>
+    <div id="fatal" class="fatal" hidden>
+      <div class="fatal-body">
+        <h1>Pereda cannot open its notes</h1>
+        <p id="fatal-message"></p>
+        <p class="hint">
+          The file was not changed. Move it aside or restore a backup, then open
+          Pereda again.
+        </p>
+      </div>
     </div>
-    <p id="assistant-text" class="assistant-text"></p>
-  </section>
-
-  <p id="status" class="status" role="status"></p>
-</div>
-
-<div id="fatal" class="fatal" hidden>
-  <div class="fatal-body">
-    <h1>Pereda cannot open its notes</h1>
-    <p id="fatal-message"></p>
-    <p class="hint">The file was not changed. Move it aside or restore a backup, then open Pereda again.</p>
-  </div>
-</div>
-</body>
+  </body>
 </html>

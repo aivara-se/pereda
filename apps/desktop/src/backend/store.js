@@ -55,18 +55,20 @@ export function openStore(path, openDatabase) {
   let db;
   try {
     db = openDatabase(path);
-    db.exec('PRAGMA journal_mode = WAL');
-    db.exec('PRAGMA synchronous = FULL');
-    const check = db.prepare('PRAGMA integrity_check').all()[0];
+    db.exec("PRAGMA journal_mode = WAL");
+    db.exec("PRAGMA synchronous = FULL");
+    const check = db.prepare("PRAGMA integrity_check").all()[0];
     const result = check === undefined ? null : check.integrity_check;
-    if (result !== 'ok') {
-      throw new Error(`the integrity check says ${result ?? 'nothing'}`);
+    if (result !== "ok") {
+      throw new Error(`the integrity check says ${result ?? "nothing"}`);
     }
   } catch (error) {
-    throw new Error(`Pereda could not open its notes at ${path}: ${error.message}`);
+    throw new Error(
+      `Pereda could not open its notes at ${path}: ${error.message}`,
+    );
   }
 
-  const version = db.prepare('PRAGMA user_version').all()[0].user_version;
+  const version = db.prepare("PRAGMA user_version").all()[0].user_version;
   if (version !== SCHEMA_VERSION) {
     const migration = MIGRATIONS[version];
     if (migration === undefined) {
@@ -75,14 +77,18 @@ export function openStore(path, openDatabase) {
       );
     }
     try {
-      db.exec(`BEGIN; ${migration} PRAGMA user_version = ${SCHEMA_VERSION}; COMMIT;`);
+      db.exec(
+        `BEGIN; ${migration} PRAGMA user_version = ${SCHEMA_VERSION}; COMMIT;`,
+      );
     } catch (error) {
       // The migration is one transaction: a failure leaves the file at the
       // version it opened at, and the reason is the one worth reporting.
       try {
-        db.exec('ROLLBACK');
+        db.exec("ROLLBACK");
       } catch {}
-      throw new Error(`Pereda could not open its notes at ${path}: ${error.message}`);
+      throw new Error(
+        `Pereda could not open its notes at ${path}: ${error.message}`,
+      );
     }
   }
 
@@ -97,11 +103,11 @@ function matchExpression(query) {
     .split(/\s+/)
     .filter((word) => /[\p{L}\p{N}]/u.test(word))
     .map((word) => `"${word.replaceAll('"', '""')}"*`)
-    .join(' ');
+    .join(" ");
 }
 
 function store(db) {
-  const read = db.prepare('SELECT body, seq FROM notes WHERE day = ?');
+  const read = db.prepare("SELECT body, seq FROM notes WHERE day = ?");
   const write = db.prepare(`
     INSERT INTO notes (day, body, seq) VALUES (?, ?, ?)
     ON CONFLICT(day) DO UPDATE SET body = excluded.body, seq = excluded.seq
@@ -140,7 +146,10 @@ function store(db) {
     save(day, body, seq) {
       write.run(day, body, seq);
       const row = read.all(day)[0] ?? null;
-      return { applied: row !== null && row.seq === seq && row.body === body, row };
+      return {
+        applied: row !== null && row.seq === seq && row.body === body,
+        row,
+      };
     },
 
     // A page of the log: days that have a note, newest first, older than the
@@ -161,7 +170,7 @@ function store(db) {
     // never from the index alone.
     search(query, before) {
       const expression = matchExpression(query);
-      if (expression === '') return [];
+      if (expression === "") return [];
       return found.all(expression, before, LIMIT);
     },
 

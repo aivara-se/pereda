@@ -4,18 +4,18 @@
 // The action a keydown means, or null when it is not one of the four. Escape
 // is reported whatever holds the focus; the page decides what it closes.
 export function keyAction(event, os) {
-  if (event.key === 'Escape') return 'escape';
-  const modifier = os === 'macos' ? event.metaKey : event.ctrlKey;
+  if (event.key === "Escape") return "escape";
+  const modifier = os === "macos" ? event.metaKey : event.ctrlKey;
   if (!modifier || event.altKey || event.shiftKey) return null;
   switch (event.key.toLowerCase()) {
-    case 'f':
-      return 'search';
-    case 't':
-      return 'today';
-    case 'arrowup':
-      return 'previous';
-    case 'arrowdown':
-      return 'next';
+    case "f":
+      return "search";
+    case "t":
+      return "today";
+    case "arrowup":
+      return "previous";
+    case "arrowdown":
+      return "next";
     default:
       return null;
   }

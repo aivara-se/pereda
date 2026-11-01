@@ -3,7 +3,9 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev": "cd apps/desktop && tinyjs dev",
     "build": "cd apps/desktop && tinyjs build",
