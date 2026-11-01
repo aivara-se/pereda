@@ -45,6 +45,13 @@ function inside(node, from, to) {
   return from < node.to && to > node.from;
 }
 
+// A block is inside at its own edges too: the fence lines are the block's
+// first and last line, so a caret at either end of it is on the block and the
+// lines show.
+function touches(node, from, to) {
+  return from <= node.to && to >= node.from;
+}
+
 // The children of a node that carry its delimiters, in the order they are read.
 function marks(node, name) {
   const found = [];
@@ -99,7 +106,7 @@ function fence(ranges, body, node, from, to) {
       ranges.push({ from: line.from, to: line.to, style: "block" });
     }
   }
-  if (inside(node, from, to)) return false;
+  if (touches(node, from, to)) return false;
   ranges.push(hiddenLine(open, body.length));
   if (close !== null) ranges.push(hiddenLine(close, body.length));
   return false;
