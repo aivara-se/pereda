@@ -6,7 +6,7 @@ A tinyjs desktop app: the operating system's webview draws the window and plain 
 
 The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame.
 
-The entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete on every entry, today included ([`020`](docs/adrs/020-actions-under-the-date.md), [`027`](docs/adrs/027-a-notes-actions-are-edit-summarise-and-delete.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
+The entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete on every entry, today included ([`020`](docs/adrs/020-actions-under-the-date.md), [`026`](docs/adrs/026-a-notes-actions-are-edit-summarise-and-delete.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
 
 Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the caret. The bar's right side reads Today, settings, search; the gear keeps a pressed state while the page is open.
 
@@ -71,7 +71,7 @@ Each key cancels the webview's default before taking the app's path. There is no
 
 The model is the operating system's, reached through `app.macos.ai`; there is no provider, key, endpoint or network fallback ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). `availability()` is read before every request; a model that is off, downloading or absent refuses in words the status line shows.
 
-The note's summarise button is the only surface: it sends that note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers. There is no switch and no stored preference ([`027`](docs/adrs/027-a-notes-actions-are-edit-summarise-and-delete.md)).
+The note's summarise button is the only surface: it sends that note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers. There is no switch and no stored preference ([`026`](docs/adrs/026-a-notes-actions-are-edit-summarise-and-delete.md)).
 
 ## The menu
 

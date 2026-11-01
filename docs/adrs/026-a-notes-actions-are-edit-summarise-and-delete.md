@@ -1,4 +1,4 @@
-# 027 - A Note's Actions Are Edit, Summarise and Delete
+# 026 - A Note's Actions Are Edit, Summarise and Delete
 
 ## Context
 
