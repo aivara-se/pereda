@@ -416,21 +416,26 @@ button:disabled {
   min-width: 0;
 }
 
-.entry .action {
+.entry .actions {
   position: absolute;
   top: calc(100% + 1px);
   right: 0;
+  display: flex;
+  gap: 2px;
+  visibility: hidden;
+}
+
+.entry:focus-within .actions {
+  visibility: visible;
+}
+
+.entry .action {
   display: grid;
   place-items: center;
   width: 24px;
   height: 24px;
   border-radius: 6px;
   color: var(--muted);
-  visibility: hidden;
-}
-
-.entry:focus-within .action {
-  visibility: visible;
 }
 
 .entry .action svg {
@@ -445,6 +450,10 @@ button:disabled {
 
 .entry .action:hover {
   background: var(--hover);
+  color: var(--ink);
+}
+
+.entry .action.remove:hover {
   color: var(--error);
 }
 
@@ -528,7 +537,7 @@ button:disabled {
     text-align: left;
   }
 
-  .entry .action {
+  .entry .actions {
     top: 0;
   }
 }

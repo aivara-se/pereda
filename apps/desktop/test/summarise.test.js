@@ -11,7 +11,7 @@ beforeAll(async () => {
   ({ api } = await import('../src/backend/main.js'));
 });
 
-function fakeApp({ availability = 'available', enabled = true, generate } = {}) {
+function fakeApp({ availability = 'available', generate } = {}) {
   const calls = [];
   return {
     calls,
@@ -24,10 +24,6 @@ function fakeApp({ availability = 'available', enabled = true, generate } = {}) 
           return generate === undefined ? 'A short summary.' : generate();
         },
       },
-    },
-    store: {
-      get: async (key) => (key === 'assistant' ? enabled : null),
-      set: async () => true,
     },
   };
 }
@@ -62,10 +58,7 @@ describe('the summary request', () => {
     await expect(first).resolves.toEqual({ text: 'A short summary.' });
   });
 
-  test('refuses when the assistant is off or the model is not ready', async () => {
-    await expect(api.summariseNote({ body: 'A note.' }, fakeApp({ enabled: false }))).rejects.toThrow(
-      'The assistant is off.',
-    );
+  test('refuses when the model is not ready', async () => {
     await expect(
       api.summariseNote({ body: 'A note.' }, fakeApp({ availability: 'unavailable' })),
     ).rejects.toThrow('Apple Intelligence is off or its model is still downloading.');

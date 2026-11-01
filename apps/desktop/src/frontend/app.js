@@ -1,7 +1,6 @@
 // The page: one log of days, newest first, every entry saved as it is typed.
 
 import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
-import { ASSISTANT_EVENT } from '../shared/assistant.js';
 import { DATA_FOLDER_EVENT } from '../shared/menu.js';
 import { keyAction } from '../shared/keys.js';
 import { writingNotice } from '../shared/midnight.js';
@@ -10,6 +9,13 @@ const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
 const LOAD_AT = 700; // pixels from the bottom that ask for the next page
 const OS = tiny.system.os();
+
+const EDIT_ICON =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>';
+const SUMMARISE_ICON =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6Z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z"/></svg>';
+const DELETE_ICON =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>';
 
 const $ = (id) => document.getElementById(id);
 const logEl = $('log');
@@ -133,13 +139,11 @@ function showAssistant(text, busy) {
   assistantPanel.hidden = false;
 }
 
-// The note on screen is the one the caret is in; with none, the first entry.
-// The reply is marked in the panel and never touches the textarea.
-async function summariseFocused() {
-  if (assistantBusy) return;
-  const entry = searchOpen || settingsOpen ? null : (focused ?? entries[0] ?? null);
-  if (entry === null) {
-    commandError = 'Open a day to summarise it.';
+// The note whose button was pressed is the one read: its text is sent, and the
+// reply is marked in the panel and never touches the textarea.
+async function summarise(entry) {
+  if (assistantBusy) {
+    commandError = 'The assistant is still answering the last note.';
     commandSelectable = false;
     renderStatus();
     return;
@@ -158,6 +162,7 @@ async function summariseFocused() {
   renderStatus();
   try {
     const { text } = await tiny.api.call('summariseNote', { body: entry.text.value });
+    commandError = '';
     showAssistant(text, false);
   } catch (message) {
     hideAssistant();
@@ -281,19 +286,39 @@ function makeEntry(day, body, seq) {
     text,
   };
 
-  // Delete belongs to the note it removes, under its date. Today's note has no
-  // row: clearing its last character is how it goes.
-  if (day !== todayKey) {
-    const action = document.createElement('button');
-    action.type = 'button';
-    action.className = 'action';
-    action.title = 'Delete this note';
-    action.setAttribute('aria-label', `Delete the note for ${longDate(day)}`);
-    action.innerHTML =
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>';
-    action.addEventListener('click', () => removeEntry(entry));
-    meta.append(action);
-  }
+  // Every note carries its own actions under the date, today included. Today's
+  // delete clears the note; an older day's delete removes the day.
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+
+  const action = (hint, name, icon) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'action';
+    button.title = hint;
+    button.setAttribute('aria-label', name);
+    button.innerHTML = icon;
+    actions.append(button);
+    return button;
+  };
+
+  action('Edit this note', `Edit the note for ${longDate(day)}`, EDIT_ICON).addEventListener(
+    'click',
+    () => {
+      text.focus();
+      setCaretToEnd(text);
+    },
+  );
+  action('Summarise this note', `Summarise the note for ${longDate(day)}`, SUMMARISE_ICON)
+    .addEventListener('click', () => summarise(entry));
+  const remove = action(
+    day === todayKey ? 'Clear this note' : 'Delete this note',
+    day === todayKey ? "Clear today's note" : `Delete the note for ${longDate(day)}`,
+    DELETE_ICON,
+  );
+  remove.classList.add('remove');
+  remove.addEventListener('click', () => removeEntry(entry));
+  meta.append(label, actions);
 
   text.addEventListener('input', () => {
     resize(entry);
@@ -606,14 +631,18 @@ async function closeSearch() {
   await loadLog();
 }
 
-// An older day's delete: one question, the day named, and no undo. Today has
-// no button; clearing its last character is how it goes.
+// Delete asks once on every day. An older day leaves the log; today's note is
+// cleared and the entry stays, because today is in the log even when empty.
 async function removeEntry(target) {
-  const sure = await tiny.dialog.confirm(`Delete the note for ${shortDate(target.day)}?`, {
-    detail: 'The text is gone for good. There is no undo.',
-    ok: 'Delete',
-    cancel: 'Keep',
-  });
+  const isToday = target.day === todayKey;
+  const sure = await tiny.dialog.confirm(
+    isToday ? "Clear today's note?" : `Delete the note for ${shortDate(target.day)}?`,
+    {
+      detail: 'The text is gone for good. There is no undo.',
+      ok: isToday ? 'Clear' : 'Delete',
+      cancel: 'Keep',
+    },
+  );
   if (!sure) return;
 
   // The dialog's blur can start a save; let it settle, or the delete and that
@@ -633,9 +662,16 @@ async function removeEntry(target) {
   target.seq = stamp;
   target.savedBody = '';
   target.text.value = '';
+  resize(target);
   saveFailures.delete(target.day);
   midnight = null;
   renderStatus();
+  if (isToday) {
+    target.text.focus();
+    setCaretToEnd(target.text);
+    updateFade();
+    return;
+  }
   dropEntry(target);
 }
 
@@ -691,6 +727,7 @@ $('today').title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
 settingsButton.addEventListener('click', openSettings);
 searchButton.addEventListener('click', () => (searchOpen ? closeSearch() : openSearch()));
 exportButton.addEventListener('click', runExport);
+$('assistant-close').addEventListener('click', hideAssistant);
 
 // The backend registers the shortcut at launch and brings the window forward on
 // a press; the press reaches this page too, and it takes the Today path.
@@ -698,13 +735,9 @@ tiny.hotkey.on((id) => {
   if (id === SHORTCUT_ID) goToday();
 });
 
-// A menu click that needs the note on screen comes back as this event. The
-// menu itself is the backend's; the page only owns the reply panel.
-tiny.api.on(ASSISTANT_EVENT, summariseFocused);
-$('assistant-close').addEventListener('click', hideAssistant);
-
-// Show data folder: the backend opened it, or it could not and sent the path
-// back. The path is the fallback the person can copy.
+// The menu's one click comes back as this event: the backend opened the
+// folder, or it could not and sent the path back. The path is the fallback the
+// person can copy.
 tiny.api.on(DATA_FOLDER_EVENT, ({ path, error }) => {
   if (error === null) {
     commandError = '';

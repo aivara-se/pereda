@@ -7,15 +7,7 @@ import { openStore } from './store.js';
 import { writeExport } from './export.js';
 import { addDays, assertWritableDay, dayQuery, today, validDay } from '../shared/day.js';
 import { SHORTCUT_COMBO, SHORTCUT_ID } from '../shared/shortcut.js';
-import {
-  ASSISTANT_EVENT,
-  ASSISTANT_INSTRUCTIONS,
-  ASSISTANT_PREF,
-  ASSISTANT_SUMMARISE,
-  ASSISTANT_TOGGLE,
-  assistantMenus,
-  assistantUnavailable,
-} from '../shared/assistant.js';
+import { ASSISTANT_INSTRUCTIONS, assistantUnavailable } from '../shared/assistant.js';
 import { DATA_FOLDER_EVENT, SHOW_DATA_FOLDER, fileMenus } from '../shared/menu.js';
 
 const DB_NAME = 'pereda.db';
@@ -54,8 +46,8 @@ function shortcutRegistration(app) {
 let generating = false;
 
 // The OS model, read through the only door the runtime has for it. Anything
-// other than macOS 26 with the model built in is `unsupported`, which removes
-// the assistant rather than offering an action that cannot work.
+// other than macOS 26 with the model built in is `unsupported`; a request then
+// says why in the status line instead of starting a model that is not there.
 async function assistantAvailability(app) {
   if (app.system.os() !== 'macos' || app.macos === undefined || app.macos.ai === undefined) {
     return 'unsupported';
@@ -65,20 +57,6 @@ async function assistantAvailability(app) {
   } catch {
     return 'unsupported';
   }
-}
-
-// The switch is the app's preference and defaults to off. It is read on every
-// menu build and before every request, so a stale menu cannot start a model
-// the person has since turned off.
-async function assistantState(app) {
-  const availability = await assistantAvailability(app);
-  if (availability === 'unsupported') return { availability, enabled: false };
-  return { availability, enabled: (await app.store.get(ASSISTANT_PREF)) === true };
-}
-
-async function setAppMenus(app) {
-  const { availability, enabled } = await assistantState(app);
-  await app.menu.set([...assistantMenus(availability, enabled), ...fileMenus()]);
 }
 
 // The folder is the backup, so the person has to be able to reach it. The
@@ -96,34 +74,16 @@ async function openDataFolder(app) {
 }
 
 // The menu is the app's, so it is built from the backend and its clicks are
-// handled here. A summary needs the note the page holds, so that one click is
-// pushed to the page.
+// handled here.
 export async function onMenu(id, app) {
-  if (id === ASSISTANT_TOGGLE) {
-    const { enabled } = await assistantState(app);
-    await app.store.set(ASSISTANT_PREF, !enabled);
-    await setAppMenus(app);
-    return;
-  }
-  if (id === ASSISTANT_SUMMARISE) {
-    app.push(ASSISTANT_EVENT);
-    return;
-  }
   if (id === SHOW_DATA_FOLDER) await openDataFolder(app);
 }
 
-// One hotkey, while the app runs. The assistant's menu is put up at launch,
-// whether or not the model is ready; a window that regains focus rebuilds it.
+// One hotkey, while the app runs. The File menu is put up once at launch: it
+// does not depend on the model or on a stored preference.
 export async function init(app) {
   shortcutRegistration(app);
-  await setAppMenus(app);
-}
-
-// Apple Intelligence can be turned on while the app runs. The runtime has no
-// menu-open event; a window that regains focus rebuilds the menu before the
-// next open, which is the closest moment there is.
-export function onWindowState(info, app) {
-  if (info.focused && info.win === 'main') setAppMenus(app);
+  await app.menu.set(fileMenus());
 }
 
 // A press brings the window forward; the page hears the same press and takes
@@ -236,14 +196,12 @@ export const api = {
     return { registered: await shortcutRegistration(app).catch(() => false) };
   },
 
-  // One summary at a time, of the note on screen and nothing else. The reply
-  // is text for the page's panel; it is never written to the notes.
+  // One summary at a time, of the note whose button was pressed and nothing
+  // else. The reply is text for the page's panel; it is never written to the
+  // notes. A machine without the model says why.
   async summariseNote(params, app) {
-    const { availability, enabled } = await assistantState(app);
-    if (availability === 'unsupported' || availability === 'unavailable') {
-      throw new Error(assistantUnavailable(availability));
-    }
-    if (!enabled) throw new Error('The assistant is off.');
+    const availability = await assistantAvailability(app);
+    if (availability !== 'available') throw new Error(assistantUnavailable(availability));
     const body = params?.body;
     if (typeof body !== 'string' || body.trim() === '') {
       throw new Error('There is nothing to summarise.');
