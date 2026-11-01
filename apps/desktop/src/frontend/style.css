@@ -425,7 +425,8 @@ button:disabled {
   visibility: hidden;
 }
 
-.entry:focus-within .actions {
+.entry:focus-within .actions,
+.entry:hover .actions {
   visibility: visible;
 }
 
@@ -509,6 +510,10 @@ button:disabled {
 .entry .note::placeholder {
   color: var(--muted);
   opacity: 0.5;
+}
+
+.entry:not(.editing) .note {
+  cursor: default;
 }
 
 @media (max-width: 620px) {
@@ -610,6 +615,11 @@ button:disabled {
   color: var(--muted);
 }
 
+/* A refusal is not a summary: it keeps the panel's place but says so. */
+.assistant.error .assistant-text {
+  color: var(--error);
+}
+
 @media (max-width: 620px) {
   .assistant {
     right: 20px;
@@ -652,17 +662,18 @@ button:disabled {
   user-select: text;
 }
 
-/* Today's note dims the window while the caret is in it. The status line and
-   the assistant panel are read, not navigated, so they stay at full strength. */
+/* The entry being written dims the rest of the window while it has the caret.
+   The status line and the assistant panel are read, not navigated, so they stay
+   at full strength. */
 .bar,
-.entry:not(.today),
-.entry.today .date {
+.entry:not(:focus-within),
+.entry:focus-within .date {
   transition: opacity 150ms ease;
 }
 
 body.writing .bar,
-body.writing .entry:not(.today),
-body.writing .entry.today .date {
+body.writing .entry:not(:focus-within),
+body.writing .entry:focus-within .date {
   opacity: 0.25;
 }
 

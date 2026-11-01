@@ -6,7 +6,7 @@ A tinyjs desktop app: the operating system's webview draws the window and plain 
 
 The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame.
 
-The entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete on every entry, today included ([`020`](docs/adrs/020-actions-under-the-date.md), [`026`](docs/adrs/026-a-notes-actions-are-edit-summarise-and-delete.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
+An older entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete, shown while the entry has focus or the pointer is over it ([`020`](docs/adrs/020-actions-under-the-date.md), [`027`](docs/adrs/027-older-notes-are-read-only-until-edited.md)). The note is read-only until edit is pressed; edit makes it writable, puts the caret at the end and fades the bar and every other entry to 0.25, and blur returns it to read-only. Today is always writable and carries no actions. The status line and the assistant panel do not fade ([`022`](docs/adrs/022-today-dims-the-window.md)).
 
 Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the caret. The bar's right side reads Today, settings, search; the gear keeps a pressed state while the page is open.
 
@@ -69,9 +69,9 @@ Each key cancels the webview's default before taking the app's path. There is no
 
 ## The assistant
 
-The model is the operating system's, reached through `app.macos.ai`; there is no provider, key, endpoint or network fallback ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). `availability()` is read before every request; a model that is off, downloading or absent refuses in words the status line shows.
+The model is the operating system's, reached through `app.macos.ai`; there is no provider, key, endpoint or network fallback ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). `availability()` is read before every request; a model that is off, downloading or absent refuses in words the panel and the status line show.
 
-The note's summarise button is the only surface: it sends that note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers. There is no switch and no stored preference ([`026`](docs/adrs/026-a-notes-actions-are-edit-summarise-and-delete.md)).
+The note's summarise button is the only surface: it sends that note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac, or the refusal marked as no summary. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers. There is no switch and no stored preference ([`026`](docs/adrs/026-a-notes-actions-are-edit-summarise-and-delete.md)).
 
 ## The menu
 
@@ -97,9 +97,9 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
 - **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
-- **No network.** v1.11 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.12 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
-- **The assistant is unavailable.** A request is refused in words the status line shows, and the note stays on screen.
+- **The assistant is unavailable.** A request is refused in words the panel and the status line show, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
 - **The data folder will not open.** The status line says so and shows the path as selectable text; nothing is copied or changed.
 - **A key does nothing.** The webview or the system kept it; every key has a mouse control that still works, and nothing else is lost.
@@ -107,7 +107,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 
 ## Not in v1.x
 
-The app above is v1.11. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.12. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Checks
 
