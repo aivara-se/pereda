@@ -6,12 +6,11 @@ Pereda is a desktop app: a tinyjs workspace in `apps/desktop` ([025](025-the-app
 
 A phone has no window to draw, no menu bar, no global shortcut, no data folder a person can open, and a keyboard that covers half the screen. The store, the day, the live write and the search are platform-neutral; the surface around them is not.
 
-The operator asks for iPhone and Android apps with the same interface and features, optimised for the device, and for one product version across the apps: a feature lands on all of them together unless the product names a platform limit.
+The operator asks for iPhone and Android apps with the same interface and features, optimised for the device.
 
 ## Decision
 
-- Two native apps: SwiftUI in `apps/iphone`, Jetpack Compose in `apps/android`. Each has its own project and store listing; the desktop app is unchanged.
-- One version across the three apps: the number in `apps/desktop/tinyjs.json` is the product's, both mobile builds take it at release, and a version ships the same features on every platform unless the product names a platform limit.
+- Two native apps: SwiftUI in `apps/iphone`, Jetpack Compose in `apps/android`. Each has its own project, version file and store listing; the desktop app is unchanged.
 - The store contract is shared, not re-invented: schema version 2, `notes` and `notes_fts`, `unicode61 remove_diacritics 0`, tombstones, sequence counters, whole-body atomic saves, WAL and `synchronous = FULL`.
 - iOS uses the system SQLite. Android bundles SQLite (`androidx.sqlite:sqlite-bundled`) because the platform build has no FTS5, and uses no Room, so the schema stays the desktop's exactly.
 - Each app is local-only: one database in its own sandbox, no account, no network, no sync between devices. A database file is the only way a whole log moves, and the app never merges two.
@@ -29,7 +28,5 @@ The operator asks for iPhone and Android apps with the same interface and featur
 - Two devices are two logs until a sync version reconciles stores. That is the cost of [002](002-local-only-in-v1.md) holding on a phone; sync never adds an account.
 - The assistant is a real platform split: iPhone has it, Android does not, and the product says so.
 - Stores add a review, a privacy label and signing keys that the desktop release does not have.
-- A version is not tagged until the desktop archives and both store builds exist; a store that reviews slowly publishes the same number later, never a different one.
-- A version with no desktop change still releases the desktop, because the number is the product's.
 
-When the mobile apps first ship, these product sentences fall: "Not mobile: no iOS or Android app"; the platform list in **The app**; "one person, one machine" becomes one person per device; "the data folder is the backup" becomes export and restore on a phone. No account, no sync and no server still hold.
+When mobile 1.0 ships, these product sentences fall: "Not mobile: no iOS or Android app"; the platform list in **The app**; "one person, one machine" becomes one person per device; "the data folder is the backup" becomes export and restore on a phone. No account, no sync and no server still hold.
