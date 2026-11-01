@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pereda</string>
+
+    <string name="today">Today</string>
+    <string name="search">Search</string>
+    <string name="back">Back</string>
+    <string name="delete">Delete this note</string>
+
+    <string name="note_hint">What happened?</string>
+    <string name="search_hint">Search the days before today</string>
+    <string name="search_empty">No day matches those words.</string>
+    <string name="search_reading">Searching…</string>
+    <string name="loading">Loading…</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="delete_today_title">Delete today\'s note?</string>
+    <string name="delete_day_title">Delete the note for %1$s?</string>
+    <string name="delete_detail">The text is gone for good. There is no undo.</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="keep">Keep</string>
+
+    <string name="fatal_title">Pereda cannot open its notes</string>
+    <string name="fatal_hint">The file was not changed. Move it aside or restore a backup, then open Pereda again.</string>
+</resources>

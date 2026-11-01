@@ -1,0 +1,9 @@
+# An Android project's local paths: the SDK is this machine's, not the repo's.
+local.properties
+.gradle/
+.kotlin/
+build/
+app/build/
+*.iml
+.idea/
+captures/
