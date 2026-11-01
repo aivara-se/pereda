@@ -63,7 +63,7 @@ A press reaches the backend and every page. The backend shows and focuses the wi
 
 ## The keys
 
-Four fixed keys, handled in the page and read by `src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F opens the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and Esc on the settings page closes it to the log it left; it does nothing anywhere else. ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
+Four fixed keys, handled in the page and read by `apps/desktop/src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F opens the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and Esc on the settings page closes it to the log it left; it does nothing anywhere else. ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
 
 Each key cancels the webview's default before taking the app's path. There is no palette, shortcut sheet, stored combination or rebinding screen: every key has a control that already does the same thing.
 
@@ -111,13 +111,15 @@ The app above is v1.10. Cloud sync is not a v1.x mechanism: the app has no serve
 
 ## Checks
 
+The app and its `tinyjs.json` live in `apps/desktop`; these commands run from the repository root.
+
 ```sh
 bun test
-tinyjs build
+bun run build
 ```
 
 `bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, every non-empty day read oldest first, an export that writes one file per day verbatim, replaces a same-named file, refuses a day that is not a date and stops at the first failed write, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
 
-`tinyjs build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
+`bun run build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
 What no test reaches — the webview's drawing and input, the search mode's swap, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.

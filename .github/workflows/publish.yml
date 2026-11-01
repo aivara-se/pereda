@@ -1,6 +1,6 @@
 name: publish
 
-# The version in tinyjs.json on main is the release. A push that changes it
+# The version in apps/desktop/tinyjs.json on main is the release. A push that changes it
 # builds the three platforms, tags the commit and publishes the release; a push
 # that does not change it reads the file and stops.
 #
@@ -41,6 +41,7 @@ jobs:
         id: read
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+        working-directory: apps/desktop
         run: |
           set -euo pipefail
           version=$(jq -r '.version // empty' tinyjs.json)
@@ -79,6 +80,9 @@ jobs:
     if: needs.meta.outputs.build == 'true'
     runs-on: macos-15
     timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/desktop
     strategy:
       fail-fast: false
       matrix:
@@ -142,7 +146,7 @@ jobs:
           TINYJS_NOTARY_PROFILE="$MACOS_NOTARY_PROFILE" tinyjs notarize --arch "$ARCH"
 
       - name: Package
-        run: ditto -c -k --keepParent "dist/$TITLE.app" "$APP-$VERSION-macos-$ARCH.zip"
+        run: ditto -c -k --keepParent "dist/$TITLE.app" "$GITHUB_WORKSPACE/$APP-$VERSION-macos-$ARCH.zip"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -155,6 +159,9 @@ jobs:
     if: needs.meta.outputs.build == 'true'
     runs-on: windows-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/desktop
     steps:
       - uses: actions/checkout@v7
         with:
@@ -176,7 +183,8 @@ jobs:
         run: |
           $app = node -p "require('./tinyjs.json').name"
           "APP=$app" | Out-File -FilePath $env:GITHUB_ENV -Append
-          Compress-Archive -Path dist\* -DestinationPath "$app-$env:VERSION-windows-x86_64.zip"
+          $zip = Join-Path $env:GITHUB_WORKSPACE "$app-$env:VERSION-windows-x86_64.zip"
+          Compress-Archive -Path dist\* -DestinationPath $zip
 
       - uses: actions/upload-artifact@v4
         with:
@@ -189,6 +197,9 @@ jobs:
     if: needs.meta.outputs.build == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/desktop
     steps:
       - uses: actions/checkout@v7
         with:
@@ -208,7 +219,7 @@ jobs:
         run: |
           app=$(jq -r .name tinyjs.json)
           echo "APP=$app" >> "$GITHUB_ENV"
-          tar -czf "$app-$VERSION-linux-x86_64.tar.gz" -C dist .
+          tar -czf "$GITHUB_WORKSPACE/$app-$VERSION-linux-x86_64.tar.gz" -C dist .
         env:
           VERSION: ${{ needs.meta.outputs.version }}
 

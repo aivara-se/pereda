@@ -1,0 +1,10 @@
+{
+  "name": "pereda-desktop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tinyjs dev",
+    "build": "tinyjs build",
+    "test": "bun test"
+  }
+}
