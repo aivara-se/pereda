@@ -6,6 +6,12 @@
   "id": "se.aivara.pereda",
   "version": "1.13.0",
   "minTinyjsVersion": "0.66.2",
+  "frontend": {
+    "build": "bun scripts/page.ts",
+    "dist": ".page",
+    "dev": "bun scripts/page.ts --serve",
+    "devUrl": "http://127.0.0.1:5199"
+  },
   "chrome": {
     "frame": false,
     "windowControls": false,
