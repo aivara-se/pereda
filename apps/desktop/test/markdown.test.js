@@ -107,6 +107,13 @@ describe("a fenced block", () => {
     ]);
   });
 
+  test("shows its fence lines while the caret is at either end of the block", () => {
+    expect(hides(body, 2)).toEqual([]);
+    expect(hides(body, 21)).toEqual([]);
+    expect(hides(body, 1)).toEqual(["```js\n", "```\n"]);
+    expect(hides(body, 22)).toEqual(["```js\n", "```\n"]);
+  });
+
   test("hides the one line of a fence that never closes", () => {
     const open = "a\n```\ncode";
     expect(hides(open, 0)).toEqual(["```\n"]);
