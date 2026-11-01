@@ -17,13 +17,13 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
 - Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — opens the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
 - The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today, settings and search at its right, and a paper translucent enough to read the desktop through.
-- Settings is a page in the same window, opened from the bar's gear. It replaces the log, which stays loaded; closing it, or Esc, returns to the same day and scroll with the caret back in the note. Nothing is stored: the app always opens on today.
+- Settings is a page in the same window, opened from the bar's gear. It replaces the log, which stays loaded; closing it, or Esc, returns to the same day and scroll with the note's focus back — the caret where it was writable. Nothing is stored: the app always opens on today.
 
 ## The day
 
 - One note per day. A day is the computer's local calendar day, and it starts at midnight.
 - The app opens on today. A note begins with its first character, so a day with nothing written leaves nothing behind.
-- Every day with a note is in the log and can be written to; today is there even when it is empty. A future day cannot be written, and a past day with nothing written is not in the log. A note is never closed.
+- Every day with a note is in the log; an older one is written after its edit button, today without one. Today is there even when it is empty. A future day cannot be written, and a past day with nothing written is not in the log. A note is never closed.
 - A window left open across midnight keeps the entry it opened; Today moves the log. While the loaded day is behind, the status line says where the text is going — “Writing to 31 October — today is 1 November.” — and nothing moves on its own.
 
 ## The note
@@ -106,7 +106,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
 - ⌘F opens the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
-- Settings opens from the bar as a page in the window; Esc closes it to the log it left, with the same day, scroll and caret.
+- Settings opens from the bar as a page in the window; Esc closes it to the log it left, with the same day, scroll and focus.
 - An older note is read-only until its edit button is pressed; today is always writable, and no action sits under its date.
 - While a note is being written — today always, an older note after its edit — the bar and the other entries fade; blur restores the window.
 - On macOS 26 with Apple Intelligence on, pressing an older note's summarise action shows its summary in a panel marked as generated on this Mac, and no word of it enters the note.
