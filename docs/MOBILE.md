@@ -2,8 +2,6 @@
 
 Two native apps, iPhone and Android, in `apps/iphone` and `apps/android`: the desktop's day, live write, search and export, on a phone. Decided in [`026`](adrs/026-mobile-apps-are-native-on-the-same-store.md) and not built. This file is the specification until they ship; then its behaviour moves into `PRODUCT.md` and its geometry into a design document.
 
-![Five screens: the log, writing today, search, an older day, and settings](mobile-mockup.png)
-
 ## What both apps keep
 
 - One note per day, written as it is typed; today opens with the caret in it and the keyboard down.
@@ -85,7 +83,7 @@ fixtures/mobile   notes.sqlite, cases.json
 
 ## Phases
 
-0. **Contract** — this file, the record and the mockup. No code.
+0. **Contract** — this file and the record. No code.
 1. **Store spike** — both apps open the fixture read-only, run every case and print identical output on a device and an emulator. This is the only technical risk; a difference in FTS5 or the tokenizer changes the plan before any screen is built.
 2. **iPhone 1.0** — log, day, search, settings, export, restore, then the assistant. TestFlight.
 3. **Android 1.0** — the same screens against the frozen fixture. Internal testing.
