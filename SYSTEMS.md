@@ -6,7 +6,7 @@ A tinyjs desktop app: the operating system's webview draws the window and plain 
 
 The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame.
 
-The focused entry's actions sit in its date column, outside the flow so the entry does not change height; delete is the only one, and today's note has none because clearing its last character removes it ([`020`](docs/adrs/020-actions-under-the-date.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
+The entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete on every entry, today included ([`020`](docs/adrs/020-actions-under-the-date.md), [`027`](docs/adrs/027-a-notes-actions-are-edit-summarise-and-delete.md)). While today's note has the document's focus, the bar and every other entry are painted at 0.25 and the note stays at full strength; the status line and the assistant panel do not fade, and focus alone sets it ([`022`](docs/adrs/022-today-dims-the-window.md)).
 
 Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the caret. The bar's right side reads Today, settings, search; the gear keeps a pressed state while the page is open.
 
@@ -69,13 +69,13 @@ Each key cancels the webview's default before taking the app's path. There is no
 
 ## The assistant
 
-The model is the operating system's, reached through `app.macos.ai`; there is no provider, key, endpoint or network fallback ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). `availability()` is read at launch, when the window regains focus, and again before every request; `unsupported` leaves no assistant, `unavailable` disables the action with the reason.
+The model is the operating system's, reached through `app.macos.ai`; there is no provider, key, endpoint or network fallback ([`012`](docs/adrs/012-the-assistant-runs-on-this-machine.md)). `availability()` is read before every request; a model that is off, downloading or absent refuses in words the status line shows.
 
-The menu is the app's: an Assistant switch stored in `app.store` and a Summarise item enabled only when the switch is on and the model is available. A click on Summarise is pushed to the page as `assistant:summarise`; the page sends the focused note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers.
+The note's summarise button is the only surface: it sends that note's text and one fixed instruction, and shows the reply in a panel marked as generated on this Mac. The reply is never written to `notes`. One request runs at a time, and the editor stays usable while the model answers. There is no switch and no stored preference ([`027`](docs/adrs/027-a-notes-actions-are-edit-summarise-and-delete.md)).
 
 ## The menu
 
-The whole menu is built in the backend: the assistant's items on macOS and a File menu with **Show data folder** on macOS and Linux ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)). The item is declared on every platform, but Windows draws no menu bar on a frameless, transparent window, so it never appears there ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)). The item asks for `app.paths().data` and hands it to `app.shell.open`; the page never builds a path. It copies nothing, exports nothing and stores nothing.
+The whole menu is built in the backend: a File menu with **Show data folder** on macOS and Linux ([`014`](docs/adrs/014-the-data-folder-is-one-menu-item.md)). The item is declared on every platform, but Windows draws no menu bar on a frameless, transparent window, so it never appears there ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)). The item asks for `app.paths().data` and hands it to `app.shell.open`; the page never builds a path. It copies nothing, exports nothing and stores nothing.
 
 A folder that will not open is pushed back with its path, and the status line shows it as text the person can select. A folder that does open clears the line.
 
@@ -97,9 +97,9 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
 - **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
-- **No network.** v1.10 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.11 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
-- **The assistant is unavailable.** The action is disabled with the reason; a request that arrives anyway is refused, and the note stays on screen.
+- **The assistant is unavailable.** A request is refused in words the status line shows, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
 - **The data folder will not open.** The status line says so and shows the path as selectable text; nothing is copied or changed.
 - **A key does nothing.** The webview or the system kept it; every key has a mouse control that still works, and nothing else is lost.
@@ -107,7 +107,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 
 ## Not in v1.x
 
-The app above is v1.10. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.11. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Checks
 
@@ -118,7 +118,7 @@ bun test
 bun run build
 ```
 
-`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, every non-empty day read oldest first, an export that writes one file per day verbatim, replaces a same-named file, refuses a day that is not a date and stops at the first failed write, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's menu for each availability and switch, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
+`bun test` covers the backend: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, every non-empty day read oldest first, an export that writes one file per day verbatim, replaces a same-named file, refuses a day that is not a date and stops at the first failed write, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's refusal for each availability, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, and the midnight line while the day is behind.
 
 `bun run build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
