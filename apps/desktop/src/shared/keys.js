@@ -2,8 +2,7 @@
 // Mac is Ctrl elsewhere; nothing here stores a combination or offers a setting.
 
 // The action a keydown means, or null when it is not one of the four. Escape
-// is reported wherever it is pressed; the page decides that only the search
-// field acts on it.
+// is reported whatever holds the focus; the page decides what it closes.
 export function keyAction(event, os) {
   if (event.key === 'Escape') return 'escape';
   const modifier = os === 'macos' ? event.metaKey : event.ctrlKey;

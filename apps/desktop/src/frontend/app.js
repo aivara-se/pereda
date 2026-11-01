@@ -526,10 +526,6 @@ function openSearch() {
 // so closing returns to the day and scroll it held and gives a note it was
 // writing its caret back. It is not stored: the app always opens on today.
 function openSettings() {
-  if (settingsOpen) {
-    closeSettings();
-    return;
-  }
   hideSearch();
   hideAssistant();
   settingsScroll = pageEl.scrollTop;
@@ -815,8 +811,9 @@ queryEl.addEventListener('input', () => {
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
 });
 
-// The four fixed keys. Escape acts only in the field; the others cancel the
-// webview's own meaning before taking the app's path. Nothing is configurable.
+// The four fixed keys. Escape closes the search from anywhere in it and the
+// settings page from anywhere on it; the others cancel the webview's own
+// meaning before taking the app's path. Nothing is configurable.
 document.addEventListener('keydown', (event) => {
   const action = keyAction(event, OS);
   if (action === null) return;
