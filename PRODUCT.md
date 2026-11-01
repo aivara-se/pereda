@@ -137,3 +137,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 ## Roadmap
 
 Everything decided for v1.x is built; the binary is v1.10. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+
+A decision is not a date: the line below is decided and not built.
+
+- **Mobile 1.0** — native iPhone and Android apps at `apps/iphone` and `apps/android`, on the same local store and with no sync ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md), [`docs/MOBILE.md`](docs/MOBILE.md)).

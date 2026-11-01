@@ -109,6 +109,18 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 
 The app above is v1.10. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
+## Planned, not built
+
+Mobile 1.0 is decided ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md)) and not built; every section above still describes the desktop app.
+
+- `apps/iphone` is SwiftUI on iOS 18 or later: the system SQLite, and on iOS 26 with Apple Intelligence the on-device model.
+- `apps/android` is Jetpack Compose on Android 10 (API 29) or later: `androidx.sqlite:sqlite-bundled`, because the platform build has no FTS5, and no Room, so the schema stays the desktop's.
+- Both open schema version 2 unchanged: `notes`, `notes_fts`, `unicode61 remove_diacritics 0`, tombstones, sequence counters, WAL and `synchronous = FULL`.
+- `fixtures/mobile/` holds one database and one set of search cases; both native suites run them and must print identical results.
+- The screens, the platform split and the phases are [`docs/MOBILE.md`](docs/MOBILE.md).
+
+The desktop release builds neither app; each store build is its own.
+
 ## Checks
 
 The app and its `tinyjs.json` live in `apps/desktop`; these commands run from the repository root.
