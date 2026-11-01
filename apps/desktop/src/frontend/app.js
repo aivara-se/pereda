@@ -24,7 +24,9 @@ const pageEl = $('page');
 const searchBar = $('searchbar');
 const queryEl = $('query');
 const settingsEl = $('settingspage');
+const todayButton = $('today');
 const settingsButton = $('settings');
+const backButton = $('back');
 const exportButton = $('export');
 const exportResult = $('export-result');
 const statusLine = $('status');
@@ -87,7 +89,18 @@ function noticeDate(day, today) {
   });
 }
 
+// The bar carries only the controls the page on screen uses: the log's Today
+// and gear, and one way back while the search or the settings page replaces it.
+// The traffic lights at its left are the window's, so they are always there.
+function renderBar() {
+  const away = searchOpen || settingsOpen;
+  todayButton.hidden = away;
+  settingsButton.hidden = away;
+  backButton.hidden = !away;
+}
+
 function renderStatus() {
+  renderBar();
   const failure = saveFailures.values().next().value;
   const problem = failure ? `Not saved — ${failure}` : commandError || logError || searchError;
   const behind =
@@ -466,7 +479,6 @@ function hideSearch() {
 function hideSettings() {
   settingsOpen = false;
   settingsEl.hidden = true;
-  settingsButton.setAttribute('aria-pressed', 'false');
   pageEl.hidden = false;
   exportResult.textContent = '';
   exportResult.classList.remove('error');
@@ -524,7 +536,6 @@ function openSettings() {
   settingsOpen = true;
   pageEl.hidden = true;
   settingsEl.hidden = false;
-  settingsButton.setAttribute('aria-pressed', 'true');
   exportResult.textContent = '';
   exportResult.classList.remove('error');
   updateFade();
@@ -751,8 +762,17 @@ function fatal(message) {
   $('fatal').hidden = false;
 }
 
-$('today').addEventListener('click', goToday);
-$('today').title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
+todayButton.addEventListener('click', goToday);
+todayButton.title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
+// The bar's one back button is the mode's way out, the same one Esc is: the
+// search closes at today, the settings page where it opened.
+backButton.addEventListener('click', () => {
+  if (settingsOpen) {
+    closeSettings();
+    return;
+  }
+  closeSearch();
+});
 // mousedown comes before the note's blur, so this is the last moment the note
 // can say it was being written.
 settingsButton.addEventListener('mousedown', () => {
@@ -807,9 +827,13 @@ document.addEventListener('keydown', (event) => {
       closeSettings();
       return;
     }
-    if (!searchOpen || document.activeElement !== queryEl) return;
-    event.preventDefault();
-    closeSearch();
+    // Search is a mode with one way out: the field has the caret, but a result
+    // can take the focus, and the key leaves from wherever it is in the mode.
+    if (searchOpen) {
+      event.preventDefault();
+      closeSearch();
+      return;
+    }
     return;
   }
 

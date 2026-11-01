@@ -190,11 +190,6 @@ button:disabled {
   opacity: 0.28;
 }
 
-.icon[aria-pressed="true"] {
-  background: var(--hover);
-  color: var(--ink);
-}
-
 .page {
   flex: 1;
   min-height: 0;
