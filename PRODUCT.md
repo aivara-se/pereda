@@ -49,14 +49,14 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
 - An export writes one Markdown file per day that has a note, named `YYYY-MM-DD.md`, into a folder chosen each time. The note's text is written verbatim; a file with the same name in that folder is replaced, and the section says so before the button. The app reports how many files it wrote and where, or the first day that failed and why.
-- In v1.12 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
+- In v1.13 the app makes no network request: no account, no telemetry, no update check. A new version is a download.
 - Deleting a note removes its text; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.12 has none.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.13 has none.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -96,7 +96,7 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.12 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.13 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -123,6 +123,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.13** — the bar without search: Today and settings are the only controls at its right, ⌘F is the only way into the search, and the gear matches the other bar icons.
 - **v1.12** — read-only days: an older note waits for its edit button before it takes a keystroke, writing it fades the rest of the window, and today has no action row.
 - **v1.11** — a note's actions: edit, summarise and delete sit under every date, today included; today's delete clears the note, and the assistant's menu switch is gone.
 - **v1.10** — settings and export: a page in the window holds Export Data, which writes one Markdown file per day into a folder the person picks.
@@ -139,4 +140,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built; the binary is v1.12. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+Everything decided for v1.x is built; the binary is v1.13. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
