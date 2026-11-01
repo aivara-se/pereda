@@ -4,6 +4,7 @@ import { SHORTCUT_ID, shortcutNotice } from "../shared/shortcut.js";
 import { DATA_FOLDER_EVENT } from "../shared/menu.js";
 import { keyAction } from "../shared/keys.js";
 import { writingNotice } from "../shared/midnight.js";
+import { noteEditor } from "./note.js";
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
@@ -125,39 +126,30 @@ function renderStatus() {
   );
 }
 
-function resize(entry) {
-  entry.text.style.height = "auto";
-  entry.text.style.height = `${entry.text.scrollHeight}px`;
-}
-
-function setCaretToEnd(text) {
-  text.setSelectionRange(text.value.length, text.value.length);
-}
-
 // An older note is read-only until its edit button asks for the caret: the
 // text becomes writable and the rest of the window fades as today's does.
 // Today starts in this state and never leaves it.
 function beginEditing(entry) {
   if (!entry.editing) {
     entry.editing = true;
-    entry.text.readOnly = false;
+    entry.note.setEditable(true);
     entry.article.classList.add("editing");
   }
   focused = entry;
-  entry.text.focus();
+  entry.note.focus();
   updateFade();
 }
 
 function startEditing(entry) {
   beginEditing(entry);
-  setCaretToEnd(entry.text);
+  entry.note.focusEnd();
 }
 
 // Leaving the caret ends an older note's edit; today stays writable.
 function stopEditing(entry) {
   if (entry.day === todayKey) return;
   entry.editing = false;
-  entry.text.readOnly = true;
+  entry.note.setEditable(false);
   entry.article.classList.remove("editing");
 }
 
@@ -200,7 +192,7 @@ async function summarise(entry) {
     renderStatus();
     return;
   }
-  if (entry.text.value.trim() === "") {
+  if (entry.note.body().trim() === "") {
     commandError = "There is nothing to summarise.";
     commandSelectable = false;
     showAssistant(commandError, { error: true });
@@ -215,7 +207,7 @@ async function summarise(entry) {
   renderStatus();
   try {
     const { text } = await tiny.api.call("summariseNote", {
-      body: entry.text.value,
+      body: entry.note.body(),
     });
     commandError = "";
     showAssistant(text);
@@ -239,8 +231,8 @@ function updateFade() {
     !settingsOpen &&
     document.hasFocus() &&
     focused !== null &&
-    !focused.text.readOnly &&
-    document.activeElement === focused.text;
+    focused.editing &&
+    focused.note.hasFocus();
   document.body.classList.toggle("writing", writing);
 }
 
@@ -278,7 +270,7 @@ async function run(entry) {
 // assigned still releases the next save.
 function flushEntry(entry) {
   clearTimeout(entry.timer);
-  entry.pending = entry.text.value;
+  entry.pending = entry.note.body();
   if (entry.runner === null) {
     entry.runner = run(entry).then(
       (ok) => {
@@ -302,7 +294,7 @@ function flushAll() {
 
 function maybeDrop(entry) {
   if (entry.day === todayKey) return;
-  if (entry.text.value !== "") return;
+  if (entry.note.body() !== "") return;
   dropEntry(entry);
 }
 
@@ -313,7 +305,7 @@ function dropEntry(entry) {
   entry.article.remove();
   if (focused === entry) {
     focused = entries[index] ?? entries[index - 1] ?? null;
-    if (focused !== null) focused.text.focus();
+    if (focused !== null) focused.note.focus();
     updateFade();
   }
 }
@@ -333,14 +325,8 @@ function makeEntry(day, body, seq) {
   label.textContent = day === todayKey ? "Today" : shortDate(day);
   meta.append(label);
 
-  const text = document.createElement("textarea");
-  text.className = "note";
-  text.value = body;
-  text.rows = 1;
-  text.spellcheck = true;
-  text.readOnly = !editable;
-  text.placeholder = "What happened?";
-  text.setAttribute("aria-label", `Note for ${longDate(day)}`);
+  const note = document.createElement("div");
+  note.className = "note";
 
   const entry = {
     day,
@@ -351,7 +337,7 @@ function makeEntry(day, body, seq) {
     timer: 0,
     editing: editable,
     article,
-    text,
+    note: null,
   };
 
   // An older note carries its actions under its date. Today has none: it is
@@ -393,25 +379,31 @@ function makeEntry(day, body, seq) {
     meta.append(label, actions);
   }
 
-  text.addEventListener("input", () => {
-    resize(entry);
-    entry.pending = text.value;
-    clearTimeout(entry.timer);
-    entry.timer = setTimeout(() => flushEntry(entry), DEBOUNCE);
-  });
-  text.addEventListener("focus", () => {
-    focused = entry;
-    updateFade();
-  });
-  text.addEventListener("blur", () => {
-    stopEditing(entry);
-    updateFade();
-    flushEntry(entry).then((ok) => {
-      if (ok) maybeDrop(entry);
-    });
+  // Every note is one editor over its string, and an older one takes no
+  // keystroke until its edit button opens it.
+  entry.note = noteEditor(note, {
+    body,
+    readOnly: !editable,
+    label: `Note for ${longDate(day)}`,
+    onEdit: () => {
+      entry.pending = entry.note.body();
+      clearTimeout(entry.timer);
+      entry.timer = setTimeout(() => flushEntry(entry), DEBOUNCE);
+    },
+    onFocus: () => {
+      focused = entry;
+      updateFade();
+    },
+    onBlur: () => {
+      stopEditing(entry);
+      updateFade();
+      flushEntry(entry).then((ok) => {
+        if (ok) maybeDrop(entry);
+      });
+    },
   });
 
-  article.append(meta, text);
+  article.append(meta, note);
   return entry;
 }
 
@@ -420,7 +412,6 @@ function renderLog(days, hasMore) {
   entries = days.map((entry) => makeEntry(entry.day, entry.body, entry.seq));
   for (const entry of entries) {
     logEl.append(entry.article);
-    resize(entry);
   }
   more = hasMore;
 }
@@ -451,8 +442,7 @@ async function loadLog(from) {
   renderLog(result.days, result.more);
   focused = entries[0] ?? null;
   if (focused !== null && focused.editing) {
-    focused.text.focus();
-    setCaretToEnd(focused.text);
+    focused.note.focusEnd();
   }
   pageEl.scrollTop = 0;
   logError = "";
@@ -476,7 +466,6 @@ async function loadOlder() {
       const entry = makeEntry(day.day, day.body, day.seq);
       logEl.append(entry.article);
       entries.push(entry);
-      resize(entry);
     }
     more = result.more;
     logError = "";
@@ -569,7 +558,7 @@ function closeSettings() {
   showLog();
   if (focused !== null) {
     if (settingsEditing) beginEditing(focused);
-    else focused.text.focus();
+    else focused.note.focus();
   }
   settingsEditing = false;
   pageEl.scrollTop = settingsScroll;
@@ -625,8 +614,7 @@ function showJump({ day, days, more: hasMore }) {
   renderLog(days, hasMore);
   focused = entries[0] ?? null;
   if (focused !== null && focused.editing) {
-    focused.text.focus();
-    setCaretToEnd(focused.text);
+    focused.note.focusEnd();
   }
   pageEl.scrollTop = 0;
   if (days.length === 0) {
@@ -732,7 +720,7 @@ async function removeEntry(target) {
   }
   target.seq = stamp;
   target.savedBody = "";
-  target.text.value = "";
+  target.note.setBody("");
   saveFailures.delete(target.day);
   midnight = null;
   renderStatus();
@@ -841,38 +829,44 @@ queryEl.addEventListener("input", () => {
 
 // The four fixed keys. Escape closes the search from anywhere in it and the
 // settings page from anywhere on it; the others cancel the webview's own
-// meaning before taking the app's path. Nothing is configurable.
-document.addEventListener("keydown", (event) => {
-  const action = keyAction(event, OS);
-  if (action === null) return;
+// meaning before taking the app's path. Nothing is configurable. The listener
+// is in the capture phase so a note's editor never sees a key the app owns: one
+// that is already cancelled is ignored by the editor.
+document.addEventListener(
+  "keydown",
+  (event) => {
+    const action = keyAction(event, OS);
+    if (action === null) return;
 
-  if (action === "escape") {
-    if (settingsOpen) {
-      event.preventDefault();
-      closeSettings();
+    if (action === "escape") {
+      if (settingsOpen) {
+        event.preventDefault();
+        closeSettings();
+        return;
+      }
+      // Search is a mode with one way out: the field has the caret, but a result
+      // can take the focus, and the key leaves from wherever it is in the mode.
+      if (searchOpen) {
+        event.preventDefault();
+        closeSearch();
+        return;
+      }
       return;
     }
-    // Search is a mode with one way out: the field has the caret, but a result
-    // can take the focus, and the key leaves from wherever it is in the mode.
-    if (searchOpen) {
-      event.preventDefault();
-      closeSearch();
+
+    event.preventDefault();
+    if (action === "search") {
+      openSearch();
       return;
     }
-    return;
-  }
-
-  event.preventDefault();
-  if (action === "search") {
-    openSearch();
-    return;
-  }
-  if (action === "today") {
-    goToday();
-    return;
-  }
-  moveDay(action === "previous" ? -1 : 1);
-});
+    if (action === "today") {
+      goToday();
+      return;
+    }
+    moveDay(action === "previous" ? -1 : 1);
+  },
+  true,
+);
 
 // The window has no frame, so its controls live in the page. A close waits for
 // the saves in flight, then quits; a failed save is already on the status line.
@@ -894,7 +888,6 @@ pageEl.addEventListener(
   },
   { passive: true },
 );
-window.addEventListener("resize", () => entries.forEach(resize));
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) flushAll();
 });
