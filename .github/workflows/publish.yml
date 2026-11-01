@@ -103,6 +103,14 @@ jobs:
         with:
           ref: ${{ needs.meta.outputs.ref }}
 
+      - uses: oven-sh/setup-bun@v2
+
+      # The page is bundled by the build, so the workspace's packages are
+      # installed before it runs.
+      - name: Install
+        run: bun install --frozen-lockfile
+        working-directory: .
+
       - name: Install tinyjs
         run: |
           curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
@@ -167,6 +175,12 @@ jobs:
         with:
           ref: ${{ needs.meta.outputs.ref }}
 
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install --frozen-lockfile
+        working-directory: .
+
       - name: Install tinyjs
         shell: pwsh
         run: |
@@ -204,6 +218,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.meta.outputs.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install --frozen-lockfile
+        working-directory: .
 
       - name: Install tinyjs
         run: |
