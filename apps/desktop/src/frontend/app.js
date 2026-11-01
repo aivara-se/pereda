@@ -303,6 +303,7 @@ function dropEntry(entry) {
   if (index === -1) return;
   entries.splice(index, 1);
   entry.article.remove();
+  entry.note.destroy();
   if (focused === entry) {
     focused = entries[index] ?? entries[index - 1] ?? null;
     if (focused !== null) focused.note.focus();
@@ -408,6 +409,7 @@ function makeEntry(day, body, seq) {
 }
 
 function renderLog(days, hasMore) {
+  for (const entry of entries) entry.note.destroy();
   logEl.replaceChildren();
   entries = days.map((entry) => makeEntry(entry.day, entry.body, entry.seq));
   for (const entry of entries) {
