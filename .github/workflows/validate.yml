@@ -20,11 +20,41 @@ jobs:
         run: bun fmt --no-script --check .
       - name: Test
         run: bun test
+
+      # The toolchain is 12 MB and the WebKitGTK runtime 44.7 MB, fetched on
+      # every run. The key is the release the installer would install, not the
+      # installer URL: that URL never changes, so the key would freeze the
+      # toolchain at whatever the first run cached.
+      - name: Resolve the tinyjs release
+        id: tinyjs
+        run: |
+          set -euo pipefail
+          tag=$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+            https://github.com/tarwin/tinyjsapp/releases/latest)
+          tag=${tag##*/}
+          case "$tag" in
+            v[0-9]*) ;;
+            *) echo "could not resolve the latest tinyjs release: '$tag'" >&2; exit 1 ;;
+          esac
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.tinyjs
+          key: tinyjs-${{ runner.os }}-${{ runner.arch }}-${{ steps.tinyjs.outputs.tag }}
+
+      # The installer refuses to run on Linux without WebKitGTK, and nothing
+      # else here reads the runtime: the build reads ~/.tinyjs. So the runtime
+      # is installed only when the installer runs.
       - name: Install tinyjs
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-0
           curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
+
       - name: Build
         run: ~/.tinyjs/tinyjs build
         working-directory: apps/desktop
