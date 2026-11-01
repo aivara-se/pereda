@@ -120,6 +120,19 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The macOS build is signed and notarized and opens without a Gatekeeper warning.
 - No AI, no account, no sync and no telemetry are present.
 
+**Mobile 1.0** is done when:
+
+- Each app opens on today with the caret in the note and the keyboard down; a tap writes.
+- Every committed character survives backgrounding, a kill and a relaunch; a failed save is shown and the text stays on screen.
+- The log reaches every older day with a note and writes it; a future day cannot be written.
+- Search finds every word as a prefix in any order, folds case, keeps å, ä and ö apart, returns at most fifty newest-first days and never today, and jumps to a typed date.
+- Delete on an older day asks once, and a cleared day stays cleared.
+- Export writes one Markdown file per day into a chosen folder and names the count and folder, or the first failure.
+- Restore replaces the notes from a schema-2 file and refuses any other, leaving the notes untouched.
+- Neither app makes a network request, checked with the network off.
+- On iPhone the assistant is off until switched on, marked, and never in the note.
+- Both open a database written by the desktop and show the same days and the same search results.
+
 ## Changelog
 
 - **v1.10** — settings and export: a page in the window holds Export Data, which writes one Markdown file per day into a folder the person picks.
@@ -134,6 +147,23 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - **v1.1** — the window draws its own frame: a frameless, translucent window with close, minimize and zoom in the page's bar.
 - **v1.0** — the live day: one note per day, written as it is typed, on the desktop; no account, server or network.
 
+## Mobile 1.0 — decided, not built
+
+Two native apps, Pereda for iPhone and Pereda for Android, carry the same day and the same log onto a phone. The decision is [`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md); the build and the checks are in [`SYSTEMS.md`](SYSTEMS.md). Nothing here is built, and the desktop is unchanged.
+
+- The app opens on today with the caret in the note and the keyboard down. Today is written at the top of the log; an older day opens as its own screen, with back, its date and delete in the bar.
+- The bar holds Today, search and settings, and on iPhone the assistant's sparkle while it is on. While a note has the caret, the bar and the other entries fade to a quarter; the status line does not.
+- Search is the desktop's mode: every word a prefix, in any order, case folded, å, ä and ö apart, never today, at most fifty days. A result opens its day, back returns to the results, and Cancel returns to the log at today.
+- Settings is a page. **Export Data** writes one Markdown file per day into a folder chosen each time; **Restore** replaces every note on the phone from a database file after one confirmation. The phone has no data folder, so these two are how notes leave and arrive.
+- Delete on an older day asks once; today goes by clearing its last character. A cleared day stays cleared, and a future day cannot be written.
+- The assistant is iPhone only, iOS 26 with Apple Intelligence, off until switched on, marked, and never in the note. Android has none, as Windows and Linux have none.
+- Each app is its own log in its own sandbox: no account, no network, no sync. Two devices are two logs, a database file is the only way a whole one moves, and the app never merges two.
+- A phone has no window controls, no global shortcut and no menu bar. A session left open across midnight keeps the day it loaded and says where the text is going until Today is pressed.
+
 ## Roadmap
 
 Everything decided for v1.x is built; the binary is v1.10. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+
+A decision is not a date: the line below is decided and not built.
+
+- **Mobile 1.0** — native iPhone and Android apps at `apps/iphone` and `apps/android`, on the same local store and with no sync ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md)); the surface is the section above.
