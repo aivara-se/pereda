@@ -178,6 +178,7 @@ async function summarise(entry) {
   if (assistantBusy) {
     commandError = 'The assistant is still answering the last note.';
     commandSelectable = false;
+    showAssistant(commandError, { error: true });
     renderStatus();
     return;
   }
