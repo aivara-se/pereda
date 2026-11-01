@@ -20,7 +20,7 @@ One fact, one home: link to a document, never restate it. A sentence here that s
 
 ## Tooling
 
-- **Bun runs the scripts.** A script that runs commands is TypeScript, run with `bun run scripts/<name>.ts` — never Python, and a shell script only when it stays a few lines. A command typed at the prompt is not a script.
+- **Bun runs the scripts.** The desktop app is the workspace in `apps/desktop`; the root scripts run it. A script that runs commands is TypeScript, run with `bun run scripts/<name>.ts` — never Python, and a shell script only when it stays a few lines. A command typed at the prompt is not a script.
 - **Never** add a second package manager, lockfile, formatter or test runner. The toolchain is the one the repository already declares.
 - **Never** report "tests pass", "it builds" or "verified" without the command and the tree it ran against.
 
@@ -32,7 +32,7 @@ The organisation's skills live in `aivara-se/.agents/skills` and every agent rea
 
 ```bash
 bun test        # the store, the search and the day
-tinyjs build    # the app for this OS
+bun run build   # the app for this OS
 ```
 
 Run the whole sequence and read every result — the last exit code says nothing about the first.

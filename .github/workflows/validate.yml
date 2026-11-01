@@ -23,6 +23,7 @@ jobs:
           curl -fsSL https://tinyjs.app/install | TINYJS_NO_MODIFY_PATH=1 sh
       - name: Build
         run: ~/.tinyjs/tinyjs build
+        working-directory: apps/desktop
 
   # The .app a reviewer runs before the merge: the build the release makes, for
   # both Macs, kept as a workflow artifact rather than published. The signing
@@ -47,15 +48,16 @@ jobs:
 
       - name: Build
         run: tinyjs build --arch "${{ matrix.arch }}"
+        working-directory: apps/desktop
 
       - name: Package
         env:
           PR: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          name=$(jq -r .name tinyjs.json)
-          title=$(jq -r '.title // .name' tinyjs.json)
-          ditto -c -k --keepParent "dist/$title.app" "$name-pr-$PR-macos-${{ matrix.arch }}.zip"
+          name=$(jq -r .name apps/desktop/tinyjs.json)
+          title=$(jq -r '.title // .name' apps/desktop/tinyjs.json)
+          ditto -c -k --keepParent "apps/desktop/dist/$title.app" "$name-pr-$PR-macos-${{ matrix.arch }}.zip"
 
       - uses: actions/upload-artifact@v4
         with:

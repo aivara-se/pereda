@@ -4,22 +4,22 @@ A real-time daily note app for the desktop: one note per day, written as you typ
 
 ![Pereda open on today's note, at the top of the log](docs/screenshot.png)
 
-The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEMS.md); the decisions are in [docs/adrs](docs/adrs/).
+The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEMS.md); the decisions are in [docs/adrs](docs/adrs/). The desktop app is the workspace in `apps/desktop`; the repository root is a bun workspace whose scripts run it.
 
 ## Run it
 
 ```sh
-tinyjs dev      # the app, with hot reload
+bun run dev     # the app, with hot reload
 bun test        # the store, the search, the jump, the export, the day, the shortcut, the keys, the midnight line, the assistant and the menu
-tinyjs build    # the app for this OS
+bun run build   # the app for this OS
 ```
 
 ## Release
 
-`.github/workflows/publish.yml` runs on a push to `main`: it reads the version in `tinyjs.json`, builds macOS arm64 and x86_64, Windows and Linux, tags `v<version>` once every build succeeds, and publishes the GitHub release with the four archives. A push that leaves the version alone does nothing ([007](docs/adrs/007-releases-follow-the-version-file.md)).
+`.github/workflows/publish.yml` runs on a push to `main`: it reads the version in `apps/desktop/tinyjs.json`, builds macOS arm64 and x86_64, Windows and Linux, tags `v<version>` once every build succeeds, and publishes the GitHub release with the four archives. A push that leaves the version alone does nothing ([007](docs/adrs/007-releases-follow-the-version-file.md)).
 
 The macOS build is signed and notarized when these secrets are set, and ad-hoc signed without them: `MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PASSWORD`, `MACOS_KEYCHAIN_PASSWORD`, `MACOS_SIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`, `MACOS_APPLE_ID`, `MACOS_TEAM_ID`, `MACOS_APP_PASSWORD`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) ([019](docs/adrs/019-the-app-is-released-under-mit.md)). The bundled Instrument Sans and Newsreader fonts keep the SIL Open Font License, in `src/frontend/fonts/`.
+MIT — see [LICENSE](LICENSE) ([019](docs/adrs/019-the-app-is-released-under-mit.md)). The bundled Instrument Sans and Newsreader fonts keep the SIL Open Font License, in `apps/desktop/src/frontend/fonts/`.

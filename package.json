@@ -2,5 +2,11 @@
   "name": "pereda",
   "private": true,
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "cd apps/desktop && tinyjs dev",
+    "build": "cd apps/desktop && tinyjs build",
+    "test": "bun test"
+  }
 }
