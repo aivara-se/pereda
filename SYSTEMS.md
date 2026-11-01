@@ -111,16 +111,15 @@ The app above is v1.10. Cloud sync is not a v1.x mechanism: the app has no serve
 
 ## Planned, not built
 
-The mobile apps are decided ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md)) and not built; every section above still describes the desktop, and the surface is [`PRODUCT.md`](PRODUCT.md)'s *The mobile apps*.
+Mobile 1.0 is decided ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md)) and not built; every section above still describes the desktop, and the surface is [`PRODUCT.md`](PRODUCT.md)'s *Mobile 1.0*.
 
 - `apps/iphone` is SwiftUI on iOS 18 or later, opening the system SQLite through a thin Swift wrapper; the assistant is `FoundationModels` on iOS 26 with Apple Intelligence; export and restore use the Files pickers.
 - `apps/android` is Jetpack Compose on Android 10 (API 29) or later, opening SQLite from `androidx.sqlite:sqlite-bundled` — the platform build has no FTS5 — with no Room, so the schema is the desktop's exactly; the pickers are the system's tree picker, and there is no assistant.
 - Both open schema version 2 unchanged: `notes`, `notes_fts`, `unicode61 remove_diacritics 0`, the triggers, the tombstones, the sequence counters, WAL and `synchronous = FULL`. A save is the whole body with a newer counter, debounced 300 ms and flushed on background, on Today and before a day opens.
 - The screens are the desktop's composition at phone size: 24 pt margins, one column, the note at 19 pt Newsreader over 1.65, dates and labels at 11 pt Instrument Sans uppercase with 0.1 em tracking, 40 pt between entries, a 44 pt bar under the safe area, 44 × 44 pt targets, and the desktop's paper, ink, muted, accent and error values. Android reads pt as dp.
 - `fixtures/mobile/` holds one schema-2 database — a year boundary, å, ä and ö, a tombstone, a note of several paragraphs — and `cases.json` with query → days and day → body. Both native suites run both files, and identical output is the gate.
-- The repository gains `apps/iphone` and `apps/android`, each with its own project and build (`xcodebuild`, `./gradlew`). Both read the version from `apps/desktop/tinyjs.json`, so the three apps carry one number. Neither carries a `package.json`, so the root bun workspace still resolves to `apps/desktop`; the desktop release builds neither.
-- When the apps ship, a version is tagged once the desktop archives and both store builds exist; a store that reviews slowly publishes the same tag later. The desktop workflow builds the desktop; the store uploads are their own jobs and read the same version.
-- The order is a store spike on both platforms that proves FTS5 and the tokenizer against the fixture, then the iPhone app through TestFlight, then the Android app on internal testing, then the two store listings — all under the desktop's version.
+- The repository gains `apps/iphone` and `apps/android`, each with its own project, version file and build (`xcodebuild`, `./gradlew`). Neither carries a `package.json`, so the root bun workspace still resolves to `apps/desktop`; the desktop release builds neither, and each store build is its own.
+- The order is a store spike on both platforms that proves FTS5 and the tokenizer against the fixture, then iPhone 1.0 through TestFlight, then Android 1.0 on internal testing, then the two store listings.
 
 ## Checks
 

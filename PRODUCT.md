@@ -120,7 +120,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The macOS build is signed and notarized and opens without a Gatekeeper warning.
 - No AI, no account, no sync and no telemetry are present.
 
-The first version that carries the mobile apps keeps every one of these on the desktop and is done when:
+**Mobile 1.0** is done when:
 
 - Each app opens on today with the caret in the note and the keyboard down; a tap writes.
 - Every committed character survives backgrounding, a kill and a relaunch; a failed save is shown and the text stays on screen.
@@ -147,11 +147,9 @@ The first version that carries the mobile apps keeps every one of these on the d
 - **v1.1** — the window draws its own frame: a frameless, translucent window with close, minimize and zoom in the page's bar.
 - **v1.0** — the live day: one note per day, written as it is typed, on the desktop; no account, server or network.
 
-## The mobile apps — decided, not built
+## Mobile 1.0 — decided, not built
 
-Two native apps, Pereda for iPhone and Pereda for Android, carry the same day and the same log onto a phone. The decision is [`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md); the build and the checks are in [`SYSTEMS.md`](SYSTEMS.md). Nothing here is built, and the desktop's behaviour is unchanged.
-
-From the first mobile version, one version covers all three apps: a feature lands on every app in the same version, and a platform limit is named where it applies, as the assistant's is.
+Two native apps, Pereda for iPhone and Pereda for Android, carry the same day and the same log onto a phone. The decision is [`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md); the build and the checks are in [`SYSTEMS.md`](SYSTEMS.md). Nothing here is built, and the desktop is unchanged.
 
 - The app opens on today with the caret in the note and the keyboard down. Today is written at the top of the log; an older day opens as its own screen, with back, its date and delete in the bar.
 - The bar holds Today, search and settings, and on iPhone the assistant's sparkle while it is on. While a note has the caret, the bar and the other entries fade to a quarter; the status line does not.
@@ -168,4 +166,4 @@ Everything decided for v1.x is built; the binary is v1.10. Cloud sync is not a v
 
 A decision is not a date: the line below is decided and not built.
 
-- **The mobile apps** — iPhone and Android at `apps/iphone` and `apps/android`, on the same local store and with no sync ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md)); they carry the desktop's version when they ship, and the surface is the section above.
+- **Mobile 1.0** — native iPhone and Android apps at `apps/iphone` and `apps/android`, on the same local store and with no sync ([`026`](docs/adrs/026-mobile-apps-are-native-on-the-same-store.md)); the surface is the section above.
