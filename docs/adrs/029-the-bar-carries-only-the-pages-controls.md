@@ -43,8 +43,9 @@ and then ignore, on a bar that carries nothing else.
   not drawn while the page is open, so it has no state to draw; the cross is the
   page's control, and the page itself says where the person is.
 - [`023`](023-settings-is-a-page-in-the-window.md)'s "Today and search leave it
-  for their own destinations" keeps only the search: ⌘F leaves the settings page
-  for the search, and the cross and Esc leave it for the log.
+  for their own destinations" loses only the Today button: the cross and Esc
+  leave the page for the log it left, ⌘F for the search, and ⌘T still leaves it
+  for today.
 - [`028`](028-the-search-has-no-control.md)'s "Esc closes the mode only from the
   field" falls; its reason — the way out is one keystroke away — now holds for
   the whole mode, and the cross is a second way out beside it.
