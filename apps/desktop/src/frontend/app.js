@@ -22,7 +22,6 @@ const logEl = $('log');
 const resultsEl = $('results');
 const pageEl = $('page');
 const searchBar = $('searchbar');
-const searchButton = $('search');
 const queryEl = $('query');
 const settingsEl = $('settingspage');
 const settingsButton = $('settings');
@@ -461,9 +460,6 @@ function hideSearch() {
   searchBar.hidden = true;
   resultsEl.hidden = true;
   resultsEl.replaceChildren();
-  searchButton.setAttribute('aria-expanded', 'false');
-  searchButton.setAttribute('aria-label', 'Search');
-  searchButton.title = OS === 'macos' ? 'Search (⌘F)' : 'Search (Ctrl+F)';
 }
 
 // Settings is over the loaded log, never a reload of it.
@@ -495,8 +491,8 @@ function hideResults() {
   resultsEl.hidden = true;
 }
 
-// Search is a mode opened from the bar: the field takes the caret and the log
-// leaves the screen until the mode is closed.
+// Search is a mode opened by ⌘F, its only way in: the field takes the caret and
+// the log leaves the screen until Esc closes it.
 function openSearch() {
   if (!searchOpen) {
     hideSearch();
@@ -505,9 +501,6 @@ function openSearch() {
     hideAssistant();
     searchBar.hidden = false;
     logEl.hidden = true;
-    searchButton.setAttribute('aria-expanded', 'true');
-    searchButton.setAttribute('aria-label', 'Close search');
-    searchButton.title = 'Close search';
     hideResults();
     pageEl.scrollTop = 0;
     renderStatus();
@@ -766,7 +759,6 @@ settingsButton.addEventListener('mousedown', () => {
   if (!settingsOpen) settingsEditing = focused !== null && focused.editing;
 });
 settingsButton.addEventListener('click', openSettings);
-searchButton.addEventListener('click', () => (searchOpen ? closeSearch() : openSearch()));
 exportButton.addEventListener('click', runExport);
 $('assistant-close').addEventListener('click', hideAssistant);
 

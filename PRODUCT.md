@@ -15,8 +15,8 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - While the app runs, ⌘⇧D — Ctrl+Shift+D on Windows and Linux — brings it forward on today from any app. The combination is fixed: no setting, no second window, no tray.
 - An older note is read-only until its edit button is pressed. Edit makes it writable, puts the caret in it and fades the bar and the other entries as today's note does; leaving the note ends the edit. Its other actions are summarise and delete. Today is always writable and has no action row.
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
-- Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — opens the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
-- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today, settings and search at its right, and a paper translucent enough to read the desktop through.
+- Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — is the only way into the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
+- The window is frameless and the page draws its bar: close, minimize and zoom at its left, Today and settings at its right, and a paper translucent enough to read the desktop through ([`028`](docs/adrs/028-the-search-has-no-control.md)).
 - Settings is a page in the same window, opened from the bar's gear. It replaces the log, which stays loaded; closing it, or Esc, returns to the same day and scroll with the note's focus back — the caret where it was writable. Nothing is stored: the app always opens on today.
 
 ## The day
@@ -38,7 +38,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 
 - The log is the index: every day with a note, newest first, with today at the top.
 - The note shows its date beside the text; there is no title to remember.
-- The bar's search opens a mode: the log and today's entry leave the screen, and a field finds a day by its words — every word must be in the note, in any order, and a word may be only its beginning, so "appl" finds "apple". Case does not matter, and å, ä and ö are their own letters. A text search never returns today.
+- ⌘F opens a mode: the log and today's entry leave the screen, and a field finds a day by its words — every word must be in the note, in any order, and a word may be only its beginning, so "appl" finds "apple". Case does not matter, and å, ä and ö are their own letters. A text search never returns today.
 - The results are the matching days newest first, each with its date and the text around the match, at most fifty. There is no ranking and no summary.
 - Scrolling down reaches older days, a page at a time, and a result opens the log at its day. Closing the search returns to today. There is no calendar and no picker; a date is named by typing it.
 - A date typed as `YYYY-MM-DD` opens the log at that day. A day after today is refused, and a day with nothing written lands on the newest day at or before it — today included, even when empty — with that said once in the status line.
@@ -105,7 +105,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
-- ⌘F opens the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end; each key has a control that does the same.
+- ⌘F opens the search and is the only way in; Esc closes it at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. The other three keys each have a control that does the same.
 - Settings opens from the bar as a page in the window; Esc closes it to the log it left, with the same day, scroll and focus.
 - An older note is read-only until its edit button is pressed; today is always writable, and no action sits under its date.
 - While a note is being written — today always, an older note after its edit — the bar and the other entries fade; blur restores the window.
