@@ -79,6 +79,9 @@ export function noteEditor(
     body: () => view.state.doc.toString(),
     hasFocus: () => view.hasFocus,
     focus: () => view.focus(),
+    // The editor is done with the note: its view leaves its listeners and its
+    // DOM, so a log that drops an entry does not keep the whole thing alive.
+    destroy: () => view.destroy(),
     // The caret at the end of the note, which is where an edit starts.
     focusEnd() {
       view.focus();
