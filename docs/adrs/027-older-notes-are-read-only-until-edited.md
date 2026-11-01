@@ -31,7 +31,8 @@ caret.
 
 - [`026`](026-a-notes-actions-are-edit-summarise-and-delete.md)'s "every entry,
   today included" and "Delete asks once on every day… today's note is cleared"
-  stop. Its row order, size and focus rule stand for older notes.
+  stop. Its row order and size stand for older notes; the row's focus rule
+  widens to the pointer.
 - [`022`](022-today-dims-the-window.md)'s fade no longer names today: it follows
   the writable note with the caret.
 - Today's delete dialog is gone; clearing today's last character is the only
