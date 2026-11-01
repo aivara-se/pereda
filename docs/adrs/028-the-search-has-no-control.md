@@ -19,8 +19,9 @@ day and the settings.
   button, and no second way into the mode.
 - ⌘F / Ctrl+F is the search's only control: it opens the mode, puts the caret in
   the field and selects what is there.
-- Esc in the field is the only way out of the mode. It empties the field and
-  returns the log to today, as [`021`](021-search-is-a-mode.md) decided.
+- Esc in the field closes the mode: it empties the field and returns the log to
+  today, as [`021`](021-search-is-a-mode.md) decided. Today, the gear and a
+  result leave the mode too, each going where it already went.
 - The field, the results, the date jump and the bound that keeps today out of a
   text search are unchanged.
 
