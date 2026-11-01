@@ -18,6 +18,14 @@ The page draws and takes input; the backend owns the day and the store. They mee
 
 The backend is the only authority. A state the page believes and the backend has not confirmed is not a state, which is what lets the app promise it never shows a save it did not make. The page holds nothing that has to survive the window: reopen, and the note is read back from the store.
 
+## The note on screen
+
+The note is one string from the store to the screen ([`030`](docs/adrs/030-the-note-renders-its-markdown.md)). The page holds no document and builds none: it parses that string for display, and saves and exports the same characters, so what is stored is what was typed.
+
+A state field parses the body with `@lezer/markdown` and turns the tree into decorations. A marker is hidden while the selection is outside its element and shown while the selection is inside it, and a fence's lines are hidden while the caret is outside the block. The markers stay in the string, so the caret, the selection and undo act on the text the store holds.
+
+Every loaded note is one CodeMirror 6 editor over its string, and a read-only note takes no keystroke ([`027`](docs/adrs/027-older-notes-are-read-only-until-edited.md)). The page is bundled by esbuild at packaging time through `frontend.build` in `tinyjs.json`; the release command does not change and no built file is committed.
+
 ## The store
 
 The requirement is that a note survives a quit or a crash, and that a day the person cleared stays cleared. One SQLite database in the app's data folder meets both: it is transactional, it is one file, and that file is the backup ([`003`](docs/adrs/003-sqlite-is-the-store.md)). It is portable between the three platforms and it is not synced anywhere.
@@ -94,6 +102,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log, 
 - **The clock moves.** A day can repeat or vanish; notes keep their dates.
 - **A second instance.** The running app comes forward, so two windows never write the same file.
 - **A book-length note.** The whole body is written on every save and shown unpaginated, so a very long note is slow.
+- **A marker never closes.** It stays literal text, and the note stays readable.
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
 - **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
@@ -122,4 +131,4 @@ bun run build
 
 `bun run build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-What no test reaches — the webview's drawing and input, the bar's controls on each page, the search mode's swap, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
+What no test reaches — the webview's drawing and input, the note's rendering and its marker reveal, the bar's controls on each page, the search mode's swap, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
