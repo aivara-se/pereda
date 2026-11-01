@@ -97,7 +97,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
 - **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
-- **No network.** v1.12 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.13 makes no request of any kind, and the acceptance run is made with the network off.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** A request is refused in words the panel and the status line show, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
@@ -107,7 +107,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log a
 
 ## Not in v1.x
 
-The app above is v1.12. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.13. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## Checks
 
