@@ -176,6 +176,11 @@ button:disabled {
   stroke-linejoin: round;
 }
 
+.icon .gear {
+  width: 14px;
+  height: 14px;
+}
+
 .icon .close {
   display: none;
 }
