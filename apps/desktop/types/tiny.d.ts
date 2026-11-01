@@ -25,7 +25,7 @@ declare interface TinyMenuItem {
   separator?: boolean;
   /** a stock entry in place of your own item: 'standard' is the whole stock
    *  set; standard: false on an { role: 'edit' } menu leaves macOS's out */
-  role?: 'standard' | 'undo' | 'redo' | 'cut' | 'copy' | 'paste' | 'selectAll';
+  role?: "standard" | "undo" | "redo" | "cut" | "copy" | "paste" | "selectAll";
 }
 
 declare interface TinyMenu {
@@ -57,7 +57,7 @@ declare interface TinyMenu {
    * the role. Windows and Linux draw a plain "Help" menu of your items in
    * the slot where you declared it.
    */
-  role?: 'edit' | 'app' | 'help';
+  role?: "edit" | "app" | "help";
   /**
    * macOS, with `role`: false leaves out the stock items the launcher would
    * add (the Edit menu's Undo…Select All group, "<App> Help").
@@ -77,7 +77,7 @@ declare interface TinyChromeOptions {
   frame?: boolean;
   /** the close/minimize/maximize group (macOS's "traffic lights"):
    *  true | false | a subset such as ['close'] | [] for none */
-  windowControls?: boolean | Array<'close' | 'minimize' | 'maximize'>;
+  windowControls?: boolean | Array<"close" | "minimize" | "maximize">;
   transparent?: boolean;
   /** material name ('sidebar' | 'hud' | 'menu' | 'popover' | 'window' |
    *  'content' | 'header' | 'sheet' | 'tooltip' | 'fullscreen' |
@@ -118,18 +118,18 @@ declare interface TinyChromeOptions {
 
 /** 'floating' = always-on-top; 'overlay' floats above almost everything
  *  (incl. most fullscreen apps); 'desktop' pins behind normal windows. */
-declare type TinyWindowLevel = 'normal' | 'floating' | 'overlay' | 'desktop';
+declare type TinyWindowLevel = "normal" | "floating" | "overlay" | "desktop";
 
 /** The portable sound names for app.playSound(). Every OS ships alert sounds
  *  but none agree on their names, so these four ask for a meaning and get the
  *  platform's nearest equivalent. Platform names and file paths also work —
  *  they're just not portable. */
-declare type TinySoundName = 'info' | 'success' | 'alert' | 'error';
+declare type TinySoundName = "info" | "success" | "alert" | "error";
 
 /** On-device LLM (Apple FoundationModels). 'available' = ready; 'unavailable'
  *  = Apple Intelligence off / model not downloaded; 'unsupported' = older
  *  macOS, or a launcher compiled without the FoundationModels shim. */
-declare type TinyAiAvailability = 'available' | 'unavailable' | 'unsupported';
+declare type TinyAiAvailability = "available" | "unavailable" | "unsupported";
 
 /** A tool the on-device model may call. `run` is YOUR function; whatever it
  *  returns goes back to the model (objects are JSON'd). Backend only — a real
@@ -164,8 +164,10 @@ declare interface TinyAiBackend extends TinyAi {
    *  The model skips tools it was asked for and its prose says it didn't:
    *  measured 3-of-3 in one run out of four, with the text claiming all three
    *  every time. Never read completion off `text`. */
-  generate(prompt: string, opts: { instructions?: string; tools: TinyAiTool[] }):
-    Promise<{ text: string; calls: TinyAiCall[] }>;
+  generate(
+    prompt: string,
+    opts: { instructions?: string; tools: TinyAiTool[] },
+  ): Promise<{ text: string; calls: TinyAiCall[] }>;
 }
 
 /** The user's language preferences and time zone, read from the OS. */
@@ -210,8 +212,16 @@ declare interface TinyWifi {
  *  gain when it differs — is native-only (the page chain ignores it; use
  *  balance()). */
 declare interface TinyAudioFilter {
-  type: 'peaking' | 'lowshelf' | 'highshelf' | 'lowpass' | 'highpass'
-      | 'bandpass' | 'notch' | 'allpass' | 'gain';
+  type:
+    | "peaking"
+    | "lowshelf"
+    | "highshelf"
+    | "lowpass"
+    | "highpass"
+    | "bandpass"
+    | "notch"
+    | "allpass"
+    | "gain";
   freq?: number;
   q?: number;
   gain?: number;
@@ -276,7 +286,7 @@ declare interface TinyWinState {
   chrome: {
     frame: boolean;
     /** what is actually shown; null where the OS won't say (Linux) */
-    windowControls: Array<'close' | 'minimize' | 'maximize'> | null;
+    windowControls: Array<"close" | "minimize" | "maximize"> | null;
     transparent: boolean;
     vibrancy: string | null;
     squareCorners: boolean;
@@ -369,7 +379,7 @@ declare interface TinyNowPlaying {
 
 /** A hardware media key / Control Center transport event. */
 declare interface TinyMediaKey {
-  command: 'play' | 'pause' | 'toggle' | 'next' | 'previous' | 'seek';
+  command: "play" | "pause" | "toggle" | "next" | "previous" | "seek";
   /** seek target in seconds (only for 'seek') */
   time?: number;
 }
@@ -378,7 +388,7 @@ declare interface TinyVoice {
   id: string;
   name: string;
   lang: string;
-  quality: 'default' | 'enhanced' | 'premium';
+  quality: "default" | "enhanced" | "premium";
 }
 
 /** A finished screen recording; path is the .mp4 you asked for. */
@@ -420,7 +430,7 @@ declare interface TinyOpenWindowOptions {
   /** x/y relative to this screen (id or a screens() entry) */
   screen?: number | TinyScreen;
   /** units for x/y with `screen`: 'pt' (default) or 'px' */
-  units?: 'pt' | 'px';
+  units?: "pt" | "px";
   /** keep this window above another of YOUR windows (true = 'main', or a
    *  win.open id) without floating over other apps the way
    *  setLevel('floating') does. Native owner/transient/child relation: it
@@ -432,7 +442,7 @@ declare interface TinyOpenWindowOptions {
 
 declare interface TinyClipboardData {
   /** what the clipboard mainly holds */
-  kind: 'files' | 'image' | 'color' | 'text' | 'empty';
+  kind: "files" | "image" | "color" | "text" | "empty";
   /** NSPasteboard change count — bumps on every clipboard change */
   changeCount: number;
   text: string | null;
@@ -478,12 +488,17 @@ declare interface TinyKeystrokeResult {
  *  yes/no preflight for screen recording, so it reads 'denied' until the
  *  user grants it in System Settings. */
 declare type TinyPermissionName =
-  | 'accessibility' | 'screen' | 'notifications'
-  | 'microphone' | 'camera' | 'location'
-  | 'automation' | `automation:${string}`;
+  | "accessibility"
+  | "screen"
+  | "notifications"
+  | "microphone"
+  | "camera"
+  | "location"
+  | "automation"
+  | `automation:${string}`;
 
 declare type TinyPermissionStatus =
-  'granted' | 'denied' | 'undetermined' | 'unsupported';
+  "granted" | "denied" | "undetermined" | "unsupported";
 
 /** The pre-0.57.0 object form of app.paths / app.info — still readable,
  *  with a one-time warning; call them instead. */
@@ -518,7 +533,7 @@ declare interface TinyAppInfoDeprecatedFields {
   readonly runtime: string;
 }
 
-declare type TinyResizeEdge = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+declare type TinyResizeEdge = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
 
 /** tiny.win.onState / the onWindowState export */
 declare interface TinyWindowStateEvent {
@@ -545,7 +560,7 @@ declare interface TinyRequirement {
 }
 
 declare interface TinySystemInfo {
-  os: 'macos' | 'windows' | 'linux';
+  os: "macos" | "windows" | "linux";
   arch: string;
   /** Linux display server ('x11' | 'wayland'); null elsewhere */
   session: string | null;
@@ -580,10 +595,22 @@ declare interface TinyMousePosition {
    *  the backend gets main */
   window: { x: number; y: number; inside: boolean } | null;
   /** the display the cursor is on (frame in the same coords) */
-  screen: { id: number; x: number; y: number; width: number; height: number; scale: number };
+  screen: {
+    id: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    scale: number;
+  };
 }
 
-declare interface TinyRect { x: number; y: number; width: number; height: number }
+declare interface TinyRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 declare interface TinyScreen {
   /** session handle (what captureScreen/recording take) — NOT stable across
@@ -631,12 +658,12 @@ declare interface TinyPositionOptions {
   screen?: number | TinyScreen;
   /** 'pt' (default): the screen's logical points; 'px': its pixels —
    *  needs `screen` (there is no global pixel space on macOS or Wayland) */
-  units?: 'pt' | 'px';
+  units?: "pt" | "px";
 }
 
 declare interface TinySizeOptions {
   /** 'px': pixels of the screen the window is on */
-  units?: 'pt' | 'px';
+  units?: "pt" | "px";
 }
 
 declare interface TinyFullscreenOptions {
@@ -666,7 +693,7 @@ declare interface TinyPaths {
  *  General > Login Items. 'unsupported': not a packaged .app (dev mode has
  *  no bundle identity to register) or macOS < 13. */
 declare type TinyLoginStatus =
-  'enabled' | 'disabled' | 'requires-approval' | 'unsupported';
+  "enabled" | "disabled" | "requires-approval" | "unsupported";
 
 /** NSWorkspace verbs — resolve true, reject with the reason on failure. */
 declare interface TinyShell {
@@ -750,7 +777,7 @@ declare interface TinyCookie {
    *  reads as that engine's default: 'none' on macOS, 'lax' on Windows,
    *  'none' or 'lax' on Linux by WebKitGTK version. Hand it back to set()
    *  unchanged to keep the cookie working the same way. */
-  sameSite: 'lax' | 'strict' | 'none';
+  sameSite: "lax" | "strict" | "none";
 }
 
 declare interface TinyCookieInit {
@@ -767,7 +794,7 @@ declare interface TinyCookieInit {
   secure?: boolean;
   httpOnly?: boolean;
   /** default 'lax' on every OS (engines disagree about an unset one) */
-  sameSite?: 'lax' | 'strict' | 'none';
+  sameSite?: "lax" | "strict" | "none";
 }
 
 /** The webview's own cookie jar — shared by every window and a wrapped
@@ -775,12 +802,21 @@ declare interface TinyCookieInit {
 declare interface TinyCookies {
   /** url keeps what a request to it would carry (domain, path, secure).
    *  Without url, Linux needs WebKitGTK 2.42+. */
-  get(filter?: { url?: string; name?: string; domain?: string; path?: string }): Promise<TinyCookie[]>;
+  get(filter?: {
+    url?: string;
+    name?: string;
+    domain?: string;
+    path?: string;
+  }): Promise<TinyCookie[]>;
   /** replaces any cookie with the same name/domain/path */
   set(cookie: TinyCookieInit): Promise<true>;
   /** one cookie by name + domain (+ path, default '/') — e.g. straight from
    *  get() — or everything get({ url, name }) matches; resolves the count */
-  remove(target: { name: string; domain: string; path?: string } | { url: string; name?: string }): Promise<number>;
+  remove(
+    target:
+      | { name: string; domain: string; path?: string }
+      | { url: string; name?: string },
+  ): Promise<number>;
 }
 
 /** Fired by "update": { "auto": … } when a newer version is available. */
@@ -860,7 +896,11 @@ declare interface Tiny {
    *  rejects. Resolves true once handed to the OS — even if the user has
    *  turned notifications off — and false only when the macOS dev fallback
    *  couldn't show it. */
-  notify(title: string, body?: string, opts?: TinyNotifyOptions): Promise<boolean>;
+  notify(
+    title: string,
+    body?: string,
+    opts?: TinyNotifyOptions,
+  ): Promise<boolean>;
 
   win: {
     /** which window this page lives in ('main' or a tiny.win.open id) */
@@ -873,7 +913,11 @@ declare interface Tiny {
     setTitle(title: string): Promise<void>;
     /** resize the PAGE's box (decorations excluded), top-left anchored —
      *  the same units getState().width/height reports back */
-    setSize(width: number, height: number, opts?: TinySizeOptions): Promise<void>;
+    setSize(
+      width: number,
+      height: number,
+      opts?: TinySizeOptions,
+    ): Promise<void>;
     /** hides the APP (NSApp hide): focus returns to the previous app —
      *  palettes can hide-then-paste with no frontmost tracking.
      *  hide({ app: false }) puts away just this window instead */
@@ -885,7 +929,10 @@ declare interface Tiny {
     restore(): Promise<void>;
     /** toggle */
     fullscreen(): Promise<void>;
-    setFullscreen(enabled: boolean, opts?: TinyFullscreenOptions): Promise<void>;
+    setFullscreen(
+      enabled: boolean,
+      opts?: TinyFullscreenOptions,
+    ): Promise<void>;
     setAlwaysOnTop(enabled: boolean): Promise<void>;
     setResizable(enabled: boolean): Promise<void>;
     /** floor for user resizes */
@@ -905,7 +952,11 @@ declare interface Tiny {
     /** top-left origin, screen points (global). With { screen }: relative to
      *  that screen's top-left, in its points — or its pixels with
      *  units: 'px'. No-op on Wayland. */
-    setPosition(x: number, y: number, opts?: TinyPositionOptions): Promise<void>;
+    setPosition(
+      x: number,
+      y: number,
+      opts?: TinyPositionOptions,
+    ): Promise<void>;
     /** null if the window is already gone */
     getState(): Promise<TinyWinState | null>;
     /** fullscreen/maximized/minimized/focused transitions, from any cause.
@@ -940,7 +991,10 @@ declare interface Tiny {
      *  native find — approximate on exotic pages on macOS/Windows (hidden
      *  text counts, shadow DOM doesn't); Linux's counts come from the
      *  engine. All three platforms; ask capabilities().findInPage. */
-    find(term: string, opts?: { forward?: boolean; matchCase?: boolean }): Promise<{ found: boolean; matches?: number; activeMatch?: number }>;
+    find(
+      term: string,
+      opts?: { forward?: boolean; matchCase?: boolean },
+    ): Promise<{ found: boolean; matches?: number; activeMatch?: number }>;
     /** clear the find selection */
     stopFind(): Promise<void>;
     /** files dragged onto the window — real filesystem paths */
@@ -961,7 +1015,10 @@ declare interface Tiny {
       /** back to showing the app menu */
       reset(): Promise<void>;
       /** patch an item in THIS window's bar only */
-      update(id: string, patch?: { label?: string; checked?: boolean; enabled?: boolean }): Promise<void>;
+      update(
+        id: string,
+        patch?: { label?: string; checked?: boolean; enabled?: boolean },
+      ): Promise<void>;
       get(id: string): Promise<TinyMenuItemState>;
     };
   };
@@ -978,7 +1035,10 @@ declare interface Tiny {
     on(fn: (id: string) => void): () => void;
     /** patch a live item without redeclaring the menu — every window's copy of
      *  the id moves. tiny.win.menu.update patches just one window's. */
-    update(id: string, patch?: { label?: string; checked?: boolean; enabled?: boolean }): Promise<void>;
+    update(
+      id: string,
+      patch?: { label?: string; checked?: boolean; enabled?: boolean },
+    ): Promise<void>;
     get(id: string): Promise<TinyMenuItemState>;
     /** replace the right-click menu; null restores WebKit's default */
     setContext(items: TinyMenuItem[] | null): Promise<void>;
@@ -1051,15 +1111,24 @@ declare interface Tiny {
        *  zero copies over any wire) or an ArrayBuffer/typed array/Blob,
        *  which is written to the app cache once and loaded from there.
        *  Rejects if the file can't be decoded. Reloading a name replaces it. */
-      load(name: string, source: string | ArrayBuffer | ArrayBufferView | Blob): Promise<true>;
+      load(
+        name: string,
+        source: string | ArrayBuffer | ArrayBufferView | Blob,
+      ): Promise<true>;
       /** Fire a voice. vol linear 0..1 (default 1), pan −1..1 equal-power
        *  (StereoPanner's law, same numbers = same sound on every OS), rate a
        *  playbackRate-style ratio (pitch and speed together, default 1). Up
        *  to 32 voices — past that the oldest is stolen; play() never rejects
        *  for "too many" (it does for an unknown name). */
-      play(name: string, opts?: {
-        vol?: number; pan?: number; rate?: number; loop?: boolean;
-      }): Promise<TinySamplerVoice>;
+      play(
+        name: string,
+        opts?: {
+          vol?: number;
+          pan?: number;
+          rate?: number;
+          loop?: boolean;
+        },
+      ): Promise<TinySamplerVoice>;
       stopAll(): Promise<void>;
       /** One master gain over the whole mixer (linear, default 1). */
       master(v: number): Promise<void>;
@@ -1092,7 +1161,7 @@ declare interface Tiny {
      */
     start(opts?: {
       /** 'app' (default) = this app's own output; 'system' = everything. */
-      scope?: 'app' | 'system';
+      scope?: "app" | "system";
       /** system scope only: drop this app's own output from the mix. */
       excludeSelf?: boolean;
       /** ms of audio per chunk, clamped ~[20, 500] (default 80). */
@@ -1104,13 +1173,15 @@ declare interface Tiny {
      * Int16 (decode: `s[i] = int16(bin[2i] | bin[2i+1]<<8); float = s[i]/32768`);
      * `t` is the monotonic ms of the chunk's first sample.
      */
-    on(fn: (chunk: {
-      pcm: string;
-      sampleRate: number;
-      channels: number;
-      frames: number;
-      t: number;
-    }) => void): () => void;
+    on(
+      fn: (chunk: {
+        pcm: string;
+        sampleRate: number;
+        channels: number;
+        frames: number;
+        t: number;
+      }) => void,
+    ): () => void;
   };
 
   theme: {
@@ -1127,7 +1198,9 @@ declare interface Tiny {
     watch(intervalMs?: number): Promise<void>;
     unwatch(): Promise<void>;
     /** after watch(); self = our own write() caused the change */
-    onChange(fn: (info: { changeCount: number; self: boolean }) => void): () => void;
+    onChange(
+      fn: (info: { changeCount: number; self: boolean }) => void,
+    ): () => void;
   };
 
   /** Native dialogs, run by the launcher — NSOpenPanel / NSAlert on macOS,
@@ -1147,23 +1220,35 @@ declare interface Tiny {
     openFile(opts?: { types?: string[] }): Promise<string | null>;
     openFiles(opts?: { types?: string[] }): Promise<string[] | null>;
     pickFolder(): Promise<string | null>;
-    saveFile(opts?: { types?: string[]; name?: string }): Promise<string | null>;
+    saveFile(opts?: {
+      types?: string[];
+      name?: string;
+    }): Promise<string | null>;
     /** `alert`/`confirm`/`prompt` are native panels with the message as the
      *  headline. A string second argument to `alert`/`confirm` is the
      *  detail; `prompt` rejects one (a TypeError — pass `{ default }`).
      *  `ok`/`cancel` relabel the buttons. The page's bare
      *  `alert()`/`confirm()`/`prompt()` are the browser primitives: one
      *  argument, origin (or app name) as the headline, no custom labels. */
-    alert(message: string, opts?: string | { detail?: string; ok?: string }): Promise<true>;
-    confirm(message: string, opts?: string | { detail?: string; ok?: string; cancel?: string }): Promise<boolean>;
-    prompt(message: string, opts?: { default?: string; ok?: string; cancel?: string }): Promise<string | null>;
+    alert(
+      message: string,
+      opts?: string | { detail?: string; ok?: string },
+    ): Promise<true>;
+    confirm(
+      message: string,
+      opts?: string | { detail?: string; ok?: string; cancel?: string },
+    ): Promise<boolean>;
+    prompt(
+      message: string,
+      opts?: { default?: string; ok?: string; cancel?: string },
+    ): Promise<string | null>;
   };
 
   /** The machine: what it is, what it can do, and its live state. Facts,
    *  not actions — anything the APP does lives on `app`. */
   system: {
     /** synchronous and safe during page setup (the webview's UA is decisive) */
-    os(): 'macos' | 'windows' | 'linux';
+    os(): "macos" | "windows" | "linux";
     isMacOS(): boolean;
     isWindows(): boolean;
     isLinux(): boolean;
@@ -1173,18 +1258,26 @@ declare interface Tiny {
      *  Mostly booleans (`sampler` is 'page' | 'native'), plus `api`: what
      *  the tinyjs.json "api" gate denies THIS origin. A page usually wants
      *  tiny.capabilities.can() instead, which answers both at once. */
-    capabilities(): Promise<Record<string, boolean | string> & {
-      api?: { gated: boolean; denied: string[] };
-    }>;
+    capabilities(): Promise<
+      Record<string, boolean | string> & {
+        api?: { gated: boolean; denied: string[] };
+      }
+    >;
     /** the user's languages + time zone, read from the OS. A page already has
      *  navigator.language(s), Intl and the 'languagechange' event; reach for
      *  this on the BACKEND (txiki has no Intl at all), or when you want the
      *  SYSTEM preference rather than what this app declares it speaks. */
     /** null where the launcher has no locale reader yet (Windows, Linux) */
     locale(): Promise<TinyLocale | null>;
-    requirements(ids?: string[] | null, opts?: { refresh?: boolean }): Promise<TinyRequirement[]>;
+    requirements(
+      ids?: string[] | null,
+      opts?: { refresh?: boolean },
+    ): Promise<TinyRequirement[]>;
     missing(ids?: string[] | null): Promise<TinyRequirement[]>;
-    promptMissing(ids?: string[] | null, opts?: { title?: string; ok?: string; cancel?: string }): Promise<{ missing: TinyRequirement[]; copied: boolean }>;
+    promptMissing(
+      ids?: string[] | null,
+      opts?: { title?: string; ok?: string; cancel?: string },
+    ): Promise<{ missing: TinyRequirement[]; copied: boolean }>;
     /** live machine state */
     battery(): Promise<TinyBattery | null>;
     wifi(): Promise<TinyWifi | null>;
@@ -1203,7 +1296,7 @@ declare interface Tiny {
     applescript(source: string): Promise<string | null>;
     /** Quick Look panel for the path(s); no args closes it */
     quickLook(paths?: string | string[] | null): Promise<void>;
-     /** on-device OCR via Vision (accurate mode); box normalized 0..1 */
+    /** on-device OCR via Vision (accurate mode); box normalized 0..1 */
     ocr(path: string): Promise<TinyOcrResult>;
     /** record a display to an .mp4 (macOS 14+, needs the 'screen' permission;
      *  video only, one at a time) */
@@ -1216,18 +1309,26 @@ declare interface Tiny {
     /** other apps' on-screen windows (Accessibility); null if not granted */
     otherWindows(): Promise<TinyOtherWindow[] | null>;
     /** move/resize another app's frontmost window (pid from otherWindows) */
-    moveWindow(pid: number, rect: { x: number; y: number; width: number; height: number }): Promise<true>;
+    moveWindow(
+      pid: number,
+      rect: { x: number; y: number; width: number; height: number },
+    ): Promise<true>;
   };
   app: {
     info(): Promise<TinyAppInfo>;
     /** self-update for built apps ("update" in tinyjs.json) */
     update: {
-      check(): Promise<{ available: boolean; current: string; latest: string | null; notes: string | null }>;
+      check(): Promise<{
+        available: boolean;
+        current: string;
+        latest: string | null;
+        notes: string | null;
+      }>;
       /** downloads, verifies, swaps the bundle and relaunches */
       install(): Promise<true>;
     };
     /** 'menubar': no Dock icon / taskbar button / app switcher entry */
-    presence(mode: 'normal' | 'menubar'): Promise<void>;
+    presence(mode: "normal" | "menubar"): Promise<void>;
     onOpenUrl(fn: (url: string) => void): () => void;
     onOpenFiles(fn: (paths: string[]) => void): () => void;
     onNotificationClick(fn: (id: string) => void): () => void;
@@ -1262,7 +1363,9 @@ declare interface Tiny {
     foregroundScreen(): Promise<TinyScreen | null>;
     /** a saved TinyScreen / TinyScreenSnapshot -> the connected screen it
      *  most likely is now (ids don't survive replugs/reboots), or null */
-    matchScreen(saved: Partial<TinyScreen> | TinyScreenSnapshot): Promise<TinyScreen | null>;
+    matchScreen(
+      saved: Partial<TinyScreen> | TinyScreenSnapshot,
+    ): Promise<TinyScreen | null>;
     /** screens plugged/unplugged/rearranged/rescaled; returns unsubscribe */
     onScreensChanged(fn: (screens: TinyScreen[]) => void): () => void;
     /** standard per-app directories */
@@ -1271,7 +1374,7 @@ declare interface Tiny {
      *  'ok' | 'unsupported' (macOS/Windows today) | 'failed'. Call it when
      *  the USER asks — silently claiming an extension is how apps get
      *  uninstalled. */
-    setAsDefaultHandler(ext: string): Promise<'ok' | 'unsupported' | 'failed'>;
+    setAsDefaultHandler(ext: string): Promise<"ok" | "unsupported" | "failed">;
     shell: TinyShell;
     launchAtLogin: TinyLaunchAtLogin;
     /** '' clears the badge */
@@ -1320,7 +1423,9 @@ declare interface Tiny {
     /** Touch ID (or the account-password sheet); false covers cancel */
     authenticate(reason?: string): Promise<boolean>;
     /** action button / reply field on a notification was used */
-    onNotificationAction(fn: (info: TinyNotificationAction) => void): () => void;
+    onNotificationAction(
+      fn: (info: TinyNotificationAction) => void,
+    ): () => void;
     nowPlaying: {
       /** also arms the media keys */
       set(info: TinyNowPlaying): Promise<void>;
@@ -1339,7 +1444,12 @@ declare interface Tiny {
     remove(): Promise<void>;
     /** the tray icon's rect { x, y, width, height } (top-left) | null.
      *  Always null on Linux, whose tray protocol doesn't say where it is. */
-    position(): Promise<{ x: number; y: number; width: number; height: number } | null>;
+    position(): Promise<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    } | null>;
     on(fn: (id: string) => void): () => void;
     onClick(fn: () => void): () => void;
   };
@@ -1361,7 +1471,9 @@ declare interface Tiny {
     /** every path that works here, sorted */
     list(): string[];
     /** fires when the answer changes, including when the first one lands */
-    onChange(fn: (change: { added: string[]; removed: string[] }) => void): () => void;
+    onChange(
+      fn: (change: { added: string[]; removed: string[] }) => void,
+    ): () => void;
     /** ask the backend again; fires onChange if anything differs */
     refresh(): Promise<void>;
   };
@@ -1370,12 +1482,12 @@ declare interface Tiny {
 declare type TinyCapability =
   | { ok: true }
   /** 'gate': tinyjs.json "api" denies it — `needs` are the names to enable */
-  | { ok: false; why: 'gate'; needs: string[] }
+  | { ok: false; why: "gate"; needs: string[] }
   /** 'platform': this OS can't; 'session': this Linux session can't (Wayland).
    *  `feature` is the system.capabilities() key that says so. */
-  | { ok: false; why: 'platform' | 'session'; feature: string }
+  | { ok: false; why: "platform" | "session"; feature: string }
   /** 'unknown': no such path; 'pending': no answer yet */
-  | { ok: false; why: 'unknown' | 'pending' };
+  | { ok: false; why: "unknown" | "pending" };
 
 declare const tiny: Tiny;
 
@@ -1431,7 +1543,10 @@ declare interface TinyWindowHandle {
     /** drop the override: back to showing the app menu */
     reset(): void;
     /** patch an item in THIS window's bar, leaving other windows' copies alone */
-    update(id: string, patch?: { label?: string; checked?: boolean; enabled?: boolean }): void;
+    update(
+      id: string,
+      patch?: { label?: string; checked?: boolean; enabled?: boolean },
+    ): void;
     get(id: string): Promise<TinyMenuItemState>;
   };
   /** @deprecated use menu.set() */
@@ -1439,7 +1554,10 @@ declare interface TinyWindowHandle {
   /** @deprecated use menu.reset() */
   resetMenu(): void;
   /** @deprecated use menu.update() */
-  updateMenuItem(id: string, patch?: { label?: string; checked?: boolean; enabled?: boolean }): void;
+  updateMenuItem(
+    id: string,
+    patch?: { label?: string; checked?: boolean; enabled?: boolean },
+  ): void;
   /** @deprecated use menu.get() */
   getMenuItem(id: string): Promise<TinyMenuItemState>;
   /** print THIS window's page (its own print panel) */
@@ -1462,7 +1580,10 @@ declare interface TinyApp {
      *  app.window(id).menu.set gives one window something else. */
     set(menus: TinyMenu[]): void;
     /** patch a live item: every window's copy of the id moves */
-    update(id: string, patch?: { label?: string; checked?: boolean; enabled?: boolean }): void;
+    update(
+      id: string,
+      patch?: { label?: string; checked?: boolean; enabled?: boolean },
+    ): void;
     get(id: string): Promise<TinyMenuItemState>;
     /** the right-click menu; null/[] restores the default */
     setContext(items: TinyMenuItem[] | null): void;
@@ -1470,7 +1591,10 @@ declare interface TinyApp {
   /** @deprecated use app.menu.set() */
   setMenu(menus: TinyMenu[]): void;
   /** @deprecated use app.menu.update() */
-  updateMenuItem(id: string, patch?: { label?: string; checked?: boolean; enabled?: boolean }): void;
+  updateMenuItem(
+    id: string,
+    patch?: { label?: string; checked?: boolean; enabled?: boolean },
+  ): void;
   /** @deprecated use app.menu.get() */
   getMenuItem(id: string): Promise<TinyMenuItemState>;
   /** @deprecated use app.menu.setContext() */
@@ -1481,7 +1605,11 @@ declare interface TinyApp {
   quit(): void;
   /** Same shape as tiny.notify, and the same result: true once handed to
    *  the OS, false only when the macOS dev fallback couldn't show it. */
-  notify(title: string, body?: string, opts?: TinyNotifyOptions): Promise<boolean>;
+  notify(
+    title: string,
+    body?: string,
+    opts?: TinyNotifyOptions,
+  ): Promise<boolean>;
   /** hides the APP (NSApp hide): focus returns to the previous app;
    *  hide({ app: false }) puts away the main window alone */
   hide(opts?: TinyHideOptions): void;
@@ -1503,13 +1631,13 @@ declare interface TinyApp {
   /** tjs.spawn without the console window a GUI app gets on Windows */
   spawnHidden(args: string[], opts?: any): any;
   /** make this app the default opener for an extension or 'folder' (Linux) */
-  setAsDefaultHandler(ext: string): Promise<'ok' | 'unsupported' | 'failed'>;
+  setAsDefaultHandler(ext: string): Promise<"ok" | "unsupported" | "failed">;
   /** true: the close button hides the window instead of quitting. macOS keeps
    *  the app alive without windows (the Dock brings it back); Windows and
    *  Linux honour it only while a tray icon, accessory mode or another window
    *  offers a way back — otherwise the last close quits, as it does there. */
   setHideOnClose(enabled: boolean): void;
-  presence(mode: 'normal' | 'menubar'): void;
+  presence(mode: "normal" | "menubar"): void;
   print(): void;
   /** render the page to a PDF file (vector) */
   printToPDF(path: string): Promise<{ path: string }>;
@@ -1550,9 +1678,18 @@ declare interface TinyApp {
     clear(): void;
     /** the same mixer the pages drive (tiny.audio.sampler) */
     sampler: {
-      load(name: string, source: string | ArrayBuffer | ArrayBufferView): Promise<true>;
-      play(name: string, opts?: { vol?: number; pan?: number; rate?: number; loop?: boolean }):
-        Promise<{ id: number; set(patch: { vol?: number; pan?: number; rate?: number }): true; stop(): true }>;
+      load(
+        name: string,
+        source: string | ArrayBuffer | ArrayBufferView,
+      ): Promise<true>;
+      play(
+        name: string,
+        opts?: { vol?: number; pan?: number; rate?: number; loop?: boolean },
+      ): Promise<{
+        id: number;
+        set(patch: { vol?: number; pan?: number; rate?: number }): true;
+        stop(): true;
+      }>;
       /** stop a voice by id (same as voice.stop()) */
       stop(id: number): true;
       stopAll(): true;
@@ -1570,7 +1707,12 @@ declare interface TinyApp {
   tray: {
     set(spec: TinyTraySpec): void;
     remove(): void;
-    position(): Promise<{ x: number; y: number; width: number; height: number } | null>;
+    position(): Promise<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    } | null>;
   };
   store: {
     get(key: string): Promise<any | null>;
@@ -1626,7 +1768,9 @@ declare interface TinyApp {
   screenAt(x: number, y: number): Promise<TinyScreen | null>;
   screenFor(rect: TinyRect): Promise<TinyScreen | null>;
   foregroundScreen(): Promise<TinyScreen | null>;
-  matchScreen(saved: Partial<TinyScreen> | TinyScreenSnapshot): Promise<TinyScreen | null>;
+  matchScreen(
+    saved: Partial<TinyScreen> | TinyScreenSnapshot,
+  ): Promise<TinyScreen | null>;
   /** standard per-app directories — a function, like tiny.app.paths()
    *  (reading app.paths.data as an object still works but is deprecated) */
   paths: (() => Promise<TinyPaths>) & TinyPathsDeprecatedFields;
@@ -1643,7 +1787,7 @@ declare interface TinyApp {
   icon(path: string): boolean;
   /** the machine — same names as tiny.system.* in the page */
   system: {
-    os(): 'macos' | 'windows' | 'linux';
+    os(): "macos" | "windows" | "linux";
     isMacOS(): boolean;
     isWindows(): boolean;
     isLinux(): boolean;
@@ -1651,7 +1795,10 @@ declare interface TinyApp {
     architecture(): Promise<string>;
     /** anything ABSENT is supported (no `api` key: the backend isn't gated) */
     capabilities(): Promise<Record<string, boolean | string>>;
-    requirements(ids?: string[] | null, opts?: { refresh?: boolean }): Promise<TinyRequirement[]>;
+    requirements(
+      ids?: string[] | null,
+      opts?: { refresh?: boolean },
+    ): Promise<TinyRequirement[]>;
     missing(ids?: string[] | null): Promise<TinyRequirement[]>;
     battery(): Promise<TinyBattery | null>;
     wifi(): Promise<TinyWifi | null>;
@@ -1681,7 +1828,10 @@ declare interface TinyApp {
     /** other apps' on-screen windows (Accessibility); null if not granted */
     otherWindows(): Promise<TinyOtherWindow[] | null>;
     /** move/resize another app's frontmost window (pid from otherWindows) */
-    moveWindow(pid: number, rect: { x: number; y: number; width: number; height: number }): Promise<true>;
+    moveWindow(
+      pid: number,
+      rect: { x: number; y: number; width: number; height: number },
+    ): Promise<true>;
   };
   /** progress bar on the app icon / taskbar button: 0..1, null clears */
   progress(value: number | null): boolean;
@@ -1720,7 +1870,12 @@ declare interface TinyApp {
   voices(): Promise<TinyVoice[]>;
   update: {
     /** notes = release notes from the manifest ("tinyjs publish --notes") */
-    check(): Promise<{ available: boolean; current: string; latest: string | null; notes: string | null }>;
+    check(): Promise<{
+      available: boolean;
+      current: string;
+      latest: string | null;
+      notes: string | null;
+    }>;
     install(): Promise<boolean>;
   };
   /** like tiny.app.info() (reading app.info.version as an object still
@@ -1761,7 +1916,7 @@ declare type TinyApiHandler = (
  *  crash (web content process died). */
 declare interface TinyNavEvent {
   window: string;
-  kind: 'policy' | 'start' | 'commit' | 'finish' | 'fail' | 'crash';
+  kind: "policy" | "start" | "commit" | "finish" | "fail" | "crash";
   url: string;
   isMainFrame?: boolean | null;
   error?: string;
@@ -1776,7 +1931,7 @@ declare interface TinyDownloadEvent {
   url: string;
   filename: string;
   path: string | null;
-  state: 'started' | 'progress' | 'done' | 'failed' | 'denied' | 'cancelled';
+  state: "started" | "progress" | "done" | "failed" | "denied" | "cancelled";
   bytes?: number;
   total?: number;
   error?: string;
@@ -1802,8 +1957,8 @@ declare interface TinyPopupEvent {
   /** id of the window whose page called window.open */
   opener?: string;
   url: string;
-  kind?: 'policy' | 'open';
+  kind?: "policy" | "open";
   /** the configured "popups" mode (policy asks only) */
   mode?: string;
-  action?: 'window' | 'external' | 'deny';
+  action?: "window" | "external" | "deny";
 }

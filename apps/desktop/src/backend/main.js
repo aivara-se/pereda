@@ -1,16 +1,29 @@
 // Pereda's backend: it owns the clock and the notes database, and the page
 // reaches them only through the calls below.
 
-import { Database } from 'tjs:sqlite';
-import path from 'tjs:path';
-import { openStore } from './store.js';
-import { writeExport } from './export.js';
-import { addDays, assertWritableDay, dayQuery, today, validDay } from '../shared/day.js';
-import { SHORTCUT_COMBO, SHORTCUT_ID } from '../shared/shortcut.js';
-import { ASSISTANT_INSTRUCTIONS, assistantUnavailable } from '../shared/assistant.js';
-import { DATA_FOLDER_EVENT, SHOW_DATA_FOLDER, fileMenus } from '../shared/menu.js';
+import { Database } from "tjs:sqlite";
+import path from "tjs:path";
+import { openStore } from "./store.js";
+import { writeExport } from "./export.js";
+import {
+  addDays,
+  assertWritableDay,
+  dayQuery,
+  today,
+  validDay,
+} from "../shared/day.js";
+import { SHORTCUT_COMBO, SHORTCUT_ID } from "../shared/shortcut.js";
+import {
+  ASSISTANT_INSTRUCTIONS,
+  assistantUnavailable,
+} from "../shared/assistant.js";
+import {
+  DATA_FOLDER_EVENT,
+  SHOW_DATA_FOLDER,
+  fileMenus,
+} from "../shared/menu.js";
 
-const DB_NAME = 'pereda.db';
+const DB_NAME = "pereda.db";
 const PAGE = 30;
 
 // The store is opened once and shared by every call, so a database that cannot
@@ -49,13 +62,17 @@ let generating = false;
 // other than macOS 26 with the model built in is `unsupported`; a request then
 // says why in the status line instead of starting a model that is not there.
 async function assistantAvailability(app) {
-  if (app.system.os() !== 'macos' || app.macos === undefined || app.macos.ai === undefined) {
-    return 'unsupported';
+  if (
+    app.system.os() !== "macos" ||
+    app.macos === undefined ||
+    app.macos.ai === undefined
+  ) {
+    return "unsupported";
   }
   try {
     return await app.macos.ai.availability();
   } catch {
-    return 'unsupported';
+    return "unsupported";
   }
 }
 
@@ -63,7 +80,7 @@ async function assistantAvailability(app) {
 // backend asks for the path; the page never builds one. Opening it copies
 // nothing, and a folder that will not open comes back with its path.
 async function openDataFolder(app) {
-  let path = '';
+  let path = "";
   try {
     path = (await app.paths()).data;
     await app.shell.open(path);
@@ -102,10 +119,13 @@ export const api = {
     const current = today();
     const before = params?.before;
     const from = params?.from;
-    if (before !== undefined && !validDay(before)) throw new Error('That is not a date.');
-    if (from !== undefined && !validDay(from)) throw new Error('That is not a date.');
+    if (before !== undefined && !validDay(before))
+      throw new Error("That is not a date.");
+    if (from !== undefined && !validDay(from))
+      throw new Error("That is not a date.");
 
-    const upper = from === undefined ? (before ?? addDays(current, 1)) : addDays(from, 1);
+    const upper =
+      from === undefined ? (before ?? addDays(current, 1)) : addDays(from, 1);
     const rows = notes.page(upper, PAGE + 1);
     const more = rows.length > PAGE;
     let days = rows.slice(0, PAGE);
@@ -113,7 +133,7 @@ export const api = {
       const row = notes.day(current);
       const first = row
         ? { day: current, body: row.body, seq: row.seq }
-        : { day: current, body: '', seq: 0 };
+        : { day: current, body: "", seq: 0 };
       days = [first, ...days.filter((entry) => entry.day !== current)];
     }
     return { today: current, days, more };
@@ -126,13 +146,14 @@ export const api = {
     const current = today();
     const day = params?.day;
     assertWritableDay(day, current);
-    if (typeof params?.body !== 'string') throw new Error('A note is plain text.');
+    if (typeof params?.body !== "string")
+      throw new Error("A note is plain text.");
     if (!Number.isSafeInteger(params?.seq) || params.seq < 1) {
-      throw new Error('A save needs a counter.');
+      throw new Error("A save needs a counter.");
     }
     const saved = notes.save(day, params.body, params.seq);
     if (!saved.applied) {
-      throw new Error('This note was written somewhere else.');
+      throw new Error("This note was written somewhere else.");
     }
     return { day, seq: saved.row.seq, today: current };
   },
@@ -143,7 +164,8 @@ export const api = {
   // by the day after it, so a result is the log at that day.
   async searchNotes(params, app) {
     const notes = await store(app);
-    if (typeof params?.query !== 'string') throw new Error('A search needs words.');
+    if (typeof params?.query !== "string")
+      throw new Error("A search needs words.");
     const current = today();
     let jump;
     try {
@@ -160,9 +182,9 @@ export const api = {
       // be saved to the wrong date.
       if (jump.day === current) {
         const row = notes.day(current);
-        if (row === null || row.body === '') {
+        if (row === null || row.body === "") {
           days = [
-            { day: current, body: '', seq: row === null ? 0 : row.seq },
+            { day: current, body: "", seq: row === null ? 0 : row.seq },
             ...days.filter((entry) => entry.day !== current),
           ];
         }
@@ -178,8 +200,8 @@ export const api = {
   async exportNotes(params, app) {
     const notes = await store(app);
     const folder = params?.folder;
-    if (typeof folder !== 'string' || folder === '') {
-      throw new Error('Choose a folder to export to.');
+    if (typeof folder !== "string" || folder === "") {
+      throw new Error("Choose a folder to export to.");
     }
     const result = await writeExport(
       notes.all(),
@@ -201,23 +223,27 @@ export const api = {
   // notes. A machine without the model says why.
   async summariseNote(params, app) {
     const availability = await assistantAvailability(app);
-    if (availability !== 'available') throw new Error(assistantUnavailable(availability));
+    if (availability !== "available")
+      throw new Error(assistantUnavailable(availability));
     const body = params?.body;
-    if (typeof body !== 'string' || body.trim() === '') {
-      throw new Error('There is nothing to summarise.');
+    if (typeof body !== "string" || body.trim() === "") {
+      throw new Error("There is nothing to summarise.");
     }
-    if (generating) throw new Error('The assistant is still answering the last note.');
+    if (generating)
+      throw new Error("The assistant is still answering the last note.");
     generating = true;
     let text;
     try {
-      text = await app.macos.ai.generate(body, { instructions: ASSISTANT_INSTRUCTIONS });
+      text = await app.macos.ai.generate(body, {
+        instructions: ASSISTANT_INSTRUCTIONS,
+      });
     } catch (error) {
       throw new Error(`The assistant could not answer: ${error.message}`);
     } finally {
       generating = false;
     }
-    if (typeof text !== 'string' || text.trim() === '') {
-      throw new Error('The assistant said nothing.');
+    if (typeof text !== "string" || text.trim() === "") {
+      throw new Error("The assistant said nothing.");
     }
     return { text };
   },

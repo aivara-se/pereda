@@ -1,9 +1,9 @@
 // The page: one log of days, newest first, every entry saved as it is typed.
 
-import { SHORTCUT_ID, shortcutNotice } from '../shared/shortcut.js';
-import { DATA_FOLDER_EVENT } from '../shared/menu.js';
-import { keyAction } from '../shared/keys.js';
-import { writingNotice } from '../shared/midnight.js';
+import { SHORTCUT_ID, shortcutNotice } from "../shared/shortcut.js";
+import { DATA_FOLDER_EVENT } from "../shared/menu.js";
+import { keyAction } from "../shared/keys.js";
+import { writingNotice } from "../shared/midnight.js";
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
@@ -18,21 +18,21 @@ const DELETE_ICON =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M10 7V5h4v2"/><path d="M7 7l1 12h8l1-12"/></svg>';
 
 const $ = (id) => document.getElementById(id);
-const logEl = $('log');
-const resultsEl = $('results');
-const pageEl = $('page');
-const searchBar = $('searchbar');
-const queryEl = $('query');
-const settingsEl = $('settingspage');
-const todayButton = $('today');
-const settingsButton = $('settings');
-const backButton = $('back');
-const exportButton = $('export');
-const exportResult = $('export-result');
-const statusLine = $('status');
-const assistantPanel = $('assistant');
-const assistantMark = $('assistant-mark');
-const assistantText = $('assistant-text');
+const logEl = $("log");
+const resultsEl = $("results");
+const pageEl = $("page");
+const searchBar = $("searchbar");
+const queryEl = $("query");
+const settingsEl = $("settingspage");
+const todayButton = $("today");
+const settingsButton = $("settings");
+const backButton = $("back");
+const exportButton = $("export");
+const exportResult = $("export-result");
+const statusLine = $("status");
+const assistantPanel = $("assistant");
+const assistantMark = $("assistant-mark");
+const assistantText = $("assistant-text");
 
 let todayKey = null; // the backend's idea of today, refreshed on every load
 let entries = []; // the days on screen, newest first
@@ -40,9 +40,9 @@ let more = false; // is there a page before the oldest day loaded?
 let loading = false;
 let loadToken = 0; // the newest load, so a slow one cannot win
 let focused = null; // the entry the keys move from, and the one with the caret when it is editable
-let logError = '';
-let searchError = '';
-let shortcutMissing = ''; // said once when the system would not give the combination
+let logError = "";
+let searchError = "";
+let shortcutMissing = ""; // said once when the system would not give the combination
 let searchOpen = false; // the log is replaced by the field and the results
 let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
@@ -51,31 +51,31 @@ let settingsScroll = 0; // the log's scroll when the page opened
 let settingsEditing = false; // the note was being written when the gear was pressed
 let exporting = false; // one export at a time
 let assistantBusy = false; // one summary at a time
-let commandError = ''; // a menu action that could not finish
+let commandError = ""; // a menu action that could not finish
 let commandSelectable = false; // the data folder's path is text to copy
-let jumpNotice = ''; // a date landed on an empty day
+let jumpNotice = ""; // a date landed on an empty day
 let midnight = null; // the loaded day is behind the backend's today
 const saveFailures = new Map(); // day -> the last reason its save failed
 
 function dayDate(day) {
-  const [year, month, date] = day.split('-').map(Number);
+  const [year, month, date] = day.split("-").map(Number);
   return new Date(year, month - 1, date);
 }
 
 function shortDate(day) {
   return dayDate(day).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 }
 
 function longDate(day) {
   return dayDate(day).toLocaleDateString(undefined, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 }
 
@@ -83,9 +83,9 @@ function longDate(day) {
 // days are in different years.
 function noticeDate(day, today) {
   return dayDate(day).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'long',
-    ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),
+    day: "numeric",
+    month: "long",
+    ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: "numeric" }),
   });
 }
 
@@ -102,26 +102,31 @@ function renderBar() {
 function renderStatus() {
   renderBar();
   const failure = saveFailures.values().next().value;
-  const problem = failure ? `Not saved — ${failure}` : commandError || logError || searchError;
+  const problem = failure
+    ? `Not saved — ${failure}`
+    : commandError || logError || searchError;
   const behind =
     midnight === null
-      ? ''
-      : writingNotice(midnight.day, midnight.today, (day) => noticeDate(day, midnight.today));
+      ? ""
+      : writingNotice(midnight.day, midnight.today, (day) =>
+          noticeDate(day, midnight.today),
+        );
   // A notice is said once: a real problem replaces it and it does not come back.
-  if (problem !== '') shortcutMissing = '';
+  if (problem !== "") shortcutMissing = "";
   statusLine.textContent = problem || behind || jumpNotice || shortcutMissing;
   statusLine.classList.toggle(
-    'info',
-    problem === '' && (behind !== '' || jumpNotice !== '' || shortcutMissing !== ''),
+    "info",
+    problem === "" &&
+      (behind !== "" || jumpNotice !== "" || shortcutMissing !== ""),
   );
   statusLine.classList.toggle(
-    'selectable',
-    commandSelectable && problem !== '' && problem === commandError,
+    "selectable",
+    commandSelectable && problem !== "" && problem === commandError,
   );
 }
 
 function resize(entry) {
-  entry.text.style.height = 'auto';
+  entry.text.style.height = "auto";
   entry.text.style.height = `${entry.text.scrollHeight}px`;
 }
 
@@ -136,7 +141,7 @@ function beginEditing(entry) {
   if (!entry.editing) {
     entry.editing = true;
     entry.text.readOnly = false;
-    entry.article.classList.add('editing');
+    entry.article.classList.add("editing");
   }
   focused = entry;
   entry.text.focus();
@@ -153,7 +158,7 @@ function stopEditing(entry) {
   if (entry.day === todayKey) return;
   entry.editing = false;
   entry.text.readOnly = true;
-  entry.article.classList.remove('editing');
+  entry.article.classList.remove("editing");
 }
 
 // ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
@@ -163,24 +168,25 @@ function moveDay(delta) {
   if (searchOpen || settingsOpen || entries.length === 0) return;
   const index = focused === null ? 0 : entries.indexOf(focused);
   const from = index === -1 ? 0 : index;
-  const target = entries[Math.min(entries.length - 1, Math.max(0, from + delta))];
+  const target =
+    entries[Math.min(entries.length - 1, Math.max(0, from + delta))];
   if (target === undefined) return;
   startEditing(target);
 }
 
 function hideAssistant() {
   assistantPanel.hidden = true;
-  assistantPanel.classList.remove('busy', 'error');
-  assistantMark.textContent = 'Generated on this Mac';
-  assistantText.textContent = '';
+  assistantPanel.classList.remove("busy", "error");
+  assistantMark.textContent = "Generated on this Mac";
+  assistantText.textContent = "";
 }
 
 // A reply is marked as generated; a refusal is not a reply, so it says so.
 function showAssistant(text, { busy = false, error = false } = {}) {
-  assistantMark.textContent = error ? 'No summary' : 'Generated on this Mac';
+  assistantMark.textContent = error ? "No summary" : "Generated on this Mac";
   assistantText.textContent = text;
-  assistantPanel.classList.toggle('busy', busy);
-  assistantPanel.classList.toggle('error', error);
+  assistantPanel.classList.toggle("busy", busy);
+  assistantPanel.classList.toggle("error", error);
   assistantPanel.hidden = false;
 }
 
@@ -188,14 +194,14 @@ function showAssistant(text, { busy = false, error = false } = {}) {
 // reply is marked in the panel and never touches the textarea.
 async function summarise(entry) {
   if (assistantBusy) {
-    commandError = 'The assistant is still answering the last note.';
+    commandError = "The assistant is still answering the last note.";
     commandSelectable = false;
     showAssistant(commandError, { error: true });
     renderStatus();
     return;
   }
-  if (entry.text.value.trim() === '') {
-    commandError = 'There is nothing to summarise.';
+  if (entry.text.value.trim() === "") {
+    commandError = "There is nothing to summarise.";
     commandSelectable = false;
     showAssistant(commandError, { error: true });
     renderStatus();
@@ -203,13 +209,15 @@ async function summarise(entry) {
   }
 
   assistantBusy = true;
-  commandError = '';
+  commandError = "";
   commandSelectable = false;
-  showAssistant('Summarising…', { busy: true });
+  showAssistant("Summarising…", { busy: true });
   renderStatus();
   try {
-    const { text } = await tiny.api.call('summariseNote', { body: entry.text.value });
-    commandError = '';
+    const { text } = await tiny.api.call("summariseNote", {
+      body: entry.text.value,
+    });
+    commandError = "";
     showAssistant(text);
   } catch (message) {
     const reason = message instanceof Error ? message.message : String(message);
@@ -233,7 +241,7 @@ function updateFade() {
     focused !== null &&
     !focused.text.readOnly &&
     document.activeElement === focused.text;
-  document.body.classList.toggle('writing', writing);
+  document.body.classList.toggle("writing", writing);
 }
 
 async function run(entry) {
@@ -243,7 +251,11 @@ async function run(entry) {
     entry.pending = null;
     let saved;
     try {
-      saved = await tiny.api.call('saveDay', { day: entry.day, body, seq: stamp });
+      saved = await tiny.api.call("saveDay", {
+        day: entry.day,
+        body,
+        seq: stamp,
+      });
     } catch (message) {
       saveFailures.set(entry.day, message);
       renderStatus();
@@ -254,7 +266,8 @@ async function run(entry) {
     saveFailures.delete(entry.day);
     // The reply says which day was written and which day the backend is on.
     // Only the save's own reply can raise this line; nothing polls.
-    midnight = saved.today > saved.day ? { day: saved.day, today: saved.today } : null;
+    midnight =
+      saved.today > saved.day ? { day: saved.day, today: saved.today } : null;
     renderStatus();
   }
   return true;
@@ -282,12 +295,14 @@ function flushEntry(entry) {
 }
 
 function flushAll() {
-  return Promise.all(entries.map(flushEntry)).then((results) => results.every(Boolean));
+  return Promise.all(entries.map(flushEntry)).then((results) =>
+    results.every(Boolean),
+  );
 }
 
 function maybeDrop(entry) {
   if (entry.day === todayKey) return;
-  if (entry.text.value !== '') return;
+  if (entry.text.value !== "") return;
   dropEntry(entry);
 }
 
@@ -304,28 +319,28 @@ function dropEntry(entry) {
 }
 
 function makeEntry(day, body, seq) {
-  const article = document.createElement('article');
-  article.className = 'entry';
+  const article = document.createElement("article");
+  article.className = "entry";
   const editable = day === todayKey; // today is always writable, an older day is not
-  article.classList.toggle('today', editable);
-  article.classList.toggle('editing', editable);
+  article.classList.toggle("today", editable);
+  article.classList.toggle("editing", editable);
 
-  const meta = document.createElement('div');
-  meta.className = 'meta';
+  const meta = document.createElement("div");
+  meta.className = "meta";
 
-  const label = document.createElement('p');
-  label.className = 'date';
-  label.textContent = day === todayKey ? 'Today' : shortDate(day);
+  const label = document.createElement("p");
+  label.className = "date";
+  label.textContent = day === todayKey ? "Today" : shortDate(day);
   meta.append(label);
 
-  const text = document.createElement('textarea');
-  text.className = 'note';
+  const text = document.createElement("textarea");
+  text.className = "note";
   text.value = body;
   text.rows = 1;
   text.spellcheck = true;
   text.readOnly = !editable;
-  text.placeholder = 'What happened?';
-  text.setAttribute('aria-label', `Note for ${longDate(day)}`);
+  text.placeholder = "What happened?";
+  text.setAttribute("aria-label", `Note for ${longDate(day)}`);
 
   const entry = {
     day,
@@ -344,47 +359,51 @@ function makeEntry(day, body, seq) {
   if (editable) {
     meta.append(label);
   } else {
-    const actions = document.createElement('div');
-    actions.className = 'actions';
+    const actions = document.createElement("div");
+    actions.className = "actions";
 
     const action = (hint, name, icon) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'action';
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "action";
       button.title = hint;
-      button.setAttribute('aria-label', name);
+      button.setAttribute("aria-label", name);
       button.innerHTML = icon;
       actions.append(button);
       return button;
     };
 
-    action('Edit this note', `Edit the note for ${longDate(day)}`, EDIT_ICON).addEventListener(
-      'click',
-      () => startEditing(entry),
-    );
-    action('Summarise this note', `Summarise the note for ${longDate(day)}`, SUMMARISE_ICON)
-      .addEventListener('click', () => summarise(entry));
+    action(
+      "Edit this note",
+      `Edit the note for ${longDate(day)}`,
+      EDIT_ICON,
+    ).addEventListener("click", () => startEditing(entry));
+    action(
+      "Summarise this note",
+      `Summarise the note for ${longDate(day)}`,
+      SUMMARISE_ICON,
+    ).addEventListener("click", () => summarise(entry));
     const remove = action(
-      'Delete this note',
+      "Delete this note",
       `Delete the note for ${longDate(day)}`,
       DELETE_ICON,
     );
-    remove.classList.add('remove');
-    remove.addEventListener('click', () => removeEntry(entry));
+    remove.classList.add("remove");
+    remove.addEventListener("click", () => removeEntry(entry));
     meta.append(label, actions);
   }
 
-  text.addEventListener('input', () => {
+  text.addEventListener("input", () => {
     resize(entry);
     entry.pending = text.value;
     clearTimeout(entry.timer);
     entry.timer = setTimeout(() => flushEntry(entry), DEBOUNCE);
   });
-  text.addEventListener('focus', () => {
+  text.addEventListener("focus", () => {
     focused = entry;
     updateFade();
   });
-  text.addEventListener('blur', () => {
+  text.addEventListener("blur", () => {
     stopEditing(entry);
     updateFade();
     flushEntry(entry).then((ok) => {
@@ -413,16 +432,19 @@ async function loadLog(from) {
   searchToken += 1; // a load ends any search still on its way
   let result;
   try {
-    result = await tiny.api.call('openLog', from === undefined ? undefined : { from });
+    result = await tiny.api.call(
+      "openLog",
+      from === undefined ? undefined : { from },
+    );
   } catch (message) {
     fatal(message);
     return;
   }
   if (token !== loadToken) return;
   todayKey = result.today;
-  commandError = '';
+  commandError = "";
   commandSelectable = false;
-  jumpNotice = '';
+  jumpNotice = "";
   midnight = null;
   hideAssistant();
   showLog(); // first: an entry measured while the log is hidden has no height
@@ -433,19 +455,22 @@ async function loadLog(from) {
     setCaretToEnd(focused.text);
   }
   pageEl.scrollTop = 0;
-  logError = '';
-  searchError = '';
+  logError = "";
+  searchError = "";
   updateFade();
   renderStatus();
 }
 
 // Ask for the days before the oldest one on screen.
 async function loadOlder() {
-  if (!more || loading || searchOpen || settingsOpen || entries.length === 0) return;
+  if (!more || loading || searchOpen || settingsOpen || entries.length === 0)
+    return;
   loading = true;
   const token = loadToken;
   try {
-    const result = await tiny.api.call('openLog', { before: entries[entries.length - 1].day });
+    const result = await tiny.api.call("openLog", {
+      before: entries[entries.length - 1].day,
+    });
     if (token !== loadToken) return;
     for (const day of result.days) {
       const entry = makeEntry(day.day, day.body, day.seq);
@@ -454,7 +479,7 @@ async function loadOlder() {
       resize(entry);
     }
     more = result.more;
-    logError = '';
+    logError = "";
   } catch (message) {
     logError = `Could not load older days — ${message}`;
   } finally {
@@ -469,7 +494,7 @@ function hideSearch() {
   searchOpen = false;
   searchToken += 1;
   clearTimeout(searchTimer);
-  queryEl.value = '';
+  queryEl.value = "";
   searchBar.hidden = true;
   resultsEl.hidden = true;
   resultsEl.replaceChildren();
@@ -480,8 +505,8 @@ function hideSettings() {
   settingsOpen = false;
   settingsEl.hidden = true;
   pageEl.hidden = false;
-  exportResult.textContent = '';
-  exportResult.classList.remove('error');
+  exportResult.textContent = "";
+  exportResult.classList.remove("error");
 }
 
 // The log is the default view: no field, no settings and no results.
@@ -532,8 +557,8 @@ function openSettings() {
   settingsOpen = true;
   pageEl.hidden = true;
   settingsEl.hidden = false;
-  exportResult.textContent = '';
-  exportResult.classList.remove('error');
+  exportResult.textContent = "";
+  exportResult.classList.remove("error");
   updateFade();
   renderStatus();
   flushAll();
@@ -554,27 +579,27 @@ function closeSettings() {
 function renderResults(days) {
   resultsEl.replaceChildren();
   if (days.length === 0) {
-    const empty = document.createElement('p');
-    empty.className = 'empty';
-    empty.textContent = 'No note says that.';
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "No note says that.";
     resultsEl.append(empty);
     return;
   }
   for (const { day, snippet } of days) {
-    const result = document.createElement('button');
-    result.type = 'button';
-    result.className = 'result';
+    const result = document.createElement("button");
+    result.type = "button";
+    result.className = "result";
 
-    const date = document.createElement('span');
-    date.className = 'date';
-    date.textContent = day === todayKey ? 'Today' : shortDate(day);
+    const date = document.createElement("span");
+    date.className = "date";
+    date.textContent = day === todayKey ? "Today" : shortDate(day);
 
-    const text = document.createElement('span');
-    text.className = 'snippet';
+    const text = document.createElement("span");
+    text.className = "snippet";
     text.textContent = snippet;
 
     result.append(date, text);
-    result.addEventListener('click', () => openDay(day));
+    result.addEventListener("click", () => openDay(day));
     resultsEl.append(result);
   }
 }
@@ -582,19 +607,19 @@ function renderResults(days) {
 // A result opens the log at its day, so the note found can be read and written.
 async function openDay(day) {
   if (!(await flushAll())) return;
-  queryEl.value = '';
+  queryEl.value = "";
   await loadLog(day);
 }
 
 // A date is answered with the page of the log at that day. An empty day is
 // not in the log, so the newest day before it is shown and the status says why.
 function showJump({ day, days, more: hasMore }) {
-  commandError = '';
+  commandError = "";
   commandSelectable = false;
-  logError = '';
-  searchError = '';
+  logError = "";
+  searchError = "";
   clearTimeout(searchTimer);
-  queryEl.value = '';
+  queryEl.value = "";
   showLog();
   hideAssistant();
   renderLog(days, hasMore);
@@ -609,7 +634,7 @@ function showJump({ day, days, more: hasMore }) {
   } else if (days[0].day !== day) {
     jumpNotice = `No note on ${shortDate(day)} — showing ${shortDate(days[0].day)}.`;
   } else {
-    jumpNotice = '';
+    jumpNotice = "";
   }
   updateFade();
   renderStatus();
@@ -620,10 +645,10 @@ function showJump({ day, days, more: hasMore }) {
 // rule. An empty field stays open.
 async function search(query) {
   if (!searchOpen) return;
-  if (query.trim() === '') {
+  if (query.trim() === "") {
     searchToken += 1;
-    searchError = '';
-    jumpNotice = '';
+    searchError = "";
+    jumpNotice = "";
     hideResults();
     renderStatus();
     return;
@@ -632,7 +657,7 @@ async function search(query) {
   if (!(await flushAll())) return;
   let result;
   try {
-    result = await tiny.api.call('searchNotes', { query });
+    result = await tiny.api.call("searchNotes", { query });
   } catch (message) {
     if (token !== searchToken) return;
     searchError = `Could not search — ${message}`;
@@ -642,8 +667,8 @@ async function search(query) {
     return;
   }
   if (token !== searchToken) return;
-  searchError = '';
-  commandError = '';
+  searchError = "";
+  commandError = "";
   commandSelectable = false;
   if (result.refused !== undefined) {
     // A date after today: say so and leave the log where it is.
@@ -655,7 +680,7 @@ async function search(query) {
     showJump(result.jump);
     return;
   }
-  jumpNotice = '';
+  jumpNotice = "";
   renderResults(result.days);
   showResults();
   pageEl.scrollTop = 0;
@@ -664,7 +689,7 @@ async function search(query) {
 
 async function goToday() {
   if (!(await flushAll())) return;
-  queryEl.value = '';
+  queryEl.value = "";
   await loadLog();
 }
 
@@ -674,18 +699,21 @@ async function closeSearch() {
   clearTimeout(searchTimer);
   searchToken += 1;
   if (!(await flushAll())) return;
-  queryEl.value = '';
+  queryEl.value = "";
   await loadLog();
 }
 
 // Delete asks once on an older day and cannot be undone. Today has no delete:
 // clearing its last character is how the text goes.
 async function removeEntry(target) {
-  const sure = await tiny.dialog.confirm(`Delete the note for ${shortDate(target.day)}?`, {
-    detail: 'The text is gone for good. There is no undo.',
-    ok: 'Delete',
-    cancel: 'Keep',
-  });
+  const sure = await tiny.dialog.confirm(
+    `Delete the note for ${shortDate(target.day)}?`,
+    {
+      detail: "The text is gone for good. There is no undo.",
+      ok: "Delete",
+      cancel: "Keep",
+    },
+  );
   if (!sure) return;
 
   // The dialog's blur can start a save; let it settle, or the delete and that
@@ -696,15 +724,15 @@ async function removeEntry(target) {
   target.pending = null;
   const stamp = target.seq + 1;
   try {
-    await tiny.api.call('saveDay', { day: target.day, body: '', seq: stamp });
+    await tiny.api.call("saveDay", { day: target.day, body: "", seq: stamp });
   } catch (message) {
     saveFailures.set(target.day, message);
     renderStatus();
     return;
   }
   target.seq = stamp;
-  target.savedBody = '';
-  target.text.value = '';
+  target.savedBody = "";
+  target.text.value = "";
   saveFailures.delete(target.day);
   midnight = null;
   renderStatus();
@@ -718,33 +746,33 @@ async function runExport() {
   if (exporting) return;
   exporting = true;
   exportButton.disabled = true;
-  exportResult.textContent = '';
-  exportResult.classList.remove('error');
+  exportResult.textContent = "";
+  exportResult.classList.remove("error");
   try {
     if (!(await flushAll())) {
-      exportResult.textContent = 'Not exported — a note could not be saved.';
-      exportResult.classList.add('error');
+      exportResult.textContent = "Not exported — a note could not be saved.";
+      exportResult.classList.add("error");
       return;
     }
     const folder = await tiny.dialog.pickFolder();
     if (folder === null) return;
-    exportResult.textContent = 'Exporting…';
-    const result = await tiny.api.call('exportNotes', { folder });
+    exportResult.textContent = "Exporting…";
+    const result = await tiny.api.call("exportNotes", { folder });
     if (result.failed !== null) {
-      const count = result.written === 1 ? '1 note' : `${result.written} notes`;
+      const count = result.written === 1 ? "1 note" : `${result.written} notes`;
       exportResult.textContent = `Wrote ${count} to ${result.folder} before ${result.failed.day} failed — ${result.failed.reason}`;
-      exportResult.classList.add('error');
+      exportResult.classList.add("error");
       return;
     }
     if (result.written === 0) {
-      exportResult.textContent = 'There are no notes to export.';
+      exportResult.textContent = "There are no notes to export.";
       return;
     }
-    const count = result.written === 1 ? '1 note' : `${result.written} notes`;
+    const count = result.written === 1 ? "1 note" : `${result.written} notes`;
     exportResult.textContent = `Wrote ${count} to ${result.folder}.`;
   } catch (message) {
     exportResult.textContent = `Could not export — ${message}`;
-    exportResult.classList.add('error');
+    exportResult.classList.add("error");
   } finally {
     exporting = false;
     exportButton.disabled = false;
@@ -753,16 +781,16 @@ async function runExport() {
 
 function fatal(message) {
   hideAssistant();
-  $('app').hidden = true;
-  $('fatal-message').textContent = message;
-  $('fatal').hidden = false;
+  $("app").hidden = true;
+  $("fatal-message").textContent = message;
+  $("fatal").hidden = false;
 }
 
-todayButton.addEventListener('click', goToday);
-todayButton.title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
+todayButton.addEventListener("click", goToday);
+todayButton.title = OS === "macos" ? "Today (⌘T)" : "Today (Ctrl+T)";
 // The bar's one back button is the mode's way out, the same one Esc is: the
 // search closes at today, the settings page where it opened.
-backButton.addEventListener('click', () => {
+backButton.addEventListener("click", () => {
   if (settingsOpen) {
     closeSettings();
     return;
@@ -771,12 +799,12 @@ backButton.addEventListener('click', () => {
 });
 // mousedown comes before the note's blur, so this is the last moment the note
 // can say it was being written.
-settingsButton.addEventListener('mousedown', () => {
+settingsButton.addEventListener("mousedown", () => {
   if (!settingsOpen) settingsEditing = focused !== null && focused.editing;
 });
-settingsButton.addEventListener('click', openSettings);
-exportButton.addEventListener('click', runExport);
-$('assistant-close').addEventListener('click', hideAssistant);
+settingsButton.addEventListener("click", openSettings);
+exportButton.addEventListener("click", runExport);
+$("assistant-close").addEventListener("click", hideAssistant);
 
 // The backend registers the shortcut at launch and brings the window forward on
 // a press; the press reaches this page too, and it takes the Today path.
@@ -789,23 +817,23 @@ tiny.hotkey.on((id) => {
 // person can copy.
 tiny.api.on(DATA_FOLDER_EVENT, ({ path, error }) => {
   if (error === null) {
-    commandError = '';
+    commandError = "";
     commandSelectable = false;
     renderStatus();
     return;
   }
   commandError =
-    path === ''
+    path === ""
       ? `Could not open the data folder — ${error}`
       : `Could not open ${path} — ${error}`;
   commandSelectable = true;
   renderStatus();
 });
 
-queryEl.addEventListener('input', () => {
+queryEl.addEventListener("input", () => {
   clearTimeout(searchTimer);
-  if (queryEl.value.trim() === '') {
-    search('');
+  if (queryEl.value.trim() === "") {
+    search("");
     return;
   }
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
@@ -814,11 +842,11 @@ queryEl.addEventListener('input', () => {
 // The four fixed keys. Escape closes the search from anywhere in it and the
 // settings page from anywhere on it; the others cancel the webview's own
 // meaning before taking the app's path. Nothing is configurable.
-document.addEventListener('keydown', (event) => {
+document.addEventListener("keydown", (event) => {
   const action = keyAction(event, OS);
   if (action === null) return;
 
-  if (action === 'escape') {
+  if (action === "escape") {
     if (settingsOpen) {
       event.preventDefault();
       closeSettings();
@@ -835,47 +863,50 @@ document.addEventListener('keydown', (event) => {
   }
 
   event.preventDefault();
-  if (action === 'search') {
+  if (action === "search") {
     openSearch();
     return;
   }
-  if (action === 'today') {
+  if (action === "today") {
     goToday();
     return;
   }
-  moveDay(action === 'previous' ? -1 : 1);
+  moveDay(action === "previous" ? -1 : 1);
 });
 
 // The window has no frame, so its controls live in the page. A close waits for
 // the saves in flight, then quits; a failed save is already on the status line.
-$('close').addEventListener('click', async () => {
+$("close").addEventListener("click", async () => {
   await flushAll();
   tiny.win.close();
 });
-$('minimize').addEventListener('click', () => tiny.win.minimize());
-$('zoom').addEventListener('click', () => tiny.win.zoom());
+$("minimize").addEventListener("click", () => tiny.win.minimize());
+$("zoom").addEventListener("click", () => tiny.win.zoom());
 pageEl.addEventListener(
-  'scroll',
+  "scroll",
   () => {
-    if (pageEl.scrollTop + pageEl.clientHeight >= pageEl.scrollHeight - LOAD_AT) {
+    if (
+      pageEl.scrollTop + pageEl.clientHeight >=
+      pageEl.scrollHeight - LOAD_AT
+    ) {
       loadOlder();
     }
   },
   { passive: true },
 );
-window.addEventListener('resize', () => entries.forEach(resize));
-document.addEventListener('visibilitychange', () => {
+window.addEventListener("resize", () => entries.forEach(resize));
+document.addEventListener("visibilitychange", () => {
   if (document.hidden) flushAll();
 });
-window.addEventListener('blur', () => {
+window.addEventListener("blur", () => {
   flushAll();
   updateFade();
 });
-window.addEventListener('focus', updateFade);
+window.addEventListener("focus", updateFade);
 
 // One ask says whether the system gave the app its shortcut; a missing one is
 // said once in the status line, and everything else works without it.
-tiny.api.call('readShortcut').then(({ registered }) => {
+tiny.api.call("readShortcut").then(({ registered }) => {
   shortcutMissing = shortcutNotice(tiny.system.os(), registered);
   renderStatus();
 });

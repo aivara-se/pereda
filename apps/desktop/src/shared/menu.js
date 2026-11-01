@@ -1,16 +1,16 @@
 // The one menu item that opens the folder the notes live in. The id and the
 // event it pushes are shared so a click and its answer cannot drift apart.
 
-export const SHOW_DATA_FOLDER = 'show-data-folder';
-export const DATA_FOLDER_EVENT = 'data-folder';
+export const SHOW_DATA_FOLDER = "show-data-folder";
+export const DATA_FOLDER_EVENT = "data-folder";
 
 // The File menu is declared on every platform and drawn where the window has a
 // menu bar.
 export function fileMenus() {
   return [
     {
-      title: 'File',
-      items: [{ id: SHOW_DATA_FOLDER, label: 'Show data folder' }],
+      title: "File",
+      items: [{ id: SHOW_DATA_FOLDER, label: "Show data folder" }],
     },
   ];
 }
