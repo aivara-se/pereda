@@ -8,7 +8,7 @@ The window is frameless and the page draws its own chrome: a bar with close, min
 
 An older entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete, shown while the entry has focus or the pointer is over it ([`020`](docs/adrs/020-actions-under-the-date.md), [`027`](docs/adrs/027-older-notes-are-read-only-until-edited.md)). The note is read-only until edit is pressed; edit makes it writable, puts the caret at the end and fades the bar and every other entry to 0.25, and blur returns it to read-only. Today is always writable and carries no actions. The status line and the assistant panel do not fade ([`022`](docs/adrs/022-today-dims-the-window.md)).
 
-Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the note's focus — the caret where it was writable. The bar's right side reads Today, settings, search; the gear keeps a pressed state while the page is open.
+Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the note's focus — the caret where it was writable. The bar's right side reads Today and settings; the gear keeps a pressed state while the page is open. Search has no control in the bar: ⌘F is its only way in ([`028`](docs/adrs/028-the-search-has-no-control.md)).
 
 One window, one OS user, one data folder. There is no account and no server ([`002`](docs/adrs/002-local-only-in-v1.md)), and the only channel the app has is inside the machine, so the network is absent by construction rather than by policy. There is no update channel either: the app checks for nothing and a new version is a fresh download ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
@@ -63,9 +63,9 @@ A press reaches the backend and every page. The backend shows and focuses the wi
 
 ## The keys
 
-Four fixed keys, handled in the page and read by `apps/desktop/src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F opens the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and Esc on the settings page closes it to the log it left; it does nothing anywhere else. ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
+Four fixed keys, handled in the page and read by `apps/desktop/src/shared/keys.js` ([`015`](docs/adrs/015-keys-and-nothing-to-configure.md)). ⌘F is the only way into the search mode and puts the caret in its field, selecting what is there; Esc in the field closes the mode, empties it and takes the Today path, and Esc on the settings page closes it to the log it left; it does nothing anywhere else. ⌘T takes the Today path, flush included; ⌘↑ and ⌘↓ move to the day above or below, with focus and the caret at the end of that note. Ctrl stands in for ⌘ on Windows and Linux.
 
-Each key cancels the webview's default before taking the app's path. There is no palette, shortcut sheet, stored combination or rebinding screen: every key has a control that already does the same thing.
+Each key cancels the webview's default before taking the app's path. There is no palette, shortcut sheet, stored combination or rebinding screen: ⌘T and the two arrows have a control that already does the same thing, and ⌘F is the search's only one ([`028`](docs/adrs/028-the-search-has-no-control.md)).
 
 ## The assistant
 

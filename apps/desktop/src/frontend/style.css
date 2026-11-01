@@ -181,18 +181,6 @@ button:disabled {
   height: 14px;
 }
 
-.icon .close {
-  display: none;
-}
-
-.icon[aria-expanded="true"] .find {
-  display: none;
-}
-
-.icon[aria-expanded="true"] .close {
-  display: block;
-}
-
 .icon:hover:not(:disabled) {
   background: var(--hover);
   color: var(--ink);
