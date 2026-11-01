@@ -30,6 +30,7 @@ const exportButton = $('export');
 const exportResult = $('export-result');
 const statusLine = $('status');
 const assistantPanel = $('assistant');
+const assistantMark = $('assistant-mark');
 const assistantText = $('assistant-text');
 
 let todayKey = null; // the backend's idea of today, refreshed on every load
@@ -37,7 +38,7 @@ let entries = []; // the days on screen, newest first
 let more = false; // is there a page before the oldest day loaded?
 let loading = false;
 let loadToken = 0; // the newest load, so a slow one cannot win
-let focused = null; // the entry with the caret, and the one the keys move from
+let focused = null; // the entry the keys move from, and the one with the caret when it is editable
 let logError = '';
 let searchError = '';
 let shortcutMissing = ''; // said once when the system would not give the combination
@@ -46,6 +47,7 @@ let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
 let settingsOpen = false; // the settings page is over the log
 let settingsScroll = 0; // the log's scroll when the page opened
+let settingsEditing = false; // the note was being written when the gear was pressed
 let exporting = false; // one export at a time
 let assistantBusy = false; // one summary at a time
 let commandError = ''; // a menu action that could not finish
@@ -115,27 +117,58 @@ function setCaretToEnd(text) {
   text.setSelectionRange(text.value.length, text.value.length);
 }
 
+// An older note is read-only until its edit button asks for the caret: the
+// text becomes writable and the rest of the window fades as today's does.
+// Today starts in this state and never leaves it.
+function beginEditing(entry) {
+  if (!entry.editing) {
+    entry.editing = true;
+    entry.text.readOnly = false;
+    entry.article.classList.add('editing');
+  }
+  focused = entry;
+  entry.text.focus();
+  updateFade();
+}
+
+function startEditing(entry) {
+  beginEditing(entry);
+  setCaretToEnd(entry.text);
+}
+
+// Leaving the caret ends an older note's edit; today stays writable.
+function stopEditing(entry) {
+  if (entry.day === todayKey) return;
+  entry.editing = false;
+  entry.text.readOnly = true;
+  entry.article.classList.remove('editing');
+}
+
 // ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
-// older, and the caret lands at the end of the note reached.
+// older, and the caret lands at the end of the note reached, which opens it
+// for writing.
 function moveDay(delta) {
   if (searchOpen || settingsOpen || entries.length === 0) return;
   const index = focused === null ? 0 : entries.indexOf(focused);
   const from = index === -1 ? 0 : index;
   const target = entries[Math.min(entries.length - 1, Math.max(0, from + delta))];
   if (target === undefined) return;
-  target.text.focus();
-  setCaretToEnd(target.text);
+  startEditing(target);
 }
 
 function hideAssistant() {
   assistantPanel.hidden = true;
-  assistantPanel.classList.remove('busy');
+  assistantPanel.classList.remove('busy', 'error');
+  assistantMark.textContent = 'Generated on this Mac';
   assistantText.textContent = '';
 }
 
-function showAssistant(text, busy) {
+// A reply is marked as generated; a refusal is not a reply, so it says so.
+function showAssistant(text, { busy = false, error = false } = {}) {
+  assistantMark.textContent = error ? 'No summary' : 'Generated on this Mac';
   assistantText.textContent = text;
   assistantPanel.classList.toggle('busy', busy);
+  assistantPanel.classList.toggle('error', error);
   assistantPanel.hidden = false;
 }
 
@@ -151,6 +184,7 @@ async function summarise(entry) {
   if (entry.text.value.trim() === '') {
     commandError = 'There is nothing to summarise.';
     commandSelectable = false;
+    showAssistant(commandError, { error: true });
     renderStatus();
     return;
   }
@@ -158,31 +192,33 @@ async function summarise(entry) {
   assistantBusy = true;
   commandError = '';
   commandSelectable = false;
-  showAssistant('Summarising…', true);
+  showAssistant('Summarising…', { busy: true });
   renderStatus();
   try {
     const { text } = await tiny.api.call('summariseNote', { body: entry.text.value });
     commandError = '';
-    showAssistant(text, false);
+    showAssistant(text);
   } catch (message) {
-    hideAssistant();
-    commandError = message;
+    const reason = message instanceof Error ? message.message : String(message);
+    commandError = reason;
     commandSelectable = false;
+    showAssistant(reason, { error: true });
   } finally {
     assistantBusy = false;
     renderStatus();
   }
 }
 
-// The only state the fade has is the caret: today's note, and only while the
-// window holds focus. A summary or a status message never fades with it.
+// The only state the fade has is the caret in a writable note: today, or an
+// older note the edit button opened. A summary or a status message never
+// fades with it.
 function updateFade() {
   const writing =
     !searchOpen &&
     !settingsOpen &&
     document.hasFocus() &&
     focused !== null &&
-    focused.day === todayKey &&
+    !focused.text.readOnly &&
     document.activeElement === focused.text;
   document.body.classList.toggle('writing', writing);
 }
@@ -257,7 +293,9 @@ function dropEntry(entry) {
 function makeEntry(day, body, seq) {
   const article = document.createElement('article');
   article.className = 'entry';
-  if (day === todayKey) article.classList.add('today');
+  const editable = day === todayKey; // today is always writable, an older day is not
+  article.classList.toggle('today', editable);
+  article.classList.toggle('editing', editable);
 
   const meta = document.createElement('div');
   meta.className = 'meta';
@@ -272,6 +310,7 @@ function makeEntry(day, body, seq) {
   text.value = body;
   text.rows = 1;
   text.spellcheck = true;
+  text.readOnly = !editable;
   text.placeholder = 'What happened?';
   text.setAttribute('aria-label', `Note for ${longDate(day)}`);
 
@@ -282,43 +321,45 @@ function makeEntry(day, body, seq) {
     pending: null,
     runner: null,
     timer: 0,
+    editing: editable,
     article,
     text,
   };
 
-  // Every note carries its own actions under the date, today included. Today's
-  // delete clears the note; an older day's delete removes the day.
-  const actions = document.createElement('div');
-  actions.className = 'actions';
+  // An older note carries its actions under its date. Today has none: it is
+  // always writable and has no delete.
+  if (editable) {
+    meta.append(label);
+  } else {
+    const actions = document.createElement('div');
+    actions.className = 'actions';
 
-  const action = (hint, name, icon) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'action';
-    button.title = hint;
-    button.setAttribute('aria-label', name);
-    button.innerHTML = icon;
-    actions.append(button);
-    return button;
-  };
+    const action = (hint, name, icon) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'action';
+      button.title = hint;
+      button.setAttribute('aria-label', name);
+      button.innerHTML = icon;
+      actions.append(button);
+      return button;
+    };
 
-  action('Edit this note', `Edit the note for ${longDate(day)}`, EDIT_ICON).addEventListener(
-    'click',
-    () => {
-      text.focus();
-      setCaretToEnd(text);
-    },
-  );
-  action('Summarise this note', `Summarise the note for ${longDate(day)}`, SUMMARISE_ICON)
-    .addEventListener('click', () => summarise(entry));
-  const remove = action(
-    day === todayKey ? 'Clear this note' : 'Delete this note',
-    day === todayKey ? "Clear today's note" : `Delete the note for ${longDate(day)}`,
-    DELETE_ICON,
-  );
-  remove.classList.add('remove');
-  remove.addEventListener('click', () => removeEntry(entry));
-  meta.append(label, actions);
+    action('Edit this note', `Edit the note for ${longDate(day)}`, EDIT_ICON).addEventListener(
+      'click',
+      () => startEditing(entry),
+    );
+    action('Summarise this note', `Summarise the note for ${longDate(day)}`, SUMMARISE_ICON)
+      .addEventListener('click', () => summarise(entry));
+    const remove = action(
+      'Delete this note',
+      `Delete the note for ${longDate(day)}`,
+      DELETE_ICON,
+    );
+    remove.classList.add('remove');
+    remove.addEventListener('click', () => removeEntry(entry));
+    meta.append(label, actions);
+  }
 
   text.addEventListener('input', () => {
     resize(entry);
@@ -331,6 +372,7 @@ function makeEntry(day, body, seq) {
     updateFade();
   });
   text.addEventListener('blur', () => {
+    stopEditing(entry);
     updateFade();
     flushEntry(entry).then((ok) => {
       if (ok) maybeDrop(entry);
@@ -373,7 +415,7 @@ async function loadLog(from) {
   showLog(); // first: an entry measured while the log is hidden has no height
   renderLog(result.days, result.more);
   focused = entries[0] ?? null;
-  if (focused !== null) {
+  if (focused !== null && focused.editing) {
     focused.text.focus();
     setCaretToEnd(focused.text);
   }
@@ -475,8 +517,8 @@ function openSearch() {
 }
 
 // Settings replaces the log or the search below the bar. The log stays loaded,
-// so closing returns to the day and scroll it held and gives the note its caret
-// back. It is not stored: the app always opens on today.
+// so closing returns to the day and scroll it held and gives a note it was
+// writing its caret back. It is not stored: the app always opens on today.
 function openSettings() {
   if (settingsOpen) {
     closeSettings();
@@ -499,7 +541,11 @@ function openSettings() {
 function closeSettings() {
   if (!settingsOpen) return;
   showLog();
-  if (focused !== null) focused.text.focus();
+  if (focused !== null) {
+    if (settingsEditing) beginEditing(focused);
+    else focused.text.focus();
+  }
+  settingsEditing = false;
   pageEl.scrollTop = settingsScroll;
   renderStatus();
 }
@@ -552,7 +598,7 @@ function showJump({ day, days, more: hasMore }) {
   hideAssistant();
   renderLog(days, hasMore);
   focused = entries[0] ?? null;
-  if (focused !== null) {
+  if (focused !== null && focused.editing) {
     focused.text.focus();
     setCaretToEnd(focused.text);
   }
@@ -631,18 +677,14 @@ async function closeSearch() {
   await loadLog();
 }
 
-// Delete asks once on every day. An older day leaves the log; today's note is
-// cleared and the entry stays, because today is in the log even when empty.
+// Delete asks once on an older day and cannot be undone. Today has no delete:
+// clearing its last character is how the text goes.
 async function removeEntry(target) {
-  const isToday = target.day === todayKey;
-  const sure = await tiny.dialog.confirm(
-    isToday ? "Clear today's note?" : `Delete the note for ${shortDate(target.day)}?`,
-    {
-      detail: 'The text is gone for good. There is no undo.',
-      ok: isToday ? 'Clear' : 'Delete',
-      cancel: 'Keep',
-    },
-  );
+  const sure = await tiny.dialog.confirm(`Delete the note for ${shortDate(target.day)}?`, {
+    detail: 'The text is gone for good. There is no undo.',
+    ok: 'Delete',
+    cancel: 'Keep',
+  });
   if (!sure) return;
 
   // The dialog's blur can start a save; let it settle, or the delete and that
@@ -662,16 +704,9 @@ async function removeEntry(target) {
   target.seq = stamp;
   target.savedBody = '';
   target.text.value = '';
-  resize(target);
   saveFailures.delete(target.day);
   midnight = null;
   renderStatus();
-  if (isToday) {
-    target.text.focus();
-    setCaretToEnd(target.text);
-    updateFade();
-    return;
-  }
   dropEntry(target);
 }
 
@@ -724,6 +759,11 @@ function fatal(message) {
 
 $('today').addEventListener('click', goToday);
 $('today').title = OS === 'macos' ? 'Today (⌘T)' : 'Today (Ctrl+T)';
+// mousedown comes before the note's blur, so this is the last moment the note
+// can say it was being written.
+settingsButton.addEventListener('mousedown', () => {
+  if (!settingsOpen) settingsEditing = focused !== null && focused.editing;
+});
 settingsButton.addEventListener('click', openSettings);
 searchButton.addEventListener('click', () => (searchOpen ? closeSearch() : openSearch()));
 exportButton.addEventListener('click', runExport);
