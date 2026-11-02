@@ -22,7 +22,7 @@ const $ = (id) => document.getElementById(id);
 const logEl = $("log");
 const resultsEl = $("results");
 const pageEl = $("page");
-const searchBar = $("searchbar");
+const searchPage = $("searchpage");
 const queryEl = $("query");
 const settingsEl = $("settingspage");
 const todayButton = $("today");
@@ -57,6 +57,59 @@ let commandSelectable = false; // the data folder's path is text to copy
 let jumpNotice = ""; // a date landed on an empty day
 let midnight = null; // the loaded day is behind the backend's today
 const saveFailures = new Map(); // day -> the last reason its save failed
+
+// A surface arrives from `enter` and leaves from `leave`, and `hidden` is the
+// state it takes when its fade ends — so every show and hide goes through these
+// two. The duration is the stylesheet's, which is what makes Reduce Motion
+// instant on the same code path.
+const leaving = new Map(); // a surface on its way out -> its frame and its landing
+let painted = false; // the first paint has no entrance
+
+function show(node) {
+  const out = leaving.get(node);
+  if (out !== undefined) {
+    clearTimeout(out.frame);
+    leaving.delete(node);
+  }
+  node.classList.remove("leave");
+  if (!node.hidden) return;
+  node.hidden = false;
+  if (!painted) return;
+  node.classList.add("enter");
+  void node.offsetWidth; // the frame the surface arrives from
+  node.classList.remove("enter");
+}
+
+function hide(node, after) {
+  if (node.hidden || leaving.has(node)) return;
+  // A surface that leaves takes no pointer and holds no focus from its first
+  // frame, so a press or a Tab during a swap reaches the page that arrives.
+  if (node.contains(document.activeElement)) document.activeElement.blur();
+  node.classList.remove("enter");
+  const ms = painted ? fade(node) : 0;
+  if (ms === 0) {
+    node.hidden = true;
+    node.classList.remove("leave");
+    if (after !== undefined) after();
+    return;
+  }
+  node.classList.add("leave");
+  leaving.set(node, {
+    after,
+    frame: setTimeout(() => {
+      node.hidden = true;
+      node.classList.remove("leave");
+      leaving.delete(node);
+      if (after !== undefined) after();
+    }, ms),
+  });
+}
+
+// How long this surface's own fade runs, read from the one declaration in the
+// stylesheet: a node with no transition answers zero and changes at once.
+function fade(node) {
+  return parseFloat(getComputedStyle(node).transitionDuration) * 1000;
+}
 
 function dayDate(day) {
   const [year, month, date] = day.split("-").map(Number);
@@ -95,9 +148,15 @@ function noticeDate(day, today) {
 // The traffic lights at its left are the window's, so they are always there.
 function renderBar() {
   const away = searchOpen || settingsOpen;
-  todayButton.hidden = away;
-  settingsButton.hidden = away;
-  backButton.hidden = !away;
+  if (away) {
+    hide(todayButton);
+    hide(settingsButton);
+    show(backButton);
+  } else {
+    show(todayButton);
+    show(settingsButton);
+    hide(backButton);
+  }
 }
 
 function renderStatus() {
@@ -114,7 +173,10 @@ function renderStatus() {
         );
   // A notice is said once: a real problem replaces it and it does not come back.
   if (problem !== "") shortcutMissing = "";
-  statusLine.textContent = problem || behind || jumpNotice || shortcutMissing;
+  const said = problem || behind || jumpNotice || shortcutMissing;
+  statusLine.textContent = said;
+  if (said === "") hide(statusLine);
+  else show(statusLine);
   statusLine.classList.toggle(
     "info",
     problem === "" &&
@@ -167,7 +229,7 @@ function moveDay(delta) {
 }
 
 function hideAssistant() {
-  assistantPanel.hidden = true;
+  hide(assistantPanel);
   assistantPanel.classList.remove("busy", "error");
   assistantMark.textContent = "Generated on this Mac";
   assistantText.textContent = "";
@@ -179,7 +241,7 @@ function showAssistant(text, { busy = false, error = false } = {}) {
   assistantText.textContent = text;
   assistantPanel.classList.toggle("busy", busy);
   assistantPanel.classList.toggle("error", error);
-  assistantPanel.hidden = false;
+  show(assistantPanel);
 }
 
 // The note whose button was pressed is the one read: its text is sent, and the
@@ -405,6 +467,16 @@ function makeEntry(day, body, seq) {
   });
 
   article.append(meta, note);
+
+  // A press anywhere on the entry selects it — its note, its date, or the space
+  // it holds — so the row under the date is reachable with the pointer. The note
+  // takes its own presses, and a pointer that only passes over changes nothing.
+  article.addEventListener("mousedown", (event) => {
+    if (event.target.closest(".note, .action") !== null) return;
+    event.preventDefault();
+    entry.note.focus();
+  });
+
   return entry;
 }
 
@@ -451,6 +523,7 @@ async function loadLog(from) {
   searchError = "";
   updateFade();
   renderStatus();
+  painted = true;
 }
 
 // Ask for the days before the oldest one on screen.
@@ -486,16 +559,14 @@ function hideSearch() {
   searchToken += 1;
   clearTimeout(searchTimer);
   queryEl.value = "";
-  searchBar.hidden = true;
-  resultsEl.hidden = true;
-  resultsEl.replaceChildren();
+  hide(searchPage);
+  hideResults();
 }
 
 // Settings is over the loaded log, never a reload of it.
 function hideSettings() {
   settingsOpen = false;
-  settingsEl.hidden = true;
-  pageEl.hidden = false;
+  hide(settingsEl);
   exportResult.textContent = "";
   exportResult.classList.remove("error");
 }
@@ -504,19 +575,19 @@ function hideSettings() {
 function showLog() {
   hideSearch();
   hideSettings();
-  logEl.hidden = false;
+  show(pageEl);
   updateFade();
 }
 
 function showResults() {
-  logEl.hidden = true;
-  resultsEl.hidden = false;
+  show(resultsEl);
 }
 
 // The results area is empty until the first character.
 function hideResults() {
-  resultsEl.replaceChildren();
-  resultsEl.hidden = true;
+  hide(resultsEl, () => {
+    resultsEl.replaceChildren();
+  });
 }
 
 // Search is a mode opened by ⌘F, its only way in: the field takes the caret and
@@ -527,10 +598,9 @@ function openSearch() {
     hideSettings();
     searchOpen = true;
     hideAssistant();
-    searchBar.hidden = false;
-    logEl.hidden = true;
+    show(searchPage);
+    hide(pageEl);
     hideResults();
-    pageEl.scrollTop = 0;
     renderStatus();
   }
   queryEl.focus();
@@ -546,8 +616,8 @@ function openSettings() {
   hideAssistant();
   settingsScroll = pageEl.scrollTop;
   settingsOpen = true;
-  pageEl.hidden = true;
-  settingsEl.hidden = false;
+  hide(pageEl);
+  show(settingsEl);
   exportResult.textContent = "";
   exportResult.classList.remove("error");
   updateFade();
@@ -673,7 +743,7 @@ async function search(query) {
   jumpNotice = "";
   renderResults(result.days);
   showResults();
-  pageEl.scrollTop = 0;
+  resultsEl.scrollTop = 0;
   renderStatus();
 }
 
@@ -771,9 +841,9 @@ async function runExport() {
 
 function fatal(message) {
   hideAssistant();
-  $("app").hidden = true;
+  hide($("app"));
   $("fatal-message").textContent = message;
-  $("fatal").hidden = false;
+  show($("fatal"));
 }
 
 todayButton.addEventListener("click", goToday);

@@ -17,6 +17,10 @@
 :root {
   color-scheme: light dark;
   --bar: 44px;
+  /* One curve and two durations: every transition in this file names them. */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --t-quick: 120ms;
+  --t-soft: 200ms;
   --bg: #faf9f6;
   --window: rgba(250, 249, 246, 0.8);
   --ink: #26231f;
@@ -131,7 +135,7 @@ button:disabled {
   height: 11px;
   border-radius: 50%;
   background: currentColor;
-  transition: transform 120ms ease;
+  transition: transform var(--t-quick) var(--ease);
 }
 
 .dot:hover::before {
@@ -154,12 +158,20 @@ button:disabled {
   color: var(--zoom);
 }
 
-/* Two controls sit at the right of the bar; everything else is the note. */
+/* Two controls sit at the right of the bar; everything else is the note. They
+   replace each other in one place, so the corner cross-fades and the bar keeps
+   its height and its drag area. */
 
 .tools {
-  display: flex;
-  gap: 2px;
+  display: grid;
   margin-left: auto;
+}
+
+.tools > * {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--t-quick) var(--ease),
+    transform var(--t-quick) var(--ease);
 }
 
 .icon {
@@ -195,9 +207,22 @@ button:disabled {
   opacity: 0.28;
 }
 
-.page {
+/* The log, the search and the settings page are mounted together: a page swap is
+   a cross-fade of two siblings in place, and the log is never rebuilt under it. */
+
+.pages {
   flex: 1;
   min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pages > * {
+  grid-area: 1 / 1;
+  min-height: 0;
+}
+
+.page {
   overflow-y: auto;
   overscroll-behavior: none;
 }
@@ -206,6 +231,22 @@ button:disabled {
   width: min(100% - 64px, 43rem);
   margin: 0 auto;
   padding: 30px 0 45vh;
+}
+
+/* The search page is the field and the list under it: the field holds its place
+   and the list scrolls at the window's edge, so its column moves nowhere. */
+
+.search-page {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.search-page .results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: none;
 }
 
 /* The field above the log: a row of it, in the note's own face. */
@@ -248,16 +289,19 @@ button:disabled {
 }
 
 .results {
+  padding: 22px 0 45vh;
+}
+
+.result,
+.results .empty {
   width: min(100% - 64px, 43rem);
   margin: 0 auto;
-  padding: 22px 0 45vh;
 }
 
 .result {
   display: grid;
   grid-template-columns: 7.5rem 1fr;
   gap: 1.5rem;
-  width: 100%;
   padding: 0 0 26px;
   color: var(--ink);
   text-align: left;
@@ -280,7 +324,6 @@ button:disabled {
 }
 
 .results .empty {
-  margin: 0;
   color: var(--muted);
   font-family: "Newsreader", ui-serif, Georgia, serif;
   font-size: 17px;
@@ -290,7 +333,6 @@ button:disabled {
    where the notes sit. It replaces the log; it never loads another day. */
 
 .settings {
-  flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: grid;
@@ -409,18 +451,36 @@ button:disabled {
   min-width: 0;
 }
 
+/* The row hangs 1 px under the date, against its right edge, outside the flow,
+   and only the selected entry shows it. It arrives on the one entrance and
+   leaves through opacity alone: its transform snaps and it takes its keys back
+   when the fade ends, never before. */
 .entry .actions {
   position: absolute;
   top: calc(100% + 1px);
   right: 0;
   display: flex;
   gap: 2px;
+  opacity: 0;
+  transform: translateY(4px);
   visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform 0s var(--t-soft),
+    visibility 0s var(--t-soft);
 }
 
-.entry:focus-within .actions,
-.entry:hover .actions {
+/* Selected: the row arrives with the 4 px rise and offers its keys at once. */
+.entry:focus-within .actions {
+  opacity: 1;
+  transform: none;
   visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform var(--t-soft) var(--ease),
+    visibility 0s;
 }
 
 .entry .action {
@@ -557,7 +617,8 @@ button:disabled {
 @media (max-width: 620px) {
   .log,
   .search,
-  .results {
+  .result,
+  .results .empty {
     width: min(100% - 40px, 43rem);
   }
 
@@ -672,20 +733,13 @@ button:disabled {
   bottom: 20px;
   margin: 0;
   max-width: min(90vw, 46rem);
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: var(--bg);
   transform: translateX(-50%);
   color: var(--error);
   font-size: 12px;
   pointer-events: none;
-}
-
-.status:empty {
-  display: none;
-}
-
-.status:not(:empty) {
-  padding: 5px 10px;
-  border-radius: 7px;
-  background: var(--bg);
 }
 
 /* A fact said once is not an error: the shortcut, when the system refused it. */
@@ -694,8 +748,8 @@ button:disabled {
 }
 
 /* The data folder could not open: its path is the fallback, so it is text the
-   person can read and copy. */
-.status.selectable {
+   person can read and copy. A line on its way out takes no pointer. */
+.status.selectable:not(.leave) {
   pointer-events: auto;
   user-select: text;
 }
@@ -706,7 +760,7 @@ button:disabled {
 .bar,
 .entry:not(:focus-within),
 .entry:focus-within .date {
-  transition: opacity 150ms ease;
+  transition: opacity var(--t-soft) var(--ease);
 }
 
 body.writing .bar,
@@ -744,6 +798,49 @@ body.writing .entry:focus-within .date {
 
 .fatal .hint {
   color: var(--muted);
+}
+
+/* One entrance and one exit, for every surface above. The page adds `enter` for
+   the frame a surface arrives from and `leave` from the frame it goes; `hidden`
+   is the state it takes when the fade ends, so the two classes are only ever the
+   ends of that fade. */
+
+.surface {
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform var(--t-soft) var(--ease);
+}
+
+.enter {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.leave {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The status line is centred by its own transform, so its rise keeps the centre. */
+.status.enter {
+  transform: translate(-50%, 4px);
+}
+
+/* Reduce Motion: both durations go to zero and the rise goes with them, so the
+   same code path draws an instant change and nothing is lost. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-quick: 0ms;
+    --t-soft: 0ms;
+  }
+
+  .enter {
+    transform: none;
+  }
+
+  .status.enter {
+    transform: translateX(-50%);
+  }
 }
 
 [hidden] {

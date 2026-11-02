@@ -58,7 +58,6 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 - A page swap is a cross-fade in place. The bar keeps its height and its place; only its right corner changes, at 120 ms.
 - Motion says nothing on its own. Every state it accompanies is also said in words or in a control's presence.
 - `prefers-reduced-motion: reduce` sets both durations to zero and removes the rise. The app is then instant and loses nothing.
-- Measured at build: the curve, the two durations and the 4 px rise, until the transitions ship.
 
 ## The narrow window
 
