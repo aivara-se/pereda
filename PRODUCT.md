@@ -146,4 +146,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built; the binary is v1.15. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+The next version is recorded and not built: v1.16, the web app and the libraries it shares ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md), [`034`](docs/adrs/034-the-two-surfaces-share-libraries.md), [`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)). The web app is a static page that keeps its notes in the browser, so "no server and no network" will describe the desktop app when it lands. Everything else decided for v1.x is built; the binary is v1.15. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
