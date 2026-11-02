@@ -13,12 +13,12 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - It is downloaded, not signed up for: anyone can download it, and there is no hosted version and nothing to self-host.
 - It opens on today with the cursor in the note.
 - While the app runs, ⌘⇧D — Ctrl+Shift+D on Windows and Linux — brings it forward on today from any app. The combination is fixed: no setting, no second window, no tray.
-- An older note is read-only until its edit button is pressed. Edit makes it writable, puts the caret in it and fades the bar and the other entries as today's note does; leaving the note ends the edit. Its other actions are summarise and delete, and they show while the note is selected; a press anywhere on the entry selects it, and a pointer that only passes over it changes nothing ([`032`](docs/adrs/032-an-entrys-actions-belong-to-selection.md)). Today is always writable, has no action row, and is selected when the app opens.
+- An older note is read-only until its edit button is pressed, and it draws no caret before that. Edit makes it writable, puts the caret at the end and fades the page's controls and the other entries as today's note does; leaving the note ends the edit. Its other actions are summarise and delete, and they show while the note is selected; a press anywhere on the entry selects it, and a pointer that only passes over it changes nothing ([`032`](docs/adrs/032-an-entrys-actions-belong-to-selection.md), [`037`](docs/adrs/037-a-selected-note-draws-no-caret.md)). Today is always writable, has no action row, and is selected when the app opens.
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
 - Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — is the only way into the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
-- The window is frameless and the page draws its bar: close, minimize and zoom at its left on every page, and the page's own controls at its right — Today and the gear on the log, one back button on the search and on the settings page — and a paper translucent enough to read the desktop through ([`029`](docs/adrs/029-the-bar-carries-only-the-pages-controls.md)).
+- The window is frameless and the page draws its bar: close, minimize and zoom at its left on every page and at full strength in every state, one back button at its right while the search or the settings page replaces the log, the gear at the window's bottom-left corner, and a paper translucent enough to read the desktop through ([`029`](docs/adrs/029-the-bar-carries-only-the-pages-controls.md), [`036`](docs/adrs/036-the-window-does-not-fade-and-the-gear-moves.md)).
 - A page change cross-fades in place, and a surface that comes or goes fades without moving the page. Nothing moves while the person types, and the system's Reduce Motion setting turns every transition off ([`031`](docs/adrs/031-the-window-moves-in-one-language.md)). The fixed values are in [`DESIGN.md`](DESIGN.md).
-- Settings is a page in the same window, opened from the bar's gear. It replaces the log, which stays loaded; the bar's back button, or Esc, returns to the same day and scroll with the note's focus back — the caret where it was writable. Nothing is stored: the app always opens on today.
+- Settings is a page in the same window, opened from the gear at the window's corner. It replaces the log, which stays loaded; the bar's back button, or Esc, returns to the same day and scroll with the note's focus back — the caret where it was writable. Nothing is stored: the app always opens on today.
 
 ## The web app
 
@@ -42,7 +42,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - One person writes it. There is no sharing, no second writer and no public link.
 - Clearing every character of a note removes it; the day remains empty.
 - Delete asks once on an older day and cannot be undone. Today has no delete: clearing its last character removes the text.
-- While a note is being written — today always, an older note after its edit button — the bar and every other entry fade to a quarter; the text, the status line and a summary stay legible.
+- While a note is being written — today always, an older note after its edit button — the page's controls and every other entry fade to a quarter; the window's three dots do not fade, and the text, the status line and a summary stay legible.
 
 ## Reading back
 
@@ -121,11 +121,11 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
-- ⌘F opens the search and is the only way in; Esc closes it at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. The other three keys each have a control that does the same.
-- Settings opens from the bar as a page in the window; its back button or Esc closes it to the log it left, with the same day, scroll and focus.
-- The bar's right corner shows only the controls the page below it uses — Today and the gear on the log, one back button on the search and on the settings page — while close, minimize and zoom sit at its left on all three.
-- An older note is read-only until its edit button is pressed; today is always writable, and no action sits under its date.
-- While a note is being written — today always, an older note after its edit — the bar and the other entries fade; blur restores the window.
+- ⌘F opens the search and is the only way in; Esc closes it at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. The back button does what Esc does; ⌘T and the two day keys have no control of their own.
+- Settings opens from the gear at the window's corner as a page in the window; its back button or Esc closes it to the log it left, with the same day, scroll and focus.
+- The bar's right corner shows one control, the back button, while the search or the settings page replaces the log; close, minimize and zoom sit at its left on all three pages and never fade.
+- An older note is read-only until its edit button is pressed and draws no caret before that; today is always writable, and no action sits under its date.
+- While a note is being written — today always, an older note after its edit — the page's controls and the other entries fade; blur restores the window.
 - On macOS 26 with Apple Intelligence on, pressing an older note's summarise action shows its summary in a panel marked as generated on this Mac, and no word of it enters the note.
 - A search finds an older day by a word from its note, folded for case and for å, ä and ö, newest first; a result opens the log at its day, today is never a text result, and closing returns to today.
 - A date typed as `YYYY-MM-DD` opens the log at that day; a day after today is refused in words, and a target with no note lands on the newest day at or before it, today included.
