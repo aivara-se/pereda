@@ -1,0 +1,15 @@
+{
+  "name": "@pereda/notes",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./day.js": "./src/day.js",
+    "./markdown.js": "./src/markdown.js",
+    "./midnight.js": "./src/midnight.js",
+    "./store.js": "./src/store.js"
+  },
+  "dependencies": {
+    "@lezer/markdown": "^1.8.1"
+  }
+}

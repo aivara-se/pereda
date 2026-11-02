@@ -1,0 +1,510 @@
+@import "@pereda/theme/theme.css";
+
+/* The web app draws its pages from the shared theme and adds no token: the
+   column, the bar and the note are the desktop's, laid out again
+   (docs/adrs/034-the-two-surfaces-share-libraries.md). */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The bar holds the app's name at its left and the page's controls at its
+   right; the page below it scrolls and the bar does not. */
+
+.bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--bar);
+  padding: 0 12px 0 22px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mark {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  color: var(--icon);
+  transition: color var(--t-quick) var(--ease);
+}
+
+.icon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon .gear {
+  width: 14px;
+  height: 14px;
+}
+
+.icon:hover {
+  color: var(--ink);
+}
+
+.icon[aria-current="page"] {
+  color: var(--ink);
+}
+
+.icon:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: none;
+}
+
+.page {
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+  padding: 30px 0 45vh;
+}
+
+/* An entry is a date column and the note, on the one grid every page shares. */
+
+.entry {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  padding-bottom: 48px;
+}
+
+.entry .date {
+  position: relative;
+  align-self: start;
+  min-width: 0;
+  padding-top: 7px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.entry.today .date,
+.entry.selected .date,
+.entry:focus-within .date {
+  color: var(--ink);
+}
+
+/* The row hangs 1 px under the date, against its right edge, outside the flow,
+   so the entry does not change height when it arrives. */
+
+.entry .actions {
+  position: absolute;
+  top: calc(100% + 1px);
+  right: 0;
+  display: flex;
+  gap: 2px;
+}
+
+.entry .actions button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.entry .actions svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.entry .actions button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.entry .actions button:last-child:hover {
+  color: var(--error);
+}
+
+.entry .actions button:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+/* The note is one editor over its string: CodeMirror's chrome goes, so the note
+   keeps the page's type, its caret and its wrap. */
+
+.note {
+  display: block;
+  width: 100%;
+  min-height: 1.65em;
+}
+
+.note .cm-editor {
+  background: transparent;
+  color: var(--ink);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 19px;
+  font-weight: 450;
+  line-height: 1.65;
+}
+
+.note .cm-scroller {
+  overflow: visible;
+  font-family: inherit;
+  line-height: inherit;
+}
+
+.note .cm-content {
+  padding: 0;
+  caret-color: var(--accent);
+}
+
+.note .cm-line {
+  padding: 0;
+}
+
+.note .cm-editor.cm-focused {
+  outline: none;
+}
+
+.note .cm-placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.entry:not(.open) .note .cm-content {
+  cursor: default;
+}
+
+/* The forms the note draws where it stands. */
+
+.md-em {
+  font-style: italic;
+}
+
+.md-strong {
+  font-weight: 700;
+}
+
+.md-del {
+  text-decoration: line-through;
+}
+
+.md-code {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: var(--hover);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.md-block {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+/* The search: a field on the log's grid, and the results under it. */
+
+.search {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+}
+
+.search .date {
+  padding-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.search .field {
+  width: 100%;
+  padding: 0 0 5px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--accent);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.search .field::placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.search .field:focus {
+  border-bottom-color: var(--accent-soft);
+}
+
+.search:focus-within .date {
+  color: var(--ink);
+}
+
+.results {
+  padding-top: 22px;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 0 0 26px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.result .date {
+  padding-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.result .snippet {
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.result:hover .date {
+  color: var(--ink);
+}
+
+.result:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.empty {
+  color: var(--muted);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+}
+
+/* Settings: a nav where the dates sit, a panel where the notes sit. */
+
+.settings {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  align-content: start;
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+  padding: 30px 0 45vh;
+}
+
+.settings-nav {
+  padding-top: 7px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.settings-rule {
+  margin: 0;
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.settings-rule code {
+  white-space: nowrap;
+}
+
+.settings-button {
+  margin-top: 24px;
+  padding: 8px 13px;
+  border-radius: 7px;
+  background: var(--hover);
+  font-size: 13px;
+}
+
+.settings-button:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.settings-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.settings-result {
+  max-width: 34rem;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.settings-result.error {
+  color: var(--error);
+}
+
+/* The status line is one sentence at the bottom centre, over the page. */
+
+.status {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  max-width: min(90vw, 46rem);
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 7px;
+  background: var(--bg);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.09);
+  color: var(--muted);
+  font-size: 12px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.status.failed {
+  color: var(--error);
+}
+
+/* A store that cannot open is the whole page: nothing is kept, and the reason
+   is the only thing to say. */
+
+.fatal {
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+  padding: 30px 0;
+}
+
+.fatal h1 {
+  margin: 0 0 12px;
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.fatal p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+@media (max-width: 620px) {
+  .page,
+  .settings,
+  .search,
+  .result {
+    width: min(100% - 40px, 43rem);
+  }
+
+  .page,
+  .settings {
+    padding-top: 22px;
+  }
+
+  .entry,
+  .search,
+  .result,
+  .settings {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .entry {
+    padding-bottom: 40px;
+  }
+
+  .entry .date,
+  .result .date,
+  .search .date,
+  .settings-nav {
+    padding-top: 0;
+    text-align: left;
+  }
+
+  .entry .actions {
+    top: 0;
+    left: 0;
+    right: auto;
+  }
+}

@@ -120,7 +120,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log, 
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
 - **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
-- **No network.** v1.15 makes no request of any kind, and the acceptance run is made with the network off.
+- **No network.** v1.16 makes no request of any kind, and the acceptance run is made with the network off. The web page asks for its own files once, and for nothing after them: a keystroke, a search and an export each make none.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** A request is refused in words the panel and the status line show, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
@@ -130,16 +130,21 @@ The page is the app's, not a window or a modal: the gear opens it over the log, 
 
 ## Not in v1.x
 
-The app above is v1.15. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.16. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
-## Planned, not built
+## The web app
 
-A second surface is decided and not built: a static web app that keeps its notes in the browser, with no account, no upload and no sync to the desktop ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)). Its mechanisms:
+A second surface: a static page that keeps its notes in the browser, with no account, no upload and no sync to the desktop ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
 
-- A bun workspace of `apps/desktop`, `apps/website`, and `libs/notes`, `libs/note-editor` and `libs/theme` ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)). The 504 platform-free lines of the day, the Markdown ranges, the midnight line, the store and the editor move into the libraries; the desktop keeps its window, menu, shortcut, assistant and SQLite file.
-- The web store is the same SQL over SQLite compiled to WebAssembly in a worker, on the origin-private file system. One schema and one search, two drivers; the SQLite file stays the desktop's.
-- The web app is SvelteKit with `adapter-static` and Vite, built by bun and deployed to GitHub Pages by a workflow ([`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)). `validate` gains its build.
-- The desktop's build, its promise of no request and the version file do not move.
+The repository is a bun workspace of `apps/desktop`, `apps/website` and the libraries both import from the workspace: `libs/notes` holds the day, the Markdown ranges, the midnight line and the store; `libs/note-editor` the CodeMirror editor over one note; `libs/theme` the tokens, the two faces and the base type ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)). A library has no build step of its own: `bun test` at the root is the one runner, and each app's build bundles the library files it imports. The desktop's backend entry is `main.ts` for that reason: tinyjs bundles a TypeScript entry, which is what lets the backend import a package, while a plain-JavaScript one ships only the folder it sits in.
+
+`apps/website/src/lib/worker.js` is the web driver and nothing more. It loads SQLite's WebAssembly build, installs the origin-private file system's shared-access-handle pool as a VFS — a worker-only VFS, and the only one GitHub Pages can serve, which cannot set the cross-origin headers the default one needs — opens `/pereda.db`, and hands the notes library a handle with `exec`, `prepare().all()`, `prepare().run()` and `close`, which is the shape the desktop's `tjs:sqlite` already has. The schema, the migrations, the ordered writes and the FTS5 search are the library's, so both surfaces run one SQL. The pool is one connection: the page holds no handle of its own.
+
+The worker answers the desktop backend's three calls — the log, the save and the search — plus the export's read of every day. The page reaches it through one request per call, answered by id.
+
+The page is SvelteKit with `adapter-static` and Vite ([`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)). Every route is prerendered and client-rendered: `/`, `/search/` and `/settings/` are files, no request is rendered, and the browser's router moves between them, asking for a page's script the first time it is opened and for nothing else. The bar, the column and the note are drawn again from `libs/theme`; no page adds a token. A browser that cannot give the worker a place to write is told so, and the page keeps nothing.
+
+`apps/website/vite.config.js` takes the path the site is served under from `PEREDA_BASE`: the deploy sets it to the repository's name, and a custom domain is a CNAME in `apps/website/static/` with that variable empty. The desktop's build, its promise of no request and the version file do not move.
 
 ## Checks
 
@@ -153,5 +158,7 @@ bun run build
 `bun test` covers the backend and what the note draws: the day at a fixed clock and around midnight, a valid and an impossible date, a future day, an insert and an update, a save that loses the counter comparison, a cleared day that leaves no note, a save that cannot resurrect a tombstone, a day across the turn of the year, a page of days newest first that stops at the end, every non-empty day read oldest first, an export that writes one file per day verbatim, replaces a same-named file, refuses a day that is not a date and stops at the first failed write, a search folded for case in any script, every word as a prefix in any order, a text search that leaves today out, the index kept in step by an update and a clear, a query read as words rather than FTS5 syntax, the fifty-day cap, a version 1 file lifted to version 2 with its notes indexed, the shortcut's refusal named for each platform, the assistant's refusal for each availability, a date resolved before the search and refused after today, the File menu's one item, each fixed key on each platform, the midnight line while the day is behind, and the five forms with the marks a selection hides.
 
 `bun run build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
+
+`bun run build:web` builds the site into `apps/website/build`: three prerendered pages, the worker, and SQLite's 879 KB of WebAssembly, which is about 400 KB gzipped. The first load asks for 22 files and about 756 KB gzipped, the database included. No test reaches the page it writes. The web app is checked by hand on each release against the desktop's promises it keeps: it opens on today, a note survives a reload, a search finds by a word's beginning in any order and keeps å, ä and ö apart, an export writes one Markdown file per day, and a keystroke with the network off still reaches the browser's own storage.
 
 What no test reaches — the webview's drawing and input, the note's rendering on screen, the bar's controls on each page, every page swap and the surfaces that fade, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.

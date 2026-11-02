@@ -3,8 +3,8 @@
 import { SHORTCUT_ID, shortcutNotice } from "../shared/shortcut.js";
 import { DATA_FOLDER_EVENT } from "../shared/menu.js";
 import { keyAction } from "../shared/keys.js";
-import { writingNotice } from "../shared/midnight.js";
-import { noteEditor } from "./note.js";
+import { writingNotice } from "@pereda/notes/midnight.js";
+import { noteEditor } from "@pereda/note-editor";
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;

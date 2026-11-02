@@ -1,18 +1,23 @@
 # Pereda
 
-A real-time daily note app for the desktop: one note per day, written as you type. macOS, Windows and Linux, in about 9.5 MB, with no account, no server and no network.
+A real-time daily note app: one note per day, written as you type. The desktop app runs on macOS, Windows and Linux, in about 9.5 MB, with no account, no server and no network. A static web page writes the same log in the browser's own storage.
 
 ![Pereda open on today's note, at the top of the log](docs/screenshot.png)
 
-The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEMS.md); the decisions are in [docs/adrs](docs/adrs/). The desktop app is the workspace in `apps/desktop`; the repository root is a bun workspace whose scripts run it.
+The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEMS.md); the decisions are in [docs/adrs](docs/adrs/). The repository is a bun workspace: the desktop app in `apps/desktop`, the web app in `apps/website`, and the day, the store, the note and the theme the two share in `libs/`. The root scripts run both.
 
 ## Run it
 
 ```sh
-bun run dev     # the app, with hot reload
-bun test        # the store, the search, the jump, the export, the day, the note's forms, the shortcut, the keys, the midnight line, the assistant's refusal and the menu
-bun run build   # the app for this OS
+bun run dev        # the app, with hot reload
+bun test           # the store, the search, the jump, the export, the day, the note's forms, the shortcut, the keys, the midnight line, the assistant's refusal and the menu
+bun run build      # the app for this OS
+bun run build:web  # the site, into apps/website/build
 ```
+
+## Deploy the site
+
+`.github/workflows/deploy.yml` builds `apps/website` on a push to `main` that changes it, and publishes it to GitHub Pages. The site is served under the repository's path until a custom domain is pointed at it; that is a CNAME in `apps/website/static/` and an empty `PEREDA_BASE` ([035](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)).
 
 ## Release
 
@@ -22,4 +27,4 @@ The macOS build is signed and notarized when these secrets are set, and ad-hoc s
 
 ## License
 
-MIT — see [LICENSE](LICENSE) ([019](docs/adrs/019-the-app-is-released-under-mit.md)). The bundled Instrument Sans and Newsreader fonts keep the SIL Open Font License, in `apps/desktop/src/frontend/fonts/`.
+MIT — see [LICENSE](LICENSE) ([019](docs/adrs/019-the-app-is-released-under-mit.md)). The bundled Instrument Sans and Newsreader fonts keep the SIL Open Font License, in `libs/theme/fonts/`.

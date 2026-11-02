@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { noteRanges } from "../src/shared/markdown.js";
+import { noteRanges } from "../src/markdown.js";
 
 // The characters a form draws away, and the text it styles, with the selection
 // a caret of the given position would make.

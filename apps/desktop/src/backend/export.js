@@ -2,7 +2,7 @@
 // failure. The store and the filesystem belong to the caller, so this loop runs
 // under bun and in the app without a second implementation.
 
-import { validDay } from "../shared/day.js";
+import { validDay } from "@pereda/notes/day.js";
 
 // Write every row to target(day) with writeFile. A day that is not a real date
 // is refused before its path is built; a failed write keeps what came before.
