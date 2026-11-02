@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./calls.js": "./src/calls.js",
     "./day.js": "./src/day.js",
     "./markdown.js": "./src/markdown.js",
     "./midnight.js": "./src/midnight.js",

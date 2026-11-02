@@ -10,7 +10,7 @@ The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEM
 
 ```sh
 bun run dev        # the app, with hot reload
-bun test           # the store, the search, the jump, the export, the day, the note's forms, the shortcut, the keys, the midnight line, the assistant's refusal and the menu
+bun test           # the store, the calls, the search, the jump, the export, the day, the note's forms, the shortcut, the keys, the midnight line, the assistant's refusal and the menu
 bun run build      # the app for this OS
 bun run build:web  # the site, into apps/website/build
 ```

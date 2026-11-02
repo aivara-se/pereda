@@ -10,17 +10,11 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm";
 import wasm from "@sqlite.org/sqlite-wasm/sqlite3.wasm?url";
 
-import {
-  addDays,
-  assertWritableDay,
-  dayQuery,
-  today,
-  validDay,
-} from "@pereda/notes/day.js";
+import { openLog, saveDay, searchNotes } from "@pereda/notes/calls.js";
+import { today } from "@pereda/notes/day.js";
 import { openStore } from "@pereda/notes/store.js";
 
 const FILE = "/pereda.db";
-const PAGE = 30;
 
 function rows(db, sql, bind) {
   const out = [];
@@ -60,87 +54,24 @@ function store() {
   return opening;
 }
 
-// The same three calls the desktop's backend answers, in the same order and
-// with the same refusals: the log, the save and the search.
+// The calls' bodies are the notes library's; this worker only says how it is
+// asked, over the store it opened.
 const calls = {
   async open() {
     await store();
     return { today: today() };
   },
 
-  // One page of the log: today on the first page, then the days before the
-  // oldest one loaded, newest first. `from` opens the log at a day instead of at
-  // today, which is how a search result and a date jump are read.
   async openLog(params) {
-    const notes = await store();
-    const current = today();
-    const before = params?.before;
-    const from = params?.from;
-    if (before !== undefined && !validDay(before))
-      throw new Error("That is not a date.");
-    if (from !== undefined && !validDay(from))
-      throw new Error("That is not a date.");
-
-    const upper =
-      from === undefined ? (before ?? addDays(current, 1)) : addDays(from, 1);
-    const read = notes.page(upper, PAGE + 1);
-    const more = read.length > PAGE;
-    let days = read.slice(0, PAGE);
-    if (before === undefined && from === undefined) {
-      const row = notes.day(current);
-      const first = row
-        ? { day: current, body: row.body, seq: row.seq }
-        : { day: current, body: "", seq: 0 };
-      days = [first, ...days.filter((entry) => entry.day !== current)];
-    }
-    return { today: current, days, more };
+    return openLog(await store(), params);
   },
 
   async saveDay(params) {
-    const notes = await store();
-    const current = today();
-    const day = params?.day;
-    assertWritableDay(day, current);
-    if (typeof params?.body !== "string")
-      throw new Error("A note is plain text.");
-    if (!Number.isSafeInteger(params?.seq) || params.seq < 1) {
-      throw new Error("A save needs a counter.");
-    }
-    const saved = notes.save(day, params.body, params.seq);
-    if (!saved.applied)
-      throw new Error("This note was written somewhere else.");
-    return { day, seq: saved.row.seq, today: current };
+    return saveDay(await store(), params);
   },
 
-  // Search the notes by their words, and answer an exact date before that rule:
-  // the page of the log bounded by the day after it.
   async searchNotes(params) {
-    const notes = await store();
-    if (typeof params?.query !== "string")
-      throw new Error("A search needs words.");
-    const current = today();
-    let jump;
-    try {
-      jump = dayQuery(params.query, current);
-    } catch (error) {
-      return { refused: error.message };
-    }
-    if (jump !== null) {
-      const read = notes.page(jump.upper, PAGE + 1);
-      const more = read.length > PAGE;
-      let days = read.slice(0, PAGE);
-      if (jump.day === current) {
-        const row = notes.day(current);
-        if (row === null || row.body === "") {
-          days = [
-            { day: current, body: "", seq: row === null ? 0 : row.seq },
-            ...days.filter((entry) => entry.day !== current),
-          ];
-        }
-      }
-      return { jump: { day: jump.day, days, more } };
-    }
-    return { days: notes.search(params.query, current) };
+    return searchNotes(await store(), params);
   },
 
   // Every day that has a note, oldest first, for the export. A tombstone is not
