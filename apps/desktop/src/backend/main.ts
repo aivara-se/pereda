@@ -4,8 +4,8 @@
 import { Database } from "tjs:sqlite";
 import path from "tjs:path";
 import { openLog, saveDay, searchNotes } from "@pereda/notes/calls.js";
+import { writeExport } from "@pereda/notes/export.js";
 import { openStore } from "@pereda/notes/store.js";
-import { writeExport } from "./export.js";
 import { SHORTCUT_COMBO, SHORTCUT_ID } from "../shared/shortcut.js";
 import {
   ASSISTANT_INSTRUCTIONS,

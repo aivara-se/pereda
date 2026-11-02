@@ -1,6 +1,8 @@
 <script>
   import { onMount } from "svelte";
 
+  import { writeExport } from "@pereda/notes/export.js";
+
   import { call } from "#lib/client.js";
   import { openStore, session } from "#lib/session.svelte.js";
 
@@ -32,31 +34,33 @@
 
     exporting = true;
     report = { text: "", failed: false };
-    let written = 0;
     try {
       const rows = await call("all");
-      for (const row of rows) {
-        try {
-          const file = await folder.getFileHandle(`${row.day}.md`, {
-            create: true,
-          });
+      const result = await writeExport(
+        rows,
+        (day) => `${day}.md`,
+        // The page's writer is the folder it picked: the same-named file is
+        // replaced because create is true, and the body is written as stored.
+        async (name, body) => {
+          const file = await folder.getFileHandle(name, { create: true });
           const stream = await file.createWritable();
-          await stream.write(row.body);
+          await stream.write(body);
           await stream.close();
-          written += 1;
-        } catch (error) {
-          report = {
-            text: `The export stopped at ${row.day}: ${error.message}. ${written} ${written === 1 ? "file was" : "files were"} written before it.`,
-            failed: true,
-          };
-          return;
-        }
+        },
+      );
+      if (result.failed !== null) {
+        const count = result.written === 1 ? "1 file was" : `${result.written} files were`;
+        report = {
+          text: `The export stopped at ${result.failed.day}: ${result.failed.reason}. ${count} written before it.`,
+          failed: true,
+        };
+        return;
       }
       report = {
         text:
-          rows.length === 0
+          result.written === 0
             ? "There are no notes to export."
-            : `Wrote ${written} ${written === 1 ? "note" : "notes"} to ${folder.name}.`,
+            : `Wrote ${result.written} ${result.written === 1 ? "note" : "notes"} to ${folder.name}.`,
         failed: false,
       };
     } catch (error) {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { writeExport } from "../src/backend/export.js";
+import { writeExport } from "../src/export.js";
 
 const target = (day) => `/notes/${day}.md`;
 
