@@ -149,6 +149,7 @@ button:disabled {
   bottom: 12px;
   z-index: 1;
   background: var(--bg);
+  transition: opacity var(--t-quick) var(--ease);
 }
 
 .corner:hover:not(:disabled) {
@@ -717,6 +718,7 @@ button:disabled {
   transition: opacity var(--t-soft) var(--ease);
 }
 
+body.writing .corner,
 body.writing .bar .tools,
 body.writing .entry:not(:focus-within),
 body.writing .entry:focus-within .date {
