@@ -4,9 +4,9 @@
 
 A tinyjs desktop app: the operating system's webview draws the window and plain JavaScript behind it owns the notes. That shape buys three things the product leans on — a build of about 9.5 MB, no native UI layer to maintain, and no server to run ([`001`](docs/adrs/001-a-desktop-app-on-tinyjs.md)). macOS 15 or later, Windows 10 and 11, and a Linux desktop with WebKitGTK 4.1.
 
-The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame.
+The window is frameless and the page draws its own chrome: a bar with close, minimize and zoom, the drag region, and a paper at 80% alpha, so the desktop reads through the window. The OS provides the window; the app provides the frame. The values it draws with are in [`DESIGN.md`](DESIGN.md).
 
-An older entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete, shown while the entry has focus or the pointer is over it ([`020`](docs/adrs/020-actions-under-the-date.md), [`027`](docs/adrs/027-older-notes-are-read-only-until-edited.md)). The note is read-only until edit is pressed; edit makes it writable, puts the caret at the end and fades the bar and every other entry to 0.25, and blur returns it to read-only. Today is always writable and carries no actions. The status line and the assistant panel do not fade ([`022`](docs/adrs/022-today-dims-the-window.md)).
+An older entry's actions sit in its date column, outside the flow so the entry does not change height: edit, summarise and delete, shown while the entry is selected and at no other time ([`020`](docs/adrs/020-actions-under-the-date.md), [`032`](docs/adrs/032-an-entrys-actions-belong-to-selection.md)). Selection is the editor's focus: a press on the note or on the date column gives it, a pointer that only passes over the entry does not, and it is the same focus the keys move from. The note is read-only until edit is pressed; edit makes it writable, puts the caret at the end and fades the bar and every other entry to 0.25, and blur returns it to read-only. Today is always writable and carries no actions. The status line and the assistant panel do not fade ([`022`](docs/adrs/022-today-dims-the-window.md)).
 
 Settings is a page in the same window, on the log's grid: a 7.5 rem nav where the dates sit and a panel where the notes sit ([`023`](docs/adrs/023-settings-is-a-page-in-the-window.md)). It replaces the log or the search below the bar; the log stays loaded, so closing restores its day, its scroll and the note's focus — the caret where it was writable. The bar's right side carries the page's controls: Today and the gear on the log, and one back button while the search or the settings page is open ([`029`](docs/adrs/029-the-bar-carries-only-the-pages-controls.md)). Search has no control on the log: ⌘F is its only way in ([`028`](docs/adrs/028-the-search-has-no-control.md)).
 
@@ -25,6 +25,20 @@ The note is one string from the store to the screen ([`030`](docs/adrs/030-the-n
 A state field parses the body with `@lezer/markdown` and turns the tree into decorations. A marker is hidden while the selection is outside its element and shown while the selection is inside it, and a fence's lines are hidden while the caret is outside the block. The markers stay in the string, so the caret, the selection and undo act on the text the store holds.
 
 Every loaded note is one CodeMirror 6 editor over its string, and a read-only note takes no keystroke ([`027`](docs/adrs/027-older-notes-are-read-only-until-edited.md)). The page is bundled by esbuild at packaging time through `frontend.build` in `tinyjs.json`; the release command does not change and no built file is committed.
+
+## Motion
+
+`style.css` declares the language once on `:root`: `--ease`, `--t-quick` and `--t-soft` ([`031`](docs/adrs/031-the-window-moves-in-one-language.md)). Every transition in the file names those three, and no other duration appears.
+
+A surface arrives when its enter class is applied while it is still in the document. It leaves when the class is removed, and takes `hidden` when its fade ends, so `hidden` is the state and the fade is the way there. From the first frame of a fade out it takes no pointer event and holds no focus, so a press during a swap reaches the page that is arriving.
+
+The pages are already mounted. The log keeps its nodes under the search and the settings page, so a page change swaps the opacity of two siblings and rebuilds nothing. The bar sits outside the swap and keeps its place; only its right corner changes.
+
+A list that a query rebuilds is one surface. `renderResults` replaces the list's children, and the list enters and leaves as a whole; its items are not animated.
+
+Typing is not a transition. The note's marks and the caret are the editor's decorations, drawn in the keystroke's frame; no class in this section reaches `.cm-*`.
+
+`@media (prefers-reduced-motion: reduce)` sets both durations to zero and drops the rise, so the same code path draws an instant change.
 
 ## The store
 
@@ -131,4 +145,4 @@ bun run build
 
 `bun run build` builds the Linux app on CI; macOS and Windows are built on their own runners at release ([`004`](docs/adrs/004-distribution-without-an-update-channel.md)).
 
-What no test reaches — the webview's drawing and input, the note's rendering on screen, the bar's controls on each page, the search mode's swap, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.
+What no test reaches — the webview's drawing and input, the note's rendering on screen, the bar's controls on each page, every page swap and the surfaces that fade, the focus fade, the settings page's return, the native folder picker, the export in the built app, the global hotkey on a real desktop, the real data folder on each OS, the signed and notarized macOS bundle, and the absence of a network request in the built app — is checked by hand on each release, with the network off.

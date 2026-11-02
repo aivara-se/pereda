@@ -13,10 +13,11 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - It is downloaded, not signed up for: anyone can download it, and there is no hosted version and nothing to self-host.
 - It opens on today with the cursor in the note.
 - While the app runs, ⌘⇧D — Ctrl+Shift+D on Windows and Linux — brings it forward on today from any app. The combination is fixed: no setting, no second window, no tray.
-- An older note is read-only until its edit button is pressed. Edit makes it writable, puts the caret in it and fades the bar and the other entries as today's note does; leaving the note ends the edit. Its other actions are summarise and delete. Today is always writable and has no action row.
+- An older note is read-only until its edit button is pressed. Edit makes it writable, puts the caret in it and fades the bar and the other entries as today's note does; leaving the note ends the edit. Its other actions are summarise and delete, and they show while the note is selected; a press anywhere on the entry selects it, and a pointer that only passes over it changes nothing ([`032`](docs/adrs/032-an-entrys-actions-belong-to-selection.md)). Today is always writable, has no action row, and is selected when the app opens.
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
 - Four fixed keys: ⌘F — Ctrl+F on Windows and Linux — is the only way into the search, Esc closes the search at today or settings where it opened, ⌘T takes the Today path, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
 - The window is frameless and the page draws its bar: close, minimize and zoom at its left on every page, and the page's own controls at its right — Today and the gear on the log, one back button on the search and on the settings page — and a paper translucent enough to read the desktop through ([`029`](docs/adrs/029-the-bar-carries-only-the-pages-controls.md)).
+- A page change cross-fades in place, and a surface that comes or goes fades without moving the page. Nothing moves while the person types, and the system's Reduce Motion setting turns every transition off ([`031`](docs/adrs/031-the-window-moves-in-one-language.md)). The fixed values are in [`DESIGN.md`](DESIGN.md).
 - Settings is a page in the same window, opened from the bar's gear. It replaces the log, which stays loaded; the bar's back button, or Esc, returns to the same day and scroll with the note's focus back — the caret where it was writable. Nothing is stored: the app always opens on today.
 
 ## The day
@@ -144,4 +145,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built; the binary is v1.14. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+Two decisions are recorded and not built: v1.15, the window's motion and the entry's selected state ([`031`](docs/adrs/031-the-window-moves-in-one-language.md), [`032`](docs/adrs/032-an-entrys-actions-belong-to-selection.md)). Everything else decided for v1.x is built; the binary is v1.14. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
