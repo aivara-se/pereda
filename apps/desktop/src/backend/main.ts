@@ -3,15 +3,9 @@
 
 import { Database } from "tjs:sqlite";
 import path from "tjs:path";
+import { openLog, saveDay, searchNotes } from "@pereda/notes/calls.js";
 import { openStore } from "@pereda/notes/store.js";
 import { writeExport } from "./export.js";
-import {
-  addDays,
-  assertWritableDay,
-  dayQuery,
-  today,
-  validDay,
-} from "@pereda/notes/day.js";
 import { SHORTCUT_COMBO, SHORTCUT_ID } from "../shared/shortcut.js";
 import {
   ASSISTANT_INSTRUCTIONS,
@@ -24,7 +18,6 @@ import {
 } from "../shared/menu.js";
 
 const DB_NAME = "pereda.db";
-const PAGE = 30;
 
 // The store is opened once and shared by every call, so a database that cannot
 // be opened reports the same reason to each of them for the life of the app.
@@ -110,88 +103,19 @@ export function onHotkey(id, app) {
 }
 
 export const api = {
-  // One page of the log: today on the first page, then the days before the
-  // oldest one loaded, newest first. A day with nothing written is skipped,
-  // except today, which is the first entry even when it is empty. `from` opens
-  // the log at a day instead of at today, which is how a search result is read.
+  // The three calls are the notes library's, so the checks, the refusals and
+  // their sentences are the web app's too. Each one here binds this backend's
+  // store; the page still asks for the same names.
   async openLog(params, app) {
-    const notes = await store(app);
-    const current = today();
-    const before = params?.before;
-    const from = params?.from;
-    if (before !== undefined && !validDay(before))
-      throw new Error("That is not a date.");
-    if (from !== undefined && !validDay(from))
-      throw new Error("That is not a date.");
-
-    const upper =
-      from === undefined ? (before ?? addDays(current, 1)) : addDays(from, 1);
-    const rows = notes.page(upper, PAGE + 1);
-    const more = rows.length > PAGE;
-    let days = rows.slice(0, PAGE);
-    if (before === undefined && from === undefined) {
-      const row = notes.day(current);
-      const first = row
-        ? { day: current, body: row.body, seq: row.seq }
-        : { day: current, body: "", seq: 0 };
-      days = [first, ...days.filter((entry) => entry.day !== current)];
-    }
-    return { today: current, days, more };
+    return openLog(await store(app), params);
   },
 
-  // Save a whole body with the page's counter. An older counter loses the
-  // comparison in the store and is reported instead of pretending to save.
   async saveDay(params, app) {
-    const notes = await store(app);
-    const current = today();
-    const day = params?.day;
-    assertWritableDay(day, current);
-    if (typeof params?.body !== "string")
-      throw new Error("A note is plain text.");
-    if (!Number.isSafeInteger(params?.seq) || params.seq < 1) {
-      throw new Error("A save needs a counter.");
-    }
-    const saved = notes.save(day, params.body, params.seq);
-    if (!saved.applied) {
-      throw new Error("This note was written somewhere else.");
-    }
-    return { day, seq: saved.row.seq, today: current };
+    return saveDay(await store(app), params);
   },
 
-  // Search the notes by their words: every word, in any order, each as a
-  // prefix, newest first. A result is a day and the text around the match.
-  // An exact date is answered before that rule: the page of the log bounded
-  // by the day after it, so a result is the log at that day.
   async searchNotes(params, app) {
-    const notes = await store(app);
-    if (typeof params?.query !== "string")
-      throw new Error("A search needs words.");
-    const current = today();
-    let jump;
-    try {
-      jump = dayQuery(params.query, current);
-    } catch (error) {
-      return { refused: error.message };
-    }
-    if (jump !== null) {
-      const rows = notes.page(jump.upper, PAGE + 1);
-      const more = rows.length > PAGE;
-      let days = rows.slice(0, PAGE);
-      // Today is in the log even when nothing is written. A jump to it must
-      // land there, not on the newest older day, or the next keystroke would
-      // be saved to the wrong date.
-      if (jump.day === current) {
-        const row = notes.day(current);
-        if (row === null || row.body === "") {
-          days = [
-            { day: current, body: "", seq: row === null ? 0 : row.seq },
-            ...days.filter((entry) => entry.day !== current),
-          ];
-        }
-      }
-      return { jump: { day: jump.day, days, more } };
-    }
-    return { days: notes.search(params.query, current) };
+    return searchNotes(await store(app), params);
   },
 
   // The export reads every note once and writes one Markdown file per day into
