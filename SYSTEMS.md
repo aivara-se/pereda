@@ -132,6 +132,15 @@ The page is the app's, not a window or a modal: the gear opens it over the log, 
 
 The app above is v1.15. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
+## Planned, not built
+
+A second surface is decided and not built: a static web app that keeps its notes in the browser, with no account, no upload and no sync to the desktop ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)). Its mechanisms:
+
+- A bun workspace of `apps/desktop`, `apps/website`, and `libs/notes`, `libs/note-editor` and `libs/theme` ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)). The 504 platform-free lines of the day, the Markdown ranges, the midnight line, the store and the editor move into the libraries; the desktop keeps its window, menu, shortcut, assistant and SQLite file.
+- The web store is the same SQL over SQLite compiled to WebAssembly in a worker, on the origin-private file system. One schema and one search, two drivers; the SQLite file stays the desktop's.
+- The web app is SvelteKit with `adapter-static` and Vite, built by bun and deployed to GitHub Pages by a workflow ([`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)). `validate` gains its build.
+- The desktop's build, its promise of no request and the version file do not move.
+
 ## Checks
 
 The app and its `tinyjs.json` live in `apps/desktop`; these commands run from the repository root.
