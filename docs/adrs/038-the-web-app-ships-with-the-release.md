@@ -10,7 +10,7 @@ The web app is another platform, like macOS, Windows and Linux.
 
 ## Decision
 
-- `publish.yml` is the only workflow on `main`. `.github/workflows/deploy.yml` is deleted.
+- `publish.yml` is the only workflow that releases on `main`. `.github/workflows/deploy.yml` is deleted; `validate.yml` still runs on every pull request and on a push to `main`, and it builds the site without deploying it.
 - The web app is the fourth platform: when the version is unreleased, `publish` builds it at the release's ref with `bun run build:web`, and its build gates the tag with the three desktop builds.
 - The site deploys after the release, to GitHub Pages, from the artefact the web job built. `PEREDA_BASE` still names the repository's path until a custom domain is pointed at it ([`035`](035-the-web-app-is-a-static-sveltekit-site.md)).
 - The desktop archives stay the release's assets; the Pages artefact belongs to the deploy and is not attached to the release.
