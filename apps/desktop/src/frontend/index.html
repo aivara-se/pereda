@@ -77,47 +77,57 @@
     </header>
 
     <div id="app" class="app">
-      <div id="searchbar" class="search" hidden>
-        <label class="date" for="query">Search</label>
-        <input
-          id="query"
-          class="field"
-          type="search"
-          placeholder="Any word in a note"
-          autocomplete="off"
-          spellcheck="false"
-        />
+      <div class="pages">
+        <main id="page" class="page surface">
+          <div id="log" class="log"></div>
+        </main>
+
+        <div id="searchpage" class="search-page surface" hidden>
+          <div class="search">
+            <label class="date" for="query">Search</label>
+            <input
+              id="query"
+              class="field"
+              type="search"
+              placeholder="Any word in a note"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+
+          <div id="results" class="results surface" hidden></div>
+        </div>
+
+        <section id="settingspage" class="settings surface" hidden>
+          <nav class="settings-nav" aria-label="Settings">
+            <ul>
+              <li>
+                <button class="settings-link" type="button" aria-current="page">
+                  Export Data
+                </button>
+              </li>
+            </ul>
+          </nav>
+          <div class="settings-panel">
+            <p class="settings-rule">
+              Export writes one Markdown file per day that has a note, named
+              <code>YYYY-MM-DD.md</code>, into the folder you choose. A file
+              with the same name there is replaced.
+            </p>
+            <button id="export" class="settings-button" type="button">
+              Export to folder…
+            </button>
+            <p id="export-result" class="settings-result" role="status"></p>
+          </div>
+        </section>
       </div>
 
-      <main id="page" class="page">
-        <div id="results" class="results" hidden></div>
-        <div id="log" class="log"></div>
-      </main>
-
-      <section id="settingspage" class="settings" hidden>
-        <nav class="settings-nav" aria-label="Settings">
-          <ul>
-            <li>
-              <button class="settings-link" type="button" aria-current="page">
-                Export Data
-              </button>
-            </li>
-          </ul>
-        </nav>
-        <div class="settings-panel">
-          <p class="settings-rule">
-            Export writes one Markdown file per day that has a note, named
-            <code>YYYY-MM-DD.md</code>, into the folder you choose. A file with
-            the same name there is replaced.
-          </p>
-          <button id="export" class="settings-button" type="button">
-            Export to folder…
-          </button>
-          <p id="export-result" class="settings-result" role="status"></p>
-        </div>
-      </section>
-
-      <section id="assistant" class="assistant" aria-live="polite" hidden>
+      <section
+        id="assistant"
+        class="assistant surface"
+        aria-live="polite"
+        hidden
+      >
         <div class="assistant-head">
           <span id="assistant-mark" class="assistant-mark"
             >Generated on this Mac</span
@@ -135,7 +145,7 @@
         <p id="assistant-text" class="assistant-text"></p>
       </section>
 
-      <p id="status" class="status" role="status"></p>
+      <p id="status" class="status surface" role="status" hidden></p>
     </div>
 
     <div id="fatal" class="fatal" hidden>
