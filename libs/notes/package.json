@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.js",
     "./day.js": "./src/day.js",
     "./markdown.js": "./src/markdown.js",
     "./midnight.js": "./src/midnight.js",
