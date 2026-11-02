@@ -67,8 +67,13 @@
   }
 
   // Delete is the note cleared: the store keeps the tombstone, and the log
-  // stops showing the day.
+  // stops showing the day. It asks once before the write, as the desktop does,
+  // with the browser's own question.
   async function remove() {
+    const sure = window.confirm(
+      `Delete the note for ${formatDay(entry.day)}? The text is gone for good. There is no undo.`,
+    );
+    if (!sure) return;
     clearTimeout(timer);
     timer = null;
     const was = editor.body();
