@@ -5,6 +5,7 @@
   "exports": {
     "./calls.js": "./src/calls.js",
     "./day.js": "./src/day.js",
+    "./export.js": "./src/export.js",
     "./markdown.js": "./src/markdown.js",
     "./midnight.js": "./src/midnight.js",
     "./store.js": "./src/store.js"
