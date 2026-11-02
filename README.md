@@ -15,13 +15,11 @@ bun run build      # the app for this OS
 bun run build:web  # the site, into apps/website/build
 ```
 
-## Deploy the site
-
-`.github/workflows/deploy.yml` builds `apps/website` on a push to `main` that changes it, and publishes it to GitHub Pages. The site is served under the repository's path until a custom domain is pointed at it; that is a CNAME in `apps/website/static/` and an empty `PEREDA_BASE` ([035](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)).
-
 ## Release
 
-`.github/workflows/publish.yml` runs on a push to `main`: it reads the version in `apps/desktop/tinyjs.json`, builds macOS arm64 and x86_64, Windows and Linux, tags `v<version>` once every build succeeds, and publishes the GitHub release with the four archives. A push that leaves the version alone does nothing ([007](docs/adrs/007-releases-follow-the-version-file.md)).
+`.github/workflows/publish.yml` runs on a push to `main`: it reads the version in `apps/desktop/tinyjs.json`, builds macOS arm64 and x86_64, Windows, Linux and the web app, tags `v<version>` once every build succeeds, publishes the GitHub release with the four desktop archives, and deploys the web app to GitHub Pages. A push that leaves the version alone does nothing ([007](docs/adrs/007-releases-follow-the-version-file.md), [038](docs/adrs/038-the-web-app-ships-with-the-release.md)).
+
+The site is served under the repository's path until a custom domain is pointed at it; that is a CNAME in `apps/website/static/` and an empty `PEREDA_BASE` ([035](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)).
 
 The macOS build is signed and notarized when these secrets are set, and ad-hoc signed without them: `MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PASSWORD`, `MACOS_KEYCHAIN_PASSWORD`, `MACOS_SIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`, `MACOS_APPLE_ID`, `MACOS_TEAM_ID`, `MACOS_APP_PASSWORD`.
 
