@@ -7,7 +7,7 @@ import {
   localDay,
   today,
   validDay,
-} from "../src/shared/day.js";
+} from "../src/day.js";
 
 describe("the local day", () => {
   test("is read from the local clock, not UTC", () => {

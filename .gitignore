@@ -3,3 +3,5 @@ dist/
 .build/
 .page/
 .DS_Store
+apps/website/build/
+apps/website/.svelte-kit/

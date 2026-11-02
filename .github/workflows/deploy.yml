@@ -1,0 +1,61 @@
+name: deploy
+
+# The site is an artefact: the web app is built from `apps/website` and the
+# libraries beside it, and GitHub Pages serves the files. A push that changes
+# neither builds nothing.
+#
+# The page is served under the repository's own path until a custom domain is
+# pointed at it: the CNAME is the operator's, and it is one line here and one
+# file in `apps/website/static/` (docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/website/**"
+      - "libs/**"
+      - "package.json"
+      - "bun.lock"
+      - ".github/workflows/deploy.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        env:
+          PEREDA_BASE: /${{ github.event.repository.name }}
+        run: bun run build:web
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/website/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

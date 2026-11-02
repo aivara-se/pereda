@@ -4,11 +4,13 @@
   "license": "MIT",
   "type": "module",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "libs/*"
   ],
   "scripts": {
     "dev": "cd apps/desktop && tinyjs dev",
     "build": "cd apps/desktop && tinyjs build",
+    "build:web": "cd apps/website && bun run build",
     "test": "bun test"
   }
 }

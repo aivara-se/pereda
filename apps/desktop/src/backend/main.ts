@@ -3,7 +3,7 @@
 
 import { Database } from "tjs:sqlite";
 import path from "tjs:path";
-import { openStore } from "./store.js";
+import { openStore } from "@pereda/notes/store.js";
 import { writeExport } from "./export.js";
 import {
   addDays,
@@ -11,7 +11,7 @@ import {
   dayQuery,
   today,
   validDay,
-} from "../shared/day.js";
+} from "@pereda/notes/day.js";
 import { SHORTCUT_COMBO, SHORTCUT_ID } from "../shared/shortcut.js";
 import {
   ASSISTANT_INSTRUCTIONS,

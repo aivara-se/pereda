@@ -1,0 +1,8 @@
+{
+  "name": "@pereda/theme",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./theme.css": "./theme.css"
+  }
+}

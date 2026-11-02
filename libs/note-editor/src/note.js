@@ -6,7 +6,7 @@ import { Compartment, EditorState, StateField } from "@codemirror/state";
 import { Decoration, EditorView, keymap, placeholder } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 
-import { noteRanges } from "../shared/markdown.js";
+import { noteRanges } from "@pereda/notes/markdown.js";
 
 // Which marks hide is the selection's answer, not the text's, so the set is
 // rebuilt when the text changes and when the selection moves — and at no other

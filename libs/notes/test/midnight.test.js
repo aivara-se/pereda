@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { writingNotice } from "../src/shared/midnight.js";
+import { writingNotice } from "../src/midnight.js";
 
 const plain = (day) => day;
 

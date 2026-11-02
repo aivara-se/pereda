@@ -59,6 +59,18 @@ jobs:
         run: ~/.tinyjs/tinyjs build
         working-directory: apps/desktop
 
+  # The web app has its own build and its own runner: a broken page is red on
+  # main like a broken app is.
+  web:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Build
+        run: bun run build:web
+
   # A pull request that changes no app code costs the Mac nothing. The diff the
   # pull request makes against its base is read on Linux, and `app` is true only
   # when `apps/`, `packages/` or the lockfile moved.
@@ -78,7 +90,7 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          if git diff --quiet "$BASE...$HEAD" -- apps packages bun.lock; then
+          if git diff --quiet "$BASE...$HEAD" -- apps libs bun.lock; then
             echo "app=false" >> "$GITHUB_OUTPUT"
           else
             echo "app=true" >> "$GITHUB_OUTPUT"

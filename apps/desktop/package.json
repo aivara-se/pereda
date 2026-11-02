@@ -7,13 +7,11 @@
     "build": "tinyjs build",
     "test": "bun test"
   },
-  "dependencies": {
-    "@codemirror/commands": "^6.11.1",
-    "@codemirror/state": "^6.7.6",
-    "@codemirror/view": "^6.43.15",
-    "@lezer/markdown": "^1.8.1"
-  },
   "devDependencies": {
     "esbuild": "^0.28.2"
+  },
+  "dependencies": {
+    "@pereda/note-editor": "workspace:*",
+    "@pereda/notes": "workspace:*"
   }
 }
