@@ -158,15 +158,15 @@ button:disabled {
   color: var(--zoom);
 }
 
-/* The page's controls sit at the right, each in its own 34 px cell 2 px apart:
-   the log's Today and gear, and one way back while the search or the settings
-   page replaces them. The corner cross-fades and the bar keeps its height and
-   its drag area. */
+/* The page's controls sit at the right in two fixed 34 px cells 2 px apart:
+   Today in the first; the gear in the second, where the way back stands while
+   the search or the settings page replaces the log. The tracks never collapse,
+   so the corner cross-fades where it is and the bar keeps its height and its
+   drag area. */
 
 .tools {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 34px;
+  grid-template-columns: 34px 34px;
   gap: 2px;
   margin-left: auto;
 }
@@ -175,6 +175,15 @@ button:disabled {
   transition:
     opacity var(--t-quick) var(--ease),
     transform var(--t-quick) var(--ease);
+}
+
+#today {
+  grid-area: 1 / 1;
+}
+
+#settings,
+#back {
+  grid-area: 1 / 2;
 }
 
 .icon {
