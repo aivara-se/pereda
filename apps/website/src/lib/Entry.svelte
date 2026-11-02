@@ -1,5 +1,7 @@
 <script>
   import Note from "#lib/Note.svelte";
+  import { onMount } from "svelte";
+
   import { call } from "#lib/client.js";
   import { formatDay } from "#lib/days.js";
   import { say } from "#lib/notice.svelte.js";
@@ -9,46 +11,50 @@
   // anywhere on the entry selects it.
   let { entry, today, onremove } = $props();
 
+  let root;
   let editor = null;
   let selected = $state(false);
   let editing = $state(entry.day === today);
   let counter = entry.seq;
   let timer = null;
-  let saving = false;
-  let waiting = false;
+  let saved = Promise.resolve(true); // every write this entry asked for, in order
 
   const open = $derived(entry.day === today || editing);
 
+  // One entry is selected at a time: a press anywhere else ends this one's
+  // selection, and its row leaves on its own fade.
+  onMount(() => {
+    const outside = (event) => {
+      if (!root.contains(event.target)) selected = false;
+    };
+    document.addEventListener("pointerdown", outside, true);
+    return () => document.removeEventListener("pointerdown", outside, true);
+  });
+
+  // One write at a time, in order. A flush answers with the promise of every
+  // write it has queued, so a blur can wait for the text it is about to close.
   function flush() {
     clearTimeout(timer);
     timer = null;
-    if (editor === null) return;
-    if (saving) {
-      waiting = true;
-      return;
-    }
+    if (editor === null) return saved;
     const body = editor.body();
-    if (body === entry.body) return;
-    writing(body);
+    if (body === entry.body) return saved;
+    saved = saved.then(() => writing(body));
+    return saved;
   }
 
   async function writing(body) {
-    saving = true;
     counter += 1;
     const seq = counter;
     try {
       const answer = await call("saveDay", { day: entry.day, body, seq });
       counter = answer.seq;
       entry.body = body;
+      return true;
     } catch (error) {
       counter = seq - 1;
       say(`The note was not saved: ${error.message}`, true);
-    } finally {
-      saving = false;
-      if (waiting) {
-        waiting = false;
-        flush();
-      }
+      return false;
     }
   }
 
@@ -57,13 +63,30 @@
     timer = setTimeout(flush, 250);
   }
 
-  // Edit puts the caret at the end of the note and fades the rest of the page,
-  // which is what selection does on the desktop.
+  // Edit puts the caret at the end of the note and makes it writable, which is
+  // what selection does on the desktop.
   function edit() {
     editing = true;
     selected = true;
     editor.setEditable(true);
     editor.focusEnd();
+  }
+
+  // Leaving a note ends an older one's edit: the text is saved first, then the
+  // note takes no keystroke again and its actions come back. A note cleared to
+  // nothing leaves the log, as it does on the desktop.
+  async function left() {
+    if (entry.day === today || !editing) {
+      selected = false;
+      flush();
+      return;
+    }
+    const empty = editor.body() === "";
+    const ok = await flush();
+    editing = false;
+    editor.setEditable(false);
+    selected = false;
+    if (ok && empty) onremove(entry);
   }
 
   // Delete is the note cleared: the store keeps the tombstone, and the log
@@ -74,8 +97,7 @@
       `Delete the note for ${formatDay(entry.day)}? The text is gone for good. There is no undo.`,
     );
     if (!sure) return;
-    clearTimeout(timer);
-    timer = null;
+    if (!(await flush())) return;
     const was = editor.body();
     editor.setBody("");
     counter += 1;
@@ -90,6 +112,7 @@
 </script>
 
 <article
+  bind:this={root}
   class="entry"
   class:today={entry.day === today}
   class:open
@@ -98,7 +121,7 @@
 >
   <div class="date">
     <time datetime={entry.day}>{formatDay(entry.day)}</time>
-    {#if selected && !open}
+    {#if !open}
       <div class="actions">
         <button type="button" title="Edit" onclick={edit}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -121,9 +144,7 @@
     label={`Note of ${entry.day}`}
     onEdit={changed}
     onFocus={() => (selected = true)}
-    onBlur={() => {
-      if (!open) selected = false;
-    }}
+    onBlur={left}
     onready={(made) => (editor = made)}
   />
 </article>
