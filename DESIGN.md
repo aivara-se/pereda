@@ -5,9 +5,9 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 ## The window
 
 - The bar is 44 px high and holds the window's controls at its left: three 26 px hit areas, each with an 11 px dot, 2 px apart.
-- The page's controls sit at the right: 34 px hit areas, 2 px apart, with 19 px icons drawn at 1.6 stroke, except the gear at 14 px.
+- The page's controls: one 34 px hit area at the bar's right, a 19 px icon at 1.6 stroke, for the way back while a page replaces the log. The gear is a 34 px hit area with a 14 px icon at the window's bottom-left corner, 12 px from each edge.
 - One page fills the window under the bar: the log, the search, or the settings page. The page scrolls and the bar does not.
-- Two surfaces sit outside the page flow: the status line at the bottom centre, and the assistant panel above it at the right.
+- Three surfaces sit outside the page flow: the gear at the bottom-left corner, the status line at the bottom centre, and the assistant panel above it at the right.
 
 ## The column
 
@@ -42,8 +42,8 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 
 ## States
 
-- **Selected.** The date goes to ink and, on an older entry, the row arrives. Nothing else changes.
-- **Edited.** The note is writable, the caret is in the text, the bar and the other entries fall to 0.25.
+- **Selected.** The date goes to ink and, on an older entry, the row arrives. Nothing else changes, and no caret is drawn until the entry is edited.
+- **Edited.** The note is writable, the caret is in the text, the page's controls and the other entries fall to 0.25; the window's dots keep full strength.
 - **Disabled.** A bar control at 0.28, a settings button at 0.5, and the default cursor.
 - **Busy.** The assistant's text is muted in the place the answer will take.
 - **Refused.** The error colour and the words that say why.

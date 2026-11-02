@@ -91,15 +91,12 @@ button:disabled {
   color: var(--zoom);
 }
 
-/* The page's controls sit at the right in two fixed 34 px cells 2 px apart:
-   Today in the first; the gear in the second, where the way back stands while
-   the search or the settings page replaces the log. The tracks never collapse,
-   so the corner cross-fades where it is and the bar keeps its height and its
-   drag area. */
+/* One control sits at the right of the bar: the way back, while a page replaces
+   the log. It stands alone there, so its arrival moves nothing and the bar
+   keeps its height and its drag area. */
 
 .tools {
-  display: grid;
-  grid-template-columns: 34px 34px;
+  display: flex;
   gap: 2px;
   margin-left: auto;
 }
@@ -108,15 +105,6 @@ button:disabled {
   transition:
     opacity var(--t-quick) var(--ease),
     transform var(--t-quick) var(--ease);
-}
-
-#today {
-  grid-area: 1 / 1;
-}
-
-#settings,
-#back {
-  grid-area: 1 / 2;
 }
 
 .icon {
@@ -150,6 +138,21 @@ button:disabled {
 
 .icon:disabled {
   opacity: 0.28;
+}
+
+/* The gear is the log's way into settings, at the window's bottom-left corner
+   so the bar carries only the window's dots and the way back. It sits on the
+   paper — a chip, not a glyph over the note scrolling behind it. */
+.corner {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1;
+  background: var(--bg);
+}
+
+.corner:hover:not(:disabled) {
+  background: linear-gradient(var(--hover), var(--hover)), var(--bg);
 }
 
 /* The log, the search and the settings page are mounted together and clipped to
@@ -400,8 +403,9 @@ button:disabled {
 
 /* The row hangs 1 px under the date, against its right edge, outside the flow,
    and only the selected entry shows it. It arrives on the one entrance and
-   leaves through opacity alone: its transform snaps and it takes its keys back
-   when the fade ends, never before. */
+   leaves through opacity alone. Its keys leave with the fade's end, never at
+   its first frame: a press on a button blurs the note, and the button under
+   the pointer must still be there when the press ends. */
 .entry .actions {
   position: absolute;
   top: calc(100% + 1px);
@@ -411,19 +415,17 @@ button:disabled {
   opacity: 0;
   transform: translateY(4px);
   visibility: hidden;
-  pointer-events: none;
   transition:
     opacity var(--t-soft) var(--ease),
     transform 0s var(--t-soft),
     visibility 0s var(--t-soft);
 }
 
-/* Selected: the row arrives with the 4 px rise and offers its keys at once. */
+/* Selected: the row arrives with the 4 px rise and is hit-testable at once. */
 .entry:focus-within .actions {
   opacity: 1;
   transform: none;
   visibility: visible;
-  pointer-events: auto;
   transition:
     opacity var(--t-soft) var(--ease),
     transform var(--t-soft) var(--ease),
@@ -532,6 +534,9 @@ button:disabled {
 
 .entry:not(.editing) .note .cm-content {
   cursor: default;
+  /* The caret is the sign of writing: a selected note that has not been opened
+     for editing keeps the focus and the selection, but draws no caret. */
+  caret-color: transparent;
 }
 
 /* The forms the note draws where it stands. A mark is hidden, not styled: these
@@ -701,16 +706,18 @@ button:disabled {
   user-select: text;
 }
 
-/* The entry being written dims the rest of the window while it has the caret.
-   The status line and the assistant panel are read, not navigated, so they stay
-   at full strength. */
-.bar,
+/* The entry being written dims the page's controls and the other entries while
+   it has the caret. The window's own three dots never fade — they are the
+   window, and the way out has to stay where the person last saw it. The status
+   line and the assistant panel are read, not navigated, so they stay at full
+   strength. */
+.bar .tools,
 .entry:not(:focus-within),
 .entry:focus-within .date {
   transition: opacity var(--t-soft) var(--ease);
 }
 
-body.writing .bar,
+body.writing .bar .tools,
 body.writing .entry:not(:focus-within),
 body.writing .entry:focus-within .date {
   opacity: 0.25;

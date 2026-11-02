@@ -25,7 +25,6 @@ const pageEl = $("page");
 const searchPage = $("searchpage");
 const queryEl = $("query");
 const settingsEl = $("settingspage");
-const todayButton = $("today");
 const settingsButton = $("settings");
 const backButton = $("back");
 const exportButton = $("export");
@@ -143,17 +142,14 @@ function noticeDate(day, today) {
   });
 }
 
-// The bar carries only the controls the page on screen uses: the log's Today
-// and gear, and one way back while the search or the settings page replaces it.
+// The bar carries one control: the way back, while the search or the settings
+// page replaces the log. The gear stands at the window's bottom-left corner.
 // The traffic lights at its left are the window's, so they are always there.
 function renderBar() {
-  const away = searchOpen || settingsOpen;
-  if (away) {
-    hide(todayButton);
+  if (searchOpen || settingsOpen) {
     hide(settingsButton);
     show(backButton);
   } else {
-    show(todayButton);
     show(settingsButton);
     hide(backButton);
   }
@@ -846,8 +842,6 @@ function fatal(message) {
   show($("fatal"));
 }
 
-todayButton.addEventListener("click", goToday);
-todayButton.title = OS === "macos" ? "Today (⌘T)" : "Today (Ctrl+T)";
 // The bar's one back button is the mode's way out, the same one Esc is: the
 // search closes at today, the settings page where it opened.
 backButton.addEventListener("click", () => {
