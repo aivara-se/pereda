@@ -25,6 +25,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The same log in a desktop browser: today, the log, the search, the settings page and the export, drawn from the same libraries as the desktop ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)).
 - It keeps its notes in the browser's own storage on that device, in the same schema and through the same search. There is no account, no upload and no server-side database; nothing about a note reaches the host, which served the page and is asked for nothing after it.
 - The two surfaces keep separate note sets. Moving notes between them is the Markdown export, done by hand, and there is no sync ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
+- The export needs the File System Access API, which Chromium browsers offer and Firefox and Safari do not. A browser without it says so and writes nothing.
 - A browser that cannot give the page a place to write says so and keeps nothing. It is never given a log that would vanish on the next reload.
 - The web app has no assistant: the model is the Mac's and stays there.
 
@@ -102,6 +103,7 @@ Known, and deliberately not handled in this version.
 - **A note past a book.** No pagination, so a very long note is slow to open.
 - **The browser's storage.** The web app asks the browser to keep its notes; a browser that evicts them anyway loses them, and the export is the backup ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
 - **A browser without the origin-private file system.** The web app says so and keeps nothing; there is no fallback that holds notes in memory.
+- **An export in a browser without the File System Access API.** Firefox and Safari do not offer it, so the settings page says so and writes nothing; there is no second export that downloads files.
 - **The assistant on the web.** There is none: the model is the Mac's, and the web app is not on the Mac's terms.
 - **A restore from another machine.** The data folder can be copied in with the app closed; there is no import screen.
 - **An export folder of the same names.** A `YYYY-MM-DD.md` file already there is replaced without a second question; the section is the only warning.
