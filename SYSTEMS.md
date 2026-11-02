@@ -144,7 +144,7 @@ Both surfaces answer the same three calls â€” the log, the save and the search â
 
 The page is SvelteKit with `adapter-static` and Vite ([`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)). Every route is prerendered and client-rendered: `/`, `/search/` and `/settings/` are files, no request is rendered, and the browser's router moves between them, asking for a page's script the first time it is opened and for nothing else. The bar, the column and the note are drawn again from `libs/theme`; no page adds a token. A browser that cannot give the worker a place to write is told so, and the page keeps nothing.
 
-`apps/website/vite.config.js` takes the path the site is served under from `PEREDA_BASE`: the deploy sets it to the repository's name, and a custom domain is a CNAME in `apps/website/static/` with that variable empty. The desktop's build, its promise of no request and the version file do not move.
+`apps/website/vite.config.js` takes the path the site is served under from `PEREDA_BASE`: the publish workflow sets it to the repository's name, and a custom domain is a CNAME in `apps/website/static/` with that variable empty. The site is a platform of the release: `publish` builds it at the release's ref, holds the tag until it succeeds with the three desktops, and deploys it to GitHub Pages after the release ([`038`](docs/adrs/038-the-web-app-ships-with-the-release.md)). The desktop's build, its promise of no request and the version file do not move.
 
 ## Checks
 

@@ -1,8 +1,12 @@
 name: publish
 
-# The version in apps/desktop/tinyjs.json on main is the release. A push that changes it
-# builds the three platforms, tags the commit and publishes the release; a push
-# that does not change it reads the file and stops.
+# The version in apps/desktop/tinyjs.json on main is the release. A push that changes
+# it builds the three desktop platforms and the web app, tags the commit, publishes the
+# release and deploys the site; a push that does not change it reads the file and stops.
+#
+# The web app is the fourth platform: its build gates the tag like the three desktops',
+# and its output is deployed instead of attached. The decision is
+# docs/adrs/038-the-web-app-ships-with-the-release.md.
 #
 # This workflow is this repository's own: the release process is the same in
 # every repository (aivara-se/.github contains docs/RELEASES.md, the standard),
@@ -249,8 +253,43 @@ jobs:
           path: ${{ env.APP }}-${{ needs.meta.outputs.version }}-linux-x86_64.tar.gz
           if-no-files-found: error
 
+  # The web app is the fourth platform. It is built at the release's ref and
+  # its output is the Pages artefact, so a broken page blocks the tag like a
+  # broken desktop build does. The site is served under the repository's path
+  # until a custom domain is pointed at it: that is a CNAME in
+  # apps/website/static/ and an empty PEREDA_BASE.
+  web:
+    needs: meta
+    if: needs.meta.outputs.build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.meta.outputs.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        env:
+          PEREDA_BASE: /${{ github.event.repository.name }}
+        run: bun run build:web
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/website/build
+
   release:
-    needs: [meta, macos, windows, linux]
+    needs: [meta, macos, windows, linux, web]
     if: needs.meta.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -261,9 +300,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN || github.token }}
 
+      # The desktop archives only: the web app's artefact belongs to the deploy
+      # job and must not become a release asset.
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: "*-x86_64"
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: "macos-arm64"
           merge-multiple: true
 
       - name: Tag the commit and publish the release
@@ -286,3 +334,22 @@ jobs:
             gh release create "$TAG" --verify-tag \
               --title "$TITLE $TAG" --generate-notes artifacts/*
           fi
+
+  # The site is published after the release, from the artefact the web job
+  # built: a release that could not be built is never a site that moved.
+  deploy:
+    needs: [meta, release]
+    if: needs.meta.outputs.build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
