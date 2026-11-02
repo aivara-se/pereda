@@ -120,7 +120,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log, 
 - **An older page fails to load.** The status names the reason, and the entries already loaded stay.
 - **A search fails.** The status names the reason, and the words stay in the field.
 - **An export fails.** It stops at the first file; the notes are unchanged, the files already written stay, and the page names the day and the reason.
-- **No network.** v1.16 makes no request of any kind, and the acceptance run is made with the network off. The web page asks for its own files once, and for nothing after them: a keystroke, a search and an export each make none.
+- **No network.** v1.17 makes no request of any kind, and the acceptance run is made with the network off. The web page asks for its own files once, and for nothing after them: a keystroke, a search and an export each make none.
 - **The shortcut is refused.** It is said once in the status line, and Today, the log and the search work without it.
 - **The assistant is unavailable.** A request is refused in words the panel and the status line show, and the note stays on screen.
 - **A date is after today.** It is refused in the status line and the log does not move; the text stays in the field.
@@ -130,7 +130,7 @@ The page is the app's, not a window or a modal: the gear opens it over the log, 
 
 ## Not in v1.x
 
-The app above is v1.16. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
+The app above is v1.17. Cloud sync is not a v1.x mechanism: the app has no server, no account table, no sync endpoint and no conflict resolution. A v2 sync would reconcile this local store and keep it the source of truth, so the app still works offline.
 
 ## The web app
 
@@ -143,6 +143,8 @@ The repository is a bun workspace of `apps/desktop`, `apps/website` and the libr
 Both surfaces answer the same three calls — the log, the save and the search — and the calls are the library's too (`libs/notes/src/calls.js`): the checks, the refusals and their sentences live once, and each backend binds only its own store. The worker answers them plus the export's read of every day. The page reaches it through one request per call, answered by id.
 
 The page is SvelteKit with `adapter-static` and Vite ([`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)). Every route is prerendered and client-rendered: `/`, `/search/` and `/settings/` are files, no request is rendered, and the browser's router moves between them, asking for a page's script the first time it is opened and for nothing else. The bar, the column and the note are drawn again from `libs/theme`; no page adds a token. A browser that cannot give the worker a place to write is told so, and the page keeps nothing.
+
+The page takes the log's bar and the note's states ([`039`](docs/adrs/039-the-web-app-takes-the-bar-and-the-notes-states.md)): the app's name at the left is the way home, Search stands at the right because the page has no ⌘F, and the gear stands at the bottom-left corner on the log and is not drawn on the search or the settings page. An older note is read-only until its edit button is pressed and draws no caret before that; blur ends its edit, a note cleared to nothing leaves the log after its save, and the page's controls and the other entries fade to 0.25 while a note is written.
 
 `apps/website/vite.config.js` takes the path the site is served under from `PEREDA_BASE`: the publish workflow sets it to the repository's name, and a custom domain is a CNAME in `apps/website/static/` with that variable empty. The site is a platform of the release: `publish` builds it at the release's ref, holds the tag until it succeeds with the three desktops, and deploys it to GitHub Pages after the release ([`038`](docs/adrs/038-the-web-app-ships-with-the-release.md)). The desktop's build, its promise of no request and the version file do not move.
 

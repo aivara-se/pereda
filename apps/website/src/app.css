@@ -63,13 +63,20 @@ button:disabled {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.1em;
+  text-decoration: none;
   text-transform: uppercase;
+  transition: color var(--t-quick) var(--ease);
+}
+
+.mark:hover {
+  color: var(--ink);
 }
 
 .tools {
   display: flex;
   align-items: center;
   gap: 2px;
+  transition: opacity var(--t-quick) var(--ease);
 }
 
 .icon {
@@ -79,7 +86,20 @@ button:disabled {
   height: 34px;
   border-radius: 7px;
   color: var(--icon);
-  transition: color var(--t-quick) var(--ease);
+  transition:
+    color var(--t-quick) var(--ease),
+    opacity var(--t-quick) var(--ease);
+}
+
+/* The gear is the log's way into settings, at the window's bottom-left corner
+   so the bar carries only the name and the search. It sits on the paper: a
+   chip, not a glyph over the note scrolling behind it. */
+.corner {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1;
+  background: var(--bg);
 }
 
 .icon svg {
@@ -130,6 +150,7 @@ main {
   grid-template-columns: 7.5rem 1fr;
   gap: 1.5rem;
   padding-bottom: 48px;
+  transition: opacity var(--t-soft) var(--ease);
 }
 
 .entry .date {
@@ -146,6 +167,7 @@ main {
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: opacity var(--t-soft) var(--ease);
 }
 
 .entry.today .date,
@@ -155,7 +177,9 @@ main {
 }
 
 /* The row hangs 1 px under the date, against its right edge, outside the flow,
-   so the entry does not change height when it arrives. */
+   so the entry does not change height when it arrives. It leaves on its fade,
+   and keeps the pointer until the fade ends: a press on a button blurs the
+   note, and the button under the pointer must still be there when it ends. */
 
 .entry .actions {
   position: absolute;
@@ -163,6 +187,24 @@ main {
   right: 0;
   display: flex;
   gap: 2px;
+  opacity: 0;
+  transform: translateY(4px);
+  visibility: hidden;
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform 0s var(--t-soft),
+    visibility 0s var(--t-soft);
+}
+
+.entry.selected .actions,
+.entry:focus-within .actions {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform var(--t-soft) var(--ease),
+    visibility 0s;
 }
 
 .entry .actions button {
@@ -241,6 +283,19 @@ main {
 
 .entry:not(.open) .note .cm-content {
   cursor: default;
+  /* The caret is the sign of writing: a selected note that has not been opened
+     for editing keeps the focus and the selection, but draws no caret. */
+  caret-color: transparent;
+}
+
+/* The note being written dims the page's controls and the other entries, as it
+   does on the desktop. The app's name is the page's identity and stays at full
+   strength, like the window's dots. */
+body:has(.entry.open:focus-within) .bar .tools,
+body:has(.entry.open:focus-within) .corner,
+body:has(.entry.open:focus-within) .entry:not(:focus-within),
+body:has(.entry.open:focus-within) .entry:focus-within .date {
+  opacity: 0.25;
 }
 
 /* The forms the note draws where it stands. */
