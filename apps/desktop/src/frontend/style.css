@@ -158,17 +158,20 @@ button:disabled {
   color: var(--zoom);
 }
 
-/* Two controls sit at the right of the bar; everything else is the note. They
-   replace each other in one place, so the corner cross-fades and the bar keeps
-   its height and its drag area. */
+/* The page's controls sit at the right, each in its own 34 px cell 2 px apart:
+   the log's Today and gear, and one way back while the search or the settings
+   page replaces them. The corner cross-fades and the bar keeps its height and
+   its drag area. */
 
 .tools {
   display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 34px;
+  gap: 2px;
   margin-left: auto;
 }
 
 .tools > * {
-  grid-area: 1 / 1;
   transition:
     opacity var(--t-quick) var(--ease),
     transform var(--t-quick) var(--ease);
@@ -207,14 +210,16 @@ button:disabled {
   opacity: 0.28;
 }
 
-/* The log, the search and the settings page are mounted together: a page swap is
-   a cross-fade of two siblings in place, and the log is never rebuilt under it. */
+/* The log, the search and the settings page are mounted together and clipped to
+   the column, so a page's 4 px rise never scrolls the window: a page swap is a
+   cross-fade of two siblings in place, and the log is never rebuilt under it. */
 
 .pages {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .pages > * {
