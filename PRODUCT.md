@@ -24,7 +24,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 
 - The same log in a browser, in a tab or installed on a phone: today, the log, the search, the settings page and the export, drawn from the same libraries as the desktop ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)).
 - It installs from the browser — Add to Home Screen on iOS, Install app on Android and desktop Chromium — and opens on its own, without an address bar ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
-- An installed app opens with no network. The page and every file it reads are held on the device, 1.9 MB in all, and the notes were already there ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
+- An installed app opens with no network. The page and every file it reads are held on the device, and the notes were already there; one document opens them at a time, so a tab left open holds them until it closes ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
 - It keeps its notes in the browser's own storage on that device, in the same schema and through the same search. There is no account, no upload and no server-side database; nothing about a note reaches the host, which served the page and is asked for nothing after it.
 - The two surfaces keep separate note sets. Moving notes between them is the Markdown export, done by hand, and there is no sync ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
 - The export needs the File System Access API, which Chromium browsers offer and Firefox and Safari do not. A browser without it says so and writes nothing.

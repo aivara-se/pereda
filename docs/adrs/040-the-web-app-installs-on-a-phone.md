@@ -13,7 +13,7 @@ The build writes 34 files for the page: 1.9 MB raw and 0.88 MB compressed, the 8
 - The web app carries a manifest and its icons, and the browser installs it to the home screen in `standalone`.
 - A service worker caches every file the build wrote at install, from a list the build writes after its last file. A navigation is answered from that cache first and from the network only on a miss.
 - The cache is named for the build's version, and the worker deletes the caches of builds that are gone.
-- The notes do not move: they stay in the browser's origin-private file system, and an installed app and a tab on the same origin share them.
+- The notes do not move: they stay in the browser's origin-private file system, and an installed app opens the notes the tab wrote. One document opens them at a time: a second document on the same origin, a tab still open beside the installed app included, cannot open the database and says so, and the notes open again once the first document closes.
 - The page keeps the layout it has: the single column under 620 px is the phone's layout, and the install adds no route, gesture or control.
 
 ## Consequences
