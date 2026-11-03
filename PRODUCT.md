@@ -22,7 +22,9 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 
 ## The web app
 
-- The same log in a desktop browser: today, the log, the search, the settings page and the export, drawn from the same libraries as the desktop ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)).
+- The same log in a browser, in a tab or installed on a phone: today, the log, the search, the settings page and the export, drawn from the same libraries as the desktop ([`034`](docs/adrs/034-the-two-surfaces-share-libraries.md)).
+- It installs from the browser — Add to Home Screen on iOS, Install app on Android and desktop Chromium — and opens on its own, without an address bar ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
+- An installed app opens with no network. The page and every file it reads are held on the device, 1.9 MB in all, and the notes were already there ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
 - It keeps its notes in the browser's own storage on that device, in the same schema and through the same search. There is no account, no upload and no server-side database; nothing about a note reaches the host, which served the page and is asked for nothing after it.
 - The two surfaces keep separate note sets. Moving notes between them is the Markdown export, done by hand, and there is no sync ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
 - The export needs the File System Access API, which Chromium browsers offer and Firefox and Safari do not. A browser without it says so and writes nothing.
@@ -83,9 +85,9 @@ The assistant has one action: summarise an older note, with Apple's on-device mo
 - Not a cloud app: no account, no sync, no collaboration, no sharing.
 - Not a service: no hosted version of the desktop app, no server and nothing to self-host. The web app is a static page that deploys, and it holds no account and no note on the host.
 - Not rich text beyond the five forms above ([`030`](docs/adrs/030-the-note-renders-its-markdown.md)).
-- Not mobile: no iOS or Android app.
+- Not a native mobile app: no iOS or Android binary. The web app installs from the browser on a phone ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
 - Not an importer: notes from other apps, or from the old pereda.app, are not imported.
-- Not self-updating: a new version is a download.
+- Not self-updating on the desktop: a new version is a download. The web app takes the next release on its next launch ([`040`](docs/adrs/040-the-web-app-installs-on-a-phone.md)).
 - Not an assistant beyond a summary: no questions across the log, no suggested lines, no chat.
 
 ## Edge cases left unhandled
@@ -102,7 +104,7 @@ Known, and deliberately not handled in this version.
 - **The File menu on Windows.** The runtime draws no menu bar on a frameless, transparent window, so **Show data folder** is not there and the folder stays a path the person has to be told ([`018`](docs/adrs/018-the-menu-is-where-the-runtime-draws-one.md)).
 - **A full disk or a read-only data folder.** The save fails, the app says so and keeps the text on screen; it never reports a save that did not happen.
 - **A note past a book.** No pagination, so a very long note is slow to open.
-- **The browser's storage.** The web app asks the browser to keep its notes; a browser that evicts them anyway loses them, and the export is the backup ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
+- **The browser's storage.** The web app asks the browser to keep its notes; a browser that evicts them anyway loses them, and on a browser with the File System Access API the export is the backup ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md)).
 - **A browser without the origin-private file system.** The web app says so and keeps nothing; there is no fallback that holds notes in memory.
 - **An export in a browser without the File System Access API.** Firefox and Safari do not offer it, so the settings page says so and writes nothing; there is no second export that downloads files.
 - **The assistant on the web.** There is none: the model is the Mac's, and the web app is not on the Mac's terms.
@@ -132,6 +134,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - A date typed as `YYYY-MM-DD` opens the log at that day; a day after today is refused in words, and a target with no note lands on the newest day at or before it, today included.
 - Clearing a note leaves the day empty; deleting an older day asks once and cannot be undone.
 - Export writes one Markdown file per day into the chosen folder, verbatim and UTF-8; a same-named file is replaced, and the result names the count and folder or the first day that failed.
+- The web app installs from a phone's browser and opens with the network off, with a note written before the install still on screen.
 - The notes are one SQLite database in the app's data folder; the only other writes are an export's files, into the folder the person chose.
 - **Show data folder** opens that folder in the system's file manager on macOS and Linux; when it cannot, the status line shows the path as text.
 - A failed save is shown and the text stays on screen; no success is reported.

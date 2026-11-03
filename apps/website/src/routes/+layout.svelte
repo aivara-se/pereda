@@ -11,7 +11,24 @@
 
   let { children } = $props();
 
-  onMount(openStore);
+  onMount(() => {
+    openStore();
+
+    // A new worker deletes the cache of the build it replaces, so a page that
+    // was already controlled reloads once when the new worker takes over, and
+    // its files and its cache name the same build. The first install has no
+    // controller to replace and does not reload.
+    if (!navigator.serviceWorker?.controller) return;
+    let reloading = false;
+    const reload = () => {
+      if (reloading) return;
+      reloading = true;
+      location.reload();
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", reload);
+    return () =>
+      navigator.serviceWorker.removeEventListener("controllerchange", reload);
+  });
 
   // The bar names the page it is on: the route, not the path the host serves.
   const here = $derived((page.route.id ?? "/").replace(/\/$/, "") || "/");
