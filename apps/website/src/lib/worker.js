@@ -38,13 +38,28 @@ function handle(db) {
 // refuses here, and the app says so instead of keeping notes it would lose.
 async function create() {
   const sqlite3 = await sqlite3InitModule({ locateFile: () => wasm });
-  const pool = await sqlite3.installOpfsSAHPoolVfs({
-    name: "pereda",
-    directory: ".pereda",
-    initialCapacity: 4,
-  });
+  const pool = await openPool(sqlite3);
   const db = new pool.OpfsSAHPoolDb(FILE);
   return openStore(FILE, () => handle(db));
+}
+
+// A page can open while the worker of the page it replaced still holds the
+// pool's access handles: an installed app that opens from the cache is faster
+// than the teardown. The pool is asked for again a few times before the app
+// says it cannot write.
+async function openPool(sqlite3) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await sqlite3.installOpfsSAHPoolVfs({
+        name: "pereda",
+        directory: ".pereda",
+        initialCapacity: 4,
+      });
+    } catch (error) {
+      if (attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+  }
 }
 
 let opening = null;
