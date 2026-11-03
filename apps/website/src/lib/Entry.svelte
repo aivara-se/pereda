@@ -120,7 +120,9 @@
   onpointerdown={() => (selected = true)}
 >
   <div class="date">
-    <time datetime={entry.day}>{formatDay(entry.day)}</time>
+    <time datetime={entry.day}
+      >{entry.day === today ? "Today" : formatDay(entry.day)}</time
+    >
     {#if !open}
       <div class="actions">
         <button type="button" title="Edit" onclick={edit}>
