@@ -2,7 +2,7 @@
 
 import { SHORTCUT_ID, shortcutNotice } from "../shared/shortcut.js";
 import { DATA_FOLDER_EVENT } from "../shared/menu.js";
-import { keyAction } from "../shared/keys.js";
+import { keyAction } from "@pereda/keys/keys.js";
 import { writingNotice } from "@pereda/notes/midnight.js";
 import { noteEditor } from "@pereda/note-editor";
 
