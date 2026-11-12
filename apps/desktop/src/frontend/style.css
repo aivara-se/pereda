@@ -700,6 +700,7 @@ button:disabled {
    window, and the way out has to stay where the person last saw it. The status
    line and the assistant panel are read, not navigated, so they stay at full
    strength. */
+.bar .tools,
 .entry:not(:focus-within),
 .entry:focus-within .date {
   transition: opacity var(--t-soft) var(--ease);

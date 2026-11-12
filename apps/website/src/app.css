@@ -81,6 +81,7 @@ button:disabled {
   align-items: center;
   gap: 5px;
   margin-left: auto;
+  transition: opacity var(--t-quick) var(--ease);
 }
 
 .icon {
