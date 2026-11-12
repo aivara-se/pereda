@@ -4,7 +4,7 @@
   import { say } from "#lib/notice.svelte.js";
   import { hide, show } from "#lib/surfaces.js";
 
-  let { onjump, before, today } = $props();
+  let { onopen, onjump, before, today } = $props();
 
   const SEARCH_DEBOUNCE = 200;
 
@@ -73,7 +73,7 @@
       return;
     }
     if (answer.jump !== undefined) {
-      onjump(answer.jump.day);
+      onjump(answer.jump);
       return;
     }
     days = answer.days;
@@ -113,7 +113,7 @@
       <p class="empty">No note says that.</p>
     {:else}
       {#each days as result (result.day)}
-        <button class="result" type="button" onclick={() => onjump(result.day)}>
+        <button class="result" type="button" onclick={() => onopen(result.day)}>
           <span class="date"
             >{result.day === today ? "Today" : formatShortDay(result.day)}</span
           >
