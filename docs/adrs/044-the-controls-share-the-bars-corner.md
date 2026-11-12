@@ -17,9 +17,10 @@ That left the page's one control alone on the paper, far from the bar's own cont
 ## Consequences
 
 - [`036`](036-the-window-does-not-fade-and-the-gear-moves.md)'s "The gear stands at the window's bottom-left corner, on the paper, wherever the log is reachable" falls, and with it that ADR's "The gear sits over the page, so it needs the paper's colour behind it": the gear draws no chip of its own.
-- [`041`](041-the-pages-have-no-close-button.md)'s "The bar's right corner carries nothing: Esc leaves the search and the settings page" falls for the corner and stands for the way out: the gear opens a page, it does not close one.
+- [`041`](041-the-pages-have-no-close-button.md)'s "The bar carries only the window's three dots, which are always there, and it does not change as the page does" falls: the corner carries the search and the gear, and the gear goes while the settings page is open.
+- [`041`](041-the-pages-have-no-close-button.md)'s "Neither page carries a control of its own" stands: the gear opens a page, it does not close one.
 - [`041`](041-the-pages-have-no-close-button.md)'s "The gear stays off the search page and off the settings page" falls for the search, which draws the gear in its corner, and stands for the settings page, where the gear leaves and keeps its space.
-- [`029`](029-the-bar-carries-only-the-pages-controls.md)'s "the bar's right corner belongs to the page below it" is now literal: the page's controls are drawn there.
+- [`029`](029-the-bar-carries-only-the-pages-controls.md)'s "The bar's right corner belongs to the page below it" is now literal: the page's controls are drawn there.
 - [`043`](043-the-web-is-the-desktops-page.md)'s "The gear stands at the window's bottom-left corner on the log only" falls: the gear stands in the bar's corner, on the log and on the search.
 - The desktop's bar carries one control and the web's two; both occupy the same corner, at the same 5 px, so the two surfaces match where they can and differ by the search a phone needs.
 - The gear leaves the settings page as it did, and the space it held stays, so a press aimed at the search while the page closes lands where it was aimed.
