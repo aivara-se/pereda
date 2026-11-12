@@ -1,19 +1,28 @@
 <script>
-  import { onMount } from "svelte";
-
   import { writeExport } from "@pereda/notes/export.js";
 
   import { call } from "#lib/client.js";
-  import { openStore, session } from "#lib/session.svelte.js";
+  import { session } from "#lib/session.svelte.js";
+  import { hide, show } from "#lib/surfaces.js";
 
+  let root;
   let exporting = $state(false);
   let report = $state({ text: "", failed: false });
 
-  onMount(openStore);
+  export function open() {
+    report = { text: "", failed: false };
+    show(root);
+  }
+
+  export function close() {
+    hide(root, () => {
+      report = { text: "", failed: false };
+    });
+  }
 
   // The notes are one Markdown file per day, in a folder the person picks. A
   // browser that cannot write a folder says so; nothing is downloaded into a
-  // directory nobody chose (docs/adrs/024).
+  // directory nobody chose (docs/adrs/024-export-writes-markdown.md).
   async function exportNotes() {
     if (exporting) return;
     if (typeof window.showDirectoryPicker !== "function") {
@@ -49,7 +58,8 @@
         },
       );
       if (result.failed !== null) {
-        const count = result.written === 1 ? "1 file was" : `${result.written} files were`;
+        const count =
+          result.written === 1 ? "1 file was" : `${result.written} files were`;
         report = {
           text: `The export stopped at ${result.failed.day}: ${result.failed.reason}. ${count} written before it.`,
           failed: true,
@@ -71,13 +81,21 @@
   }
 </script>
 
-<div class="settings">
-  <p class="settings-nav">Settings</p>
+<section class="settings surface" bind:this={root} hidden>
+  <nav class="settings-nav" aria-label="Settings">
+    <ul>
+      <li>
+        <button class="settings-link" type="button" aria-current="page">
+          Export Data
+        </button>
+      </li>
+    </ul>
+  </nav>
   <div class="settings-panel">
     <p class="settings-rule">
-      Export writes one Markdown file per day, named <code>YYYY-MM-DD.md</code>,
-      into the folder you choose. The note is written exactly as it is stored; a
-      file of the same name in that folder is replaced.
+      Export writes one Markdown file per day that has a note, named
+      <code>YYYY-MM-DD.md</code>, into the folder you choose. A file with the
+      same name there is replaced.
     </p>
     <button
       class="settings-button"
@@ -85,10 +103,10 @@
       onclick={exportNotes}
       disabled={exporting || session.status !== "ready"}
     >
-      {exporting ? "Exporting…" : "Export Data"}
+      Export to folder…
     </button>
     <p class="settings-result" class:error={report.failed} role="status">
       {report.text}
     </p>
   </div>
-</div>
+</section>

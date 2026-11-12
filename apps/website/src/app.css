@@ -1,8 +1,8 @@
 @import "@pereda/theme/theme.css";
 
-/* The web app draws its pages from the shared theme and adds no token: the
-   column, the bar and the note are the desktop's, laid out again
-   (docs/adrs/034-the-two-surfaces-share-libraries.md). */
+/* The web app draws the desktop's page from the shared theme and adds no token:
+   the same bar, the same column, the same note, with the name where the window
+   draws its dots (docs/adrs/043-the-web-is-the-desktops-page.md). */
 
 * {
   box-sizing: border-box;
@@ -17,6 +17,8 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
+  /* The browser is the window: its paper is opaque, not the desktop's
+     translucent --window over a wallpaper. */
   background: var(--bg);
   color: var(--ink);
 }
@@ -32,7 +34,6 @@ button {
 
 button:disabled {
   cursor: default;
-  opacity: 0.5;
 }
 
 .visually-hidden {
@@ -44,14 +45,14 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* The bar holds the app's name at its left and the page's controls at its
-   right; the page below it scrolls and the bar does not. */
+/* The bar carries the app's name at its left, the way the desktop's carries the
+   window's dots there, and the one control it can offer: the search. The page
+   below it scrolls and the bar does not. */
 
 .bar {
   flex: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: var(--bar);
   padding: 0 12px 0 22px;
   -webkit-user-select: none;
@@ -76,7 +77,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 2px;
-  transition: opacity var(--t-quick) var(--ease);
+  margin-left: auto;
 }
 
 .icon {
@@ -84,22 +85,8 @@ button:disabled {
   place-items: center;
   width: 34px;
   height: 34px;
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--icon);
-  transition:
-    color var(--t-quick) var(--ease),
-    opacity var(--t-quick) var(--ease);
-}
-
-/* The gear is the log's way into settings, at the window's bottom-left corner
-   so the bar carries only the name and the search. It sits on the paper: a
-   chip, not a glyph over the note scrolling behind it. */
-.corner {
-  position: fixed;
-  left: 12px;
-  bottom: 12px;
-  z-index: 1;
-  background: var(--bg);
 }
 
 .icon svg {
@@ -118,6 +105,7 @@ button:disabled {
 }
 
 .icon:hover {
+  background: var(--hover);
   color: var(--ink);
 }
 
@@ -127,225 +115,82 @@ button:disabled {
 
 .icon:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
-main {
+/* The gear is the log's way into settings, at the window's bottom-left corner
+   so the bar carries only the name and the search. It sits on the paper — a
+   chip, not a glyph over the note scrolling behind it. */
+.corner {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1;
+  background: var(--bg);
+  transition: opacity var(--t-quick) var(--ease);
+}
+
+.corner:hover {
+  background: linear-gradient(var(--hover), var(--hover)), var(--bg);
+}
+
+.app {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The log, the search and the settings page are mounted together and clipped to
+   the column, so a page's 4 px rise never scrolls the window: a page swap is a
+   cross-fade of two siblings in place, and the log is never rebuilt. */
+
+.pages {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.pages > * {
+  grid-area: 1 / 1;
+  min-height: 0;
+}
+
+.page {
+  overflow-y: auto;
+  overscroll-behavior: none;
+}
+
+.log {
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
+  padding: 30px 0 45vh;
+}
+
+/* The search page is the field and the list under it: the field holds its place
+   and the list scrolls at the window's edge, so its column moves nowhere. */
+
+.search-page {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.search-page .results {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: none;
 }
 
-.page {
+.search {
+  flex: none;
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
   width: min(100% - 64px, 43rem);
   margin: 0 auto;
-  padding: 30px 0 45vh;
-}
-
-/* An entry is a date column and the note, on the one grid every page shares. */
-
-.entry {
-  display: grid;
-  grid-template-columns: 7.5rem 1fr;
-  gap: 1.5rem;
-  padding-bottom: 48px;
-  transition: opacity var(--t-soft) var(--ease);
-}
-
-.entry .date {
-  position: relative;
-  align-self: start;
-  min-width: 0;
-  padding-top: 7px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-align: right;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: opacity var(--t-soft) var(--ease);
-}
-
-/* The date clips and takes the ellipsis; the row is not clipped with it. */
-.entry .date time {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.entry.today .date,
-.entry.selected .date,
-.entry:focus-within .date {
-  color: var(--ink);
-}
-
-/* The row hangs 1 px under the date, against its right edge, outside the flow,
-   so the entry does not change height when it arrives. It leaves on its fade,
-   and keeps the pointer until the fade ends: a press on a button blurs the
-   note, and the button under the pointer must still be there when it ends. */
-
-.entry .actions {
-  position: absolute;
-  top: calc(100% + 1px);
-  right: 0;
-  display: flex;
-  gap: 2px;
-  opacity: 0;
-  transform: translateY(4px);
-  visibility: hidden;
-  transition:
-    opacity var(--t-soft) var(--ease),
-    transform 0s var(--t-soft),
-    visibility 0s var(--t-soft);
-}
-
-.entry.selected .actions,
-.entry:focus-within .actions {
-  opacity: 1;
-  transform: none;
-  visibility: visible;
-  transition:
-    opacity var(--t-soft) var(--ease),
-    transform var(--t-soft) var(--ease),
-    visibility 0s;
-}
-
-.entry .actions button {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  color: var(--muted);
-}
-
-.entry .actions svg {
-  width: 13px;
-  height: 13px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.entry .actions button:hover {
-  background: var(--hover);
-  color: var(--ink);
-}
-
-.entry .actions button:last-child:hover {
-  color: var(--error);
-}
-
-.entry .actions button:focus-visible {
-  outline: 2px solid var(--accent);
-}
-
-/* The note is one editor over its string: CodeMirror's chrome goes, so the note
-   keeps the page's type, its caret and its wrap. */
-
-.note {
-  display: block;
-  width: 100%;
-  min-height: 1.65em;
-}
-
-.note .cm-editor {
-  background: transparent;
-  color: var(--ink);
-  font-family: "Newsreader", ui-serif, Georgia, serif;
-  font-size: 19px;
-  font-weight: 450;
-  line-height: 1.65;
-}
-
-.note .cm-scroller {
-  overflow: visible;
-  font-family: inherit;
-  line-height: inherit;
-}
-
-.note .cm-content {
-  padding: 0;
-  caret-color: var(--accent);
-}
-
-.note .cm-line {
-  padding: 0;
-}
-
-.note .cm-editor.cm-focused {
-  outline: none;
-}
-
-.note .cm-placeholder {
-  color: var(--muted);
-  opacity: 0.5;
-}
-
-.entry:not(.open) .note .cm-content {
-  cursor: default;
-  /* The caret is the sign of writing: a selected note that has not been opened
-     for editing keeps the focus and the selection, but draws no caret. */
-  caret-color: transparent;
-}
-
-/* The note being written dims the page's controls and the other entries, as it
-   does on the desktop. The app's name is the page's identity and stays at full
-   strength, like the window's dots. */
-body:has(.entry.open:focus-within) .bar .tools,
-body:has(.entry.open:focus-within) .corner,
-body:has(.entry.open:focus-within) .entry:not(:focus-within),
-body:has(.entry.open:focus-within) .entry:focus-within .date {
-  opacity: 0.25;
-}
-
-/* The forms the note draws where it stands. */
-
-.md-em {
-  font-style: italic;
-}
-
-.md-strong {
-  font-weight: 700;
-}
-
-.md-del {
-  text-decoration: line-through;
-}
-
-.md-code {
-  padding: 1px 3px;
-  border-radius: 3px;
-  background: var(--hover);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85em;
-}
-
-.md-block {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85em;
-}
-
-/* The search: a field on the log's grid, and the results under it. */
-
-.search {
-  display: grid;
-  grid-template-columns: 7.5rem 1fr;
-  gap: 1.5rem;
-}
-
-.search .date {
-  padding-top: 7px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-align: right;
-  text-transform: uppercase;
 }
 
 .search .field {
@@ -377,27 +222,28 @@ body:has(.entry.open:focus-within) .entry:focus-within .date {
 }
 
 .results {
-  padding-top: 22px;
+  padding: 22px 0 45vh;
+}
+
+.result,
+.results .empty {
+  width: min(100% - 64px, 43rem);
+  margin: 0 auto;
 }
 
 .result {
   display: grid;
   grid-template-columns: 7.5rem 1fr;
   gap: 1.5rem;
-  width: 100%;
   padding: 0 0 26px;
   color: var(--ink);
   text-align: left;
 }
 
-.result .date {
-  padding-top: 6px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-align: right;
-  text-transform: uppercase;
+.result:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .result .snippet {
@@ -410,21 +256,18 @@ body:has(.entry.open:focus-within) .entry:focus-within .date {
   color: var(--ink);
 }
 
-.result:focus-visible {
-  border-radius: 4px;
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-}
-
-.empty {
+.results .empty {
   color: var(--muted);
   font-family: "Newsreader", ui-serif, Georgia, serif;
   font-size: 17px;
 }
 
-/* Settings: a nav where the dates sit, a panel where the notes sit. */
+/* Settings is a page on the log's grid: a nav where the dates sit and a panel
+   where the notes sit. It replaces the log; it never loads another day. */
 
 .settings {
+  min-height: 0;
+  overflow-y: auto;
   display: grid;
   grid-template-columns: 7.5rem 1fr;
   gap: 1.5rem;
@@ -436,12 +279,33 @@ body:has(.entry.open:focus-within) .entry:focus-within .date {
 
 .settings-nav {
   padding-top: 7px;
-  color: var(--ink);
+}
+
+.settings-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-link {
+  width: 100%;
+  padding: 0;
+  color: var(--muted);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-align: right;
   text-transform: uppercase;
+}
+
+.settings-link[aria-current="page"] {
+  color: var(--ink);
+}
+
+.settings-link:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .settings-rule {
@@ -467,6 +331,10 @@ body:has(.entry.open:focus-within) .entry:focus-within .date {
   background: var(--accent-soft);
 }
 
+.settings-button:disabled {
+  opacity: 0.5;
+}
+
 .settings-button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -484,80 +352,292 @@ body:has(.entry.open:focus-within) .entry:focus-within .date {
   color: var(--error);
 }
 
-/* The status line is one sentence at the bottom centre, over the page. */
+/* An entry is a date column and the note, on the one grid every page shares. */
 
-.status {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  max-width: min(90vw, 46rem);
-  margin: 0;
-  padding: 7px 12px;
-  border-radius: 7px;
-  background: var(--bg);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.09);
-  color: var(--muted);
-  font-size: 12px;
-  transform: translateX(-50%);
-  pointer-events: none;
+.entry {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1.5rem;
+  padding-bottom: 48px;
 }
 
-.status.failed {
+/* The date column carries the entry's actions without making the entry taller:
+   the row is out of the flow and only its own entry can show it. */
+.entry .meta {
+  position: relative;
+  align-self: start;
+  min-width: 0;
+}
+
+/* The row hangs 1 px under the date, against its right edge, outside the flow,
+   and only the selected entry shows it. It arrives on the one entrance and
+   leaves through opacity alone. Its keys leave with the fade's end, never at
+   its first frame: a press on a button blurs the note, and the button under
+   the pointer must still be there when the press ends. */
+.entry .actions {
+  position: absolute;
+  top: calc(100% + 1px);
+  right: 0;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transform: translateY(4px);
+  visibility: hidden;
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform 0s var(--t-soft),
+    visibility 0s var(--t-soft);
+}
+
+/* Selected: the row arrives with the 4 px rise and is hit-testable at once. */
+.entry:focus-within .actions {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform var(--t-soft) var(--ease),
+    visibility 0s;
+}
+
+.entry .action {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.entry .action svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.entry .action:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.entry .action.remove:hover {
   color: var(--error);
 }
 
-/* A store that cannot open is the whole page: nothing is kept, and the reason
-   is the only thing to say. */
+.entry .action:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.date {
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.entry .date,
+.search .date {
+  padding-top: 7px;
+}
+
+.result .date {
+  padding-top: 6px;
+}
+
+.entry.today .date,
+.entry:focus-within .date {
+  color: var(--ink);
+}
+
+.entry .note {
+  display: block;
+  width: 100%;
+  min-height: 1.65em;
+}
+
+/* The note is one editor over its string. CodeMirror's own chrome goes, so the
+   note keeps the page's type, its caret and its wrap. */
+.entry .note .cm-editor {
+  background: transparent;
+  color: var(--ink);
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-size: 19px;
+  font-weight: 450;
+  line-height: 1.65;
+}
+
+.entry .note .cm-scroller {
+  overflow: visible;
+  font-family: inherit;
+  line-height: inherit;
+}
+
+.entry .note .cm-content {
+  padding: 0;
+  caret-color: var(--accent);
+}
+
+.entry .note .cm-line {
+  padding: 0;
+}
+
+.entry .note .cm-editor.cm-focused {
+  outline: none;
+}
+
+.entry .note .cm-placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.entry:not(.editing) .note .cm-content {
+  cursor: default;
+  /* The caret is the sign of writing: a selected note that has not been opened
+     for editing keeps the focus and the selection, but draws no caret. */
+  caret-color: transparent;
+}
+
+/* The forms the note draws where it stands. A mark is hidden, not styled: these
+   are the styles of the text a mark was drawn away from. */
+.md-em {
+  font-style: italic;
+}
+
+.md-strong {
+  font-weight: 700;
+}
+
+.md-del {
+  text-decoration: line-through;
+}
+
+.md-code {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: var(--hover);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.md-block {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+/* The status line is one sentence at the bottom centre, over the page. An error
+   is the colour of the line; a fact is muted. */
+
+.status {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  margin: 0;
+  max-width: min(90vw, 46rem);
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: var(--bg);
+  transform: translateX(-50%);
+  color: var(--error);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.status.info {
+  color: var(--muted);
+}
+
+/* The one screen that stops the app: the store is named, not touched. */
 
 .fatal {
-  width: min(100% - 64px, 43rem);
-  margin: 0 auto;
-  padding: 30px 0;
+  position: fixed;
+  inset: var(--bar) 0 0;
+  display: grid;
+  place-items: center;
+  padding: 40px;
+  background: var(--bg);
+}
+
+.fatal-body {
+  max-width: 34rem;
 }
 
 .fatal h1 {
-  margin: 0 0 12px;
-  font-size: 19px;
-  font-weight: 500;
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .fatal p {
   margin: 0 0 10px;
+  overflow-wrap: anywhere;
+}
+
+.fatal .hint {
   color: var(--muted);
-  font-family: "Newsreader", ui-serif, Georgia, serif;
-  font-size: 17px;
-  line-height: 1.6;
+}
+
+/* The entry being written dims the page's controls and the other entries while
+   it has the caret. The app's name and its search are the page's identity, so
+   they stay at full strength, as the window's dots do. The status line is read,
+   not navigated, so it stays at full strength. */
+.entry:not(:focus-within),
+.entry:focus-within .date {
+  transition: opacity var(--t-soft) var(--ease);
+}
+
+body:has(.entry.editing:focus-within) .corner,
+body:has(.entry.editing:focus-within) .entry:not(:focus-within),
+body:has(.entry.editing:focus-within) .entry:focus-within .date {
+  opacity: 0.25;
 }
 
 @media (max-width: 620px) {
-  .page,
-  .settings,
+  .log,
   .search,
-  .result {
+  .result,
+  .results .empty,
+  .settings {
     width: min(100% - 40px, 43rem);
   }
 
-  .page,
+  .log,
+  .results,
   .settings {
     padding-top: 22px;
   }
 
+  .settings-nav {
+    padding-top: 0;
+  }
+
   .entry,
-  .search,
   .result,
+  .search,
   .settings {
     grid-template-columns: 1fr;
     gap: 4px;
   }
 
-  .entry {
+  .entry,
+  .result {
     padding-bottom: 40px;
   }
 
   .entry .date,
   .result .date,
   .search .date,
-  .settings-nav {
+  .settings-link {
     padding-top: 0;
     text-align: left;
   }
@@ -567,4 +647,51 @@ body:has(.entry.open:focus-within) .entry:focus-within .date {
     left: 0;
     right: auto;
   }
+}
+
+/* One entrance and one exit, for every surface above. The page adds `enter` for
+   the frame a surface arrives from and `leave` from the frame it goes; `hidden`
+   is the state it takes when the fade ends, so the two classes are only ever the
+   ends of that fade. */
+
+.surface {
+  transition:
+    opacity var(--t-soft) var(--ease),
+    transform var(--t-soft) var(--ease);
+}
+
+.enter {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.leave {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The status line is centred by its own transform, so its rise keeps the centre. */
+.status.enter {
+  transform: translate(-50%, 4px);
+}
+
+/* Reduce Motion: both durations go to zero and the rise goes with them, so the
+   same code path draws an instant change and nothing is lost. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-quick: 0ms;
+    --t-soft: 0ms;
+  }
+
+  .enter {
+    transform: none;
+  }
+
+  .status.enter {
+    transform: translateX(-50%);
+  }
+}
+
+[hidden] {
+  display: none !important;
 }
