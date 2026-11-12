@@ -62,14 +62,14 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
 - An export writes one Markdown file per day that has a note, named `YYYY-MM-DD.md`, into a folder chosen each time. The note's text is written verbatim; a file with the same name in that folder is replaced, and the section says so before the button. The app reports how many files it wrote and where, or the first day that failed and why.
-- In v1.17 the desktop app makes no network request: no account, no telemetry, no update check. A new version is a download. The web page is the one thing that travels over the network, and only to be loaded.
+- In v1.18 the desktop app makes no network request: no account, no telemetry, no update check. A new version is a download. The web page is the one thing that travels over the network, and only to be loaded.
 - Deleting a note removes its text; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.17 has none. The web page asks for its own files once and for nothing after them.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.18 has none. The web page asks for its own files once and for nothing after them.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -114,7 +114,7 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.17 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.18 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -144,6 +144,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.18** — the page's controls: the search and the gear share the bar's right corner at one 5 px margin, the window keeps only its dots, the search opens from its control as well as ⌘F, and ⌘, opens the settings page. Neither page carries a close button; Esc leaves both. The web app becomes the desktop's page: one log, three modes and no routes, with the same keys, and a path the app does not name boots it ([`041`](docs/adrs/041-the-pages-have-no-close-button.md), [`042`](docs/adrs/042-the-settings-page-has-a-key.md), [`043`](docs/adrs/043-the-web-is-the-desktops-page.md), [`044`](docs/adrs/044-the-controls-share-the-bars-corner.md), [`045`](docs/adrs/045-the-search-has-a-control.md)).
 - **v1.17** — the bar gives the window its corner back: close, minimize and zoom keep full strength while a note is written, the gear moves to the window's corner, Today leaves the bar, an older note draws no caret until Edit, and its actions land on every webview. The web app takes the same bar and the same note states: the name goes home, Search stays, the gear sits at the corner, and an older web note is read-only until Edit, ends its edit on blur, and leaves the log when cleared.
 - **v1.16** — the web app and the libraries it shares: the day, the store, the note and the theme move into `libs/`, and a static SvelteKit page writes the same log in the browser's own storage, with the same search, the same actions and the export ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md), [`034`](docs/adrs/034-the-two-surfaces-share-libraries.md), [`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)).
 - **v1.15** — the window moves in one language: a page cross-fades in place, a surface fades in with a small rise and leaves with a fade, and a note's actions show while its entry is selected and never when a pointer passes over it.
@@ -165,4 +166,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built: the binary is v1.17, and the web app of [`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md) deploys from `main` as a static page that keeps its notes in the browser. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+Everything decided for v1.x is built: the binary is v1.18, and the web app of [`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md) deploys from `main` as a static page that keeps its notes in the browser. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
