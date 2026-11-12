@@ -582,8 +582,8 @@ function hideResults() {
   });
 }
 
-// Search is a mode opened by ⌘F, its only way in: the field takes the caret and
-// the log leaves the screen until Esc closes it.
+// Search is a mode opened by ⌘F or the bar's search control: the field takes the
+// caret and the log leaves the screen until Esc or a second press closes it.
 function openSearch() {
   if (!searchOpen) {
     hideSearch();
