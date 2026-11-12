@@ -22,10 +22,11 @@ describe("the fixed keys", () => {
     expect(keyAction(press("f", { metaKey: true }), "linux")).toBeNull();
   });
 
-  test("are the four, and nothing else", () => {
+  test("are the five, and nothing else", () => {
     const cases = [
       ["f", "search"],
       ["t", "today"],
+      [",", "settings"],
       ["ArrowUp", "previous"],
       ["ArrowDown", "next"],
     ];
