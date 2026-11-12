@@ -118,7 +118,9 @@
     }
   }
 
-  // Today is the page's own address: ⌘T takes it, and either mode leaves for it.
+  // The key map's today action: it closes either mode and reloads the log. The
+  // browser takes ⌘T for a new tab, so no key reaches it here
+  // (docs/adrs/043-the-web-is-the-desktops-page.md).
   async function goToday() {
     if (!(await flushAll())) return;
     if (mode === "search") {
@@ -133,8 +135,9 @@
     await loadLog();
   }
 
-  // The search is a mode over the log, opened by ⌘F or the bar's one control:
-  // the field takes the caret, and the log leaves the screen until Esc closes it.
+  // The search is a mode over the log, opened by ⌘F or its control: the field
+  // takes the caret, and the log leaves the screen until Esc or a second press
+  // on the control closes it.
   async function openSearch() {
     if (mode === "search") {
       search.open();

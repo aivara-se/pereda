@@ -45,8 +45,8 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* The bar carries the app's name at its left, the way the desktop's carries the
-   window's dots there, and the one control it can offer: the search. The page
+/* The bar carries the app's two controls at its right, the search then the gear,
+   and nothing at its left, where the desktop carries the window's dots. The page
    below it scrolls and the bar does not. */
 
 .bar {

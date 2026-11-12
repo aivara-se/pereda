@@ -18,8 +18,8 @@
   let shown = false; // the mode is open, not fading in or out
 
   // The field takes the caret and an empty log of results; the mode is the
-  // page's to open and close. A press while the mode is open keeps the query
-  // and brings the caret back, as the desktop's does.
+  // page's to open and close. ⌘F while the mode is open keeps the query and
+  // brings the caret back, as the desktop's does.
   export function open() {
     if (!shown) {
       clearTimeout(timer);

@@ -15,10 +15,10 @@ That leaves the control of the page you are on doing nothing for it — the gear
 
 ## Consequences
 
-- [`041`](041-the-pages-have-no-close-button.md)'s "Esc is the way out of the search and the settings page" reads Esc and the control of the page you are on.
-- [`043`](043-the-web-is-the-desktops-page.md)'s "the name at the left is the way home and the way out of a mode" falls, and the bar has no left-hand control on either surface.
-- [`044`](044-the-controls-share-the-bars-corner.md)'s "the gear leaves the settings page and keeps its space" falls: it stays, marked, and the search beside it does not move.
-- [`045`](045-the-search-has-a-control.md)'s "a press while the mode is open brings the caret back" reads "closes the mode"; the control is a toggle, and the mark is what says so.
+- [`041`](041-the-pages-have-no-close-button.md)'s "Esc is the way out of the search, which it closes at today, and of the settings page, which it closes to the log it left" reads Esc and the control of the page you are on.
+- [`043`](043-the-web-is-the-desktops-page.md)'s "The name is the way home and the way out of either mode, which is the pointer's only way out" falls, and the bar has no left-hand control on either surface.
+- [`044`](044-the-controls-share-the-bars-corner.md)'s "On the settings page it leaves and keeps its space, so the control beside it does not move" falls: the gear stays, marked, and the search beside it does not move.
+- [`045`](045-the-search-has-a-control.md)'s "A press while the mode is open brings the caret back" reads "closes the mode"; the control is a toggle, and the mark is what says so.
 - The settings page has a pointer's way out on the desktop for the first time since [`041`](041-the-pages-have-no-close-button.md), which closed that door when it took the cross away.
 - A phone reaches the log from either mode by the control that opened it, and the bar is one row of two icons at the right.
 - The two surfaces now draw the same bar apart from the window's three dots.
