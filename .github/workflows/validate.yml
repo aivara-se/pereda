@@ -137,3 +137,8 @@ jobs:
           name: macos-arm64
           path: "*.zip"
           if-no-files-found: error
+
+  # The organisation's entry file, checked against the one standard in
+  # aivara-se/.github. This repository carries no copy of the checker.
+  agents:
+    uses: aivara-se/.github/.github/workflows/validate-agents.yml@main
