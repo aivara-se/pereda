@@ -67,7 +67,7 @@
       return;
     }
     if (answer.jump !== undefined) {
-      onjump(answer.jump);
+      onjump(answer.jump.day);
       return;
     }
     days = answer.days;
