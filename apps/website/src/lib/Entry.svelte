@@ -1,35 +1,26 @@
 <script>
-  import Note from "#lib/Note.svelte";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
+  import Note from "#lib/Note.svelte";
   import { call } from "#lib/client.js";
-  import { formatDay } from "#lib/days.js";
+  import { formatShortDay } from "#lib/days.js";
   import { say } from "#lib/notice.svelte.js";
 
   // One entry of the log. Today is always writable and carries no action row;
   // an older note is read-only until its edit button is pressed, and a press
   // anywhere on the entry selects it.
-  let { entry, today, onremove } = $props();
+  let { entry, today, onready, onforget, onfocus, onremove, onmidnight } = $props();
+
+  const DEBOUNCE = 300;
 
   let root;
   let editor = null;
-  let selected = $state(false);
   let editing = $state(entry.day === today);
   let counter = entry.seq;
   let timer = null;
   let saved = Promise.resolve(true); // every write this entry asked for, in order
 
   const open = $derived(entry.day === today || editing);
-
-  // One entry is selected at a time: a press anywhere else ends this one's
-  // selection, and its row leaves on its own fade.
-  onMount(() => {
-    const outside = (event) => {
-      if (!root.contains(event.target)) selected = false;
-    };
-    document.addEventListener("pointerdown", outside, true);
-    return () => document.removeEventListener("pointerdown", outside, true);
-  });
 
   // One write at a time, in order. A flush answers with the promise of every
   // write it has queued, so a blur can wait for the text it is about to close.
@@ -44,98 +35,117 @@
   }
 
   async function writing(body) {
-    counter += 1;
-    const seq = counter;
+    const seq = counter + 1;
     try {
       const answer = await call("saveDay", { day: entry.day, body, seq });
       counter = answer.seq;
       entry.body = body;
+      // The reply says which day the store is on: only a save can say the log
+      // is behind midnight.
+      if (answer.today > entry.day) onmidnight({ day: entry.day, today: answer.today });
       return true;
     } catch (error) {
-      counter = seq - 1;
-      say(`The note was not saved: ${error.message}`, true);
+      say(`Not saved — ${error.message}`, true);
       return false;
     }
   }
 
   function changed() {
     clearTimeout(timer);
-    timer = setTimeout(flush, 250);
+    timer = setTimeout(flush, DEBOUNCE);
   }
 
-  // Edit puts the caret at the end of the note and makes it writable, which is
-  // what selection does on the desktop.
+  // Edit puts the caret at the end of the note and makes it writable.
   function edit() {
     editing = true;
-    selected = true;
     editor.setEditable(true);
     editor.focusEnd();
   }
 
   // Leaving a note ends an older one's edit: the text is saved first, then the
-  // note takes no keystroke again and its actions come back. A note cleared to
-  // nothing leaves the log, as it does on the desktop.
-  async function left() {
-    if (entry.day === today || !editing) {
-      selected = false;
+  // note takes no keystroke again. A note cleared to nothing leaves the log, as
+  // it does on the desktop.
+  function left() {
+    if (entry.day === today) {
       flush();
       return;
     }
+    if (!editing) return;
     const empty = editor.body() === "";
-    const ok = await flush();
     editing = false;
     editor.setEditable(false);
-    selected = false;
-    if (ok && empty) onremove(entry);
+    flush().then((ok) => {
+      if (ok && empty) onremove(entry);
+    });
   }
 
-  // Delete is the note cleared: the store keeps the tombstone, and the log
-  // stops showing the day. It asks once before the write, as the desktop does,
-  // with the browser's own question.
+  // Delete asks once on an older day and cannot be undone. Today has no delete:
+  // clearing its last character is how the text goes.
   async function remove() {
     const sure = window.confirm(
-      `Delete the note for ${formatDay(entry.day)}? The text is gone for good. There is no undo.`,
+      `Delete the note for ${formatShortDay(entry.day)}?\n\nThe text is gone for good. There is no undo.`,
     );
     if (!sure) return;
     if (!(await flush())) return;
     const was = editor.body();
     editor.setBody("");
-    counter += 1;
+    const seq = counter + 1;
     try {
-      await call("saveDay", { day: entry.day, body: "", seq: counter });
+      const answer = await call("saveDay", { day: entry.day, body: "", seq });
+      counter = answer.seq;
       onremove(entry);
     } catch (error) {
       editor.setBody(was);
       say(`The note was not deleted: ${error.message}`, true);
     }
   }
+
+  onMount(() => {
+    onready({ flush, edit, focus: () => editor.focus(), editing: () => editing });
+  });
+
+  onDestroy(() => onforget());
 </script>
 
 <article
   bind:this={root}
   class="entry"
   class:today={entry.day === today}
-  class:open
-  class:selected
-  onpointerdown={() => (selected = true)}
+  class:editing={open}
+  onmousedown={(event) => {
+    if (event.target.closest(".note, .action") !== null) return;
+    event.preventDefault();
+    editor.focus();
+  }}
 >
-  <div class="date">
-    <time datetime={entry.day}
-      >{entry.day === today ? "Today" : formatDay(entry.day)}</time
-    >
-    {#if !open}
+  <div class="meta">
+    <p class="date">{entry.day === today ? "Today" : formatShortDay(entry.day)}</p>
+    {#if entry.day !== today}
       <div class="actions">
-        <button type="button" title="Edit" onclick={edit}>
+        <button
+          class="action"
+          type="button"
+          title="Edit this note"
+          aria-label={`Edit the note for ${formatShortDay(entry.day)}`}
+          onclick={edit}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 20h4L20 8l-4-4L4 16v4Z" />
+            <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z" />
+            <path d="m13.5 6.5 4 4" />
           </svg>
-          <span class="visually-hidden">Edit</span>
         </button>
-        <button type="button" title="Delete" onclick={remove}>
+        <button
+          class="action remove"
+          type="button"
+          title="Delete this note"
+          aria-label={`Delete the note for ${formatShortDay(entry.day)}`}
+          onclick={remove}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13" />
+            <path d="M5 7h14" />
+            <path d="M10 7V5h4v2" />
+            <path d="M7 7l1 12h8l1-12" />
           </svg>
-          <span class="visually-hidden">Delete</span>
         </button>
       </div>
     {/if}
@@ -143,9 +153,9 @@
   <Note
     body={entry.body}
     readOnly={!open}
-    label={`Note of ${entry.day}`}
+    label={`Note for ${formatShortDay(entry.day)}`}
     onEdit={changed}
-    onFocus={() => (selected = true)}
+    onFocus={() => onfocus()}
     onBlur={left}
     onready={(made) => (editor = made)}
   />

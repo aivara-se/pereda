@@ -30,7 +30,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The export needs the File System Access API, which Chromium browsers offer and Firefox and Safari do not. A browser without it says so and writes nothing.
 - A browser that cannot give the page a place to write says so and keeps nothing. It is never given a log that would vanish on the next reload.
 - The web app has no assistant: the model is the Mac's and stays there.
-- It wears the same bar and the same note states as the app: the name at the left is the way home, Search sits at the right because the page has no ⌘F, the gear stands at the bottom-left corner, and Today has no control. An older note is read-only until Edit and draws no caret before that; blur ends the edit, a note cleared to nothing leaves the log, and the page's controls and the other entries fade while a note is written ([`039`](docs/adrs/039-the-web-app-takes-the-bar-and-the-notes-states.md)).
+- It wears the same page as the app: the log, the search and the settings page are modes over one log that is never rebuilt, and ⌘F, ⌘, and Esc open and close them where the browser has a keyboard. The name at the left is the way home and the way out of a mode, Search sits at the right at every width because a phone has no ⌘F, the gear stands at the bottom-left corner, and Today has no control. An older note is read-only until Edit and draws no caret before that; blur ends the edit, a note cleared to nothing leaves the log, and the page's controls and the other entries fade while a note is written ([`039`](docs/adrs/039-the-web-app-takes-the-bar-and-the-notes-states.md), [`043`](docs/adrs/043-the-web-is-the-desktops-page.md)).
 
 ## The day
 

@@ -13,7 +13,13 @@ export default defineConfig({
     sveltekit({
       paths: { base },
       // Every route is a page the build writes: no request is rendered.
-      adapter: adapter({ pages: "build", assets: "build", precompress: false }),
+      adapter: adapter({
+        pages: "build",
+        assets: "build",
+        precompress: false,
+        // A path the app does not name still boots it (docs/adrs/043).
+        fallback: "404.html",
+      }),
     }),
   ],
 
