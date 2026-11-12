@@ -141,12 +141,11 @@ function noticeDate(day, today) {
   });
 }
 
-// The gear is the log's alone: the search and the settings page draw no control
-// of their own, and Esc leaves them. The bar carries only the window's three
-// dots, which are the window's and are always there.
+// The bar's right corner carries the gear, on the log and on the search, where
+// it opens the settings page as ⌘, does. It leaves the settings page and keeps
+// its space, so the bar does not change width under the pointer.
 function renderGear() {
-  if (searchOpen || settingsOpen) hide(settingsButton);
-  else show(settingsButton);
+  settingsButton.classList.toggle("away", settingsOpen);
 }
 
 function renderStatus() {
