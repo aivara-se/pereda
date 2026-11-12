@@ -15,15 +15,20 @@
   let days = $state([]);
   let timer = 0;
   let token = 0; // the newest search, so a slow one cannot win
+  let shown = false; // the mode is open, not fading in or out
 
   // The field takes the caret and an empty log of results; the mode is the
-  // page's to open and close.
+  // page's to open and close. A press while the mode is open keeps the query
+  // and brings the caret back, as the desktop's does.
   export function open() {
-    clearTimeout(timer);
-    token += 1;
-    query = "";
-    days = [];
-    hide(resultsEl);
+    if (!shown) {
+      clearTimeout(timer);
+      token += 1;
+      query = "";
+      days = [];
+      hide(resultsEl);
+      shown = true;
+    }
     show(root);
     field.focus();
     field.select();
@@ -33,6 +38,7 @@
   export function close() {
     clearTimeout(timer);
     token += 1;
+    shown = false;
     hide(root, () => {
       query = "";
       days = [];
