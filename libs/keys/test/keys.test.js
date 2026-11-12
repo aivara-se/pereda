@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { keyAction } from "../src/shared/keys.js";
+import { keyAction } from "../src/keys.js";
 
 function press(key, extra = {}) {
   return {

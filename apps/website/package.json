@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@pereda/keys": "workspace:*",
     "@pereda/note-editor": "workspace:*",
     "@pereda/notes": "workspace:*",
     "@pereda/theme": "workspace:*",
