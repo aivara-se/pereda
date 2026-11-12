@@ -5,7 +5,7 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 ## The window
 
 - The bar is 44 px high and holds the window's controls at its left: three 26 px hit areas, each with an 11 px dot, 2 px apart.
-- The page's controls sit in the bar's right corner: a 34 px hit area with a 14 px icon for the gear, and on the web a 34 px hit area with a 19 px icon for the search at its left. The bar is 44 px, so the gap above a control is 5 px, and 5 px is also the gap between two controls and from the right edge.
+- The page's controls sit in the bar's right corner: a 34 px hit area with a 19 px icon for the search, and a 34 px hit area with a 14 px icon for the gear at its right. The bar is 44 px, so the gap above a control is 5 px, and 5 px is also the gap between two controls and from the right edge.
 - One page fills the window under the bar: the log, the search, or the settings page. The page scrolls and the bar does not.
 - Two surfaces sit outside the page flow: the status line at the bottom centre and the assistant panel above it at the right. The bar's controls sit above them, in its right corner.
 

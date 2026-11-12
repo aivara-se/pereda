@@ -126,15 +126,22 @@ button:disabled {
   opacity: 0.28;
 }
 
-/* The bar's right corner is the page's: the gear stands there, 5 px from the
-   bar's top and its right edge. It leaves the settings page and keeps its
-   space, so nothing beside it moves. */
-.bar .icon {
+/* The bar's right corner is the page's: the search stands first and the gear
+   beside it, 5 px apart and 5 px from the bar's top and right edge. The gear
+   leaves the settings page and keeps its space, so the search does not move. */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   margin-left: auto;
 }
 
 .icon.away {
   visibility: hidden;
+}
+
+.icon[aria-current="page"] {
+  color: var(--ink);
 }
 
 /* The log, the search and the settings page are mounted together and clipped to
@@ -698,7 +705,7 @@ button:disabled {
   transition: opacity var(--t-soft) var(--ease);
 }
 
-body.writing .bar .icon,
+body.writing .bar .tools,
 body.writing .entry:not(:focus-within),
 body.writing .entry:focus-within .date {
   opacity: 0.25;

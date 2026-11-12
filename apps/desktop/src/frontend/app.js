@@ -26,6 +26,7 @@ const searchPage = $("searchpage");
 const queryEl = $("query");
 const settingsEl = $("settingspage");
 const settingsButton = $("settings");
+const searchButton = $("search");
 const exportButton = $("export");
 const exportResult = $("export-result");
 const statusLine = $("status");
@@ -141,15 +142,17 @@ function noticeDate(day, today) {
   });
 }
 
-// The bar's right corner carries the gear, on the log and on the search, where
-// it opens the settings page as ⌘, does. It leaves the settings page and keeps
-// its space, so the bar does not change width under the pointer.
-function renderGear() {
+// The bar's right corner carries the page's two controls: the search, marked
+// while its mode is open, and the gear beside it. The gear leaves the settings
+// page and keeps its space, so the search does not move under the pointer.
+function renderBar() {
+  if (searchOpen) searchButton.setAttribute("aria-current", "page");
+  else searchButton.removeAttribute("aria-current");
   settingsButton.classList.toggle("away", settingsOpen);
 }
 
 function renderStatus() {
-  renderGear();
+  renderBar();
   const failure = saveFailures.values().next().value;
   const problem = failure
     ? `Not saved — ${failure}`
@@ -837,6 +840,7 @@ function fatal(message) {
 
 // mousedown comes before the note's blur, so this is the last moment the note
 // can say it was being written.
+searchButton.addEventListener("click", openSearch);
 settingsButton.addEventListener("mousedown", () => {
   if (!settingsOpen) settingsEditing = focused !== null && focused.editing;
 });
