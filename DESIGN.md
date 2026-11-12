@@ -5,7 +5,7 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 ## The window
 
 - The bar is 44 px high and holds the window's controls at its left: three 26 px hit areas, each with an 11 px dot, 2 px apart.
-- The page's controls sit in the bar's right corner: a 34 px hit area with a 19 px icon for the search, and a 34 px hit area with a 14 px icon for the gear at its right. The bar is 44 px, so the gap above a control is 5 px, and 5 px is also the gap between two controls and from the right edge.
+- The page's controls sit in the bar's right corner, both drawn on every page: a 34 px hit area with a 19 px icon for the search, and a 34 px hit area with a 14 px icon for the gear at its right. The bar is 44 px, so the gap above a control is 5 px, and 5 px is also the gap between two controls and from the right edge.
 - One page fills the window under the bar: the log, the search, or the settings page. The page scrolls and the bar does not.
 - Two surfaces sit outside the page flow: the status line at the bottom centre and the assistant panel above it at the right. The bar's controls sit above them, in its right corner.
 
@@ -55,7 +55,7 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 - A surface arrives with opacity 0 to 1 and a 4 px rise. It leaves with opacity only. Nothing scales, slides or bounces.
 - What moves: a page swap, the results list, the assistant panel, the status line, the action row, and the bar's page controls.
 - What does not move: typing, the note's marks, the caret, the first paint, the scroll position, and the items of a list a query rebuilds.
-- A page swap is a cross-fade in place. The bar keeps its height and its place, and the gear in its right corner leaves the settings page at once, holding the space it had so nothing beside it moves.
+- A page swap is a cross-fade in place. The bar keeps its height, its place and both its controls; only the mark on the control of the page on screen changes.
 - Motion says nothing on its own. Every state it accompanies is also said in words or in a control's presence.
 - `prefers-reduced-motion: reduce` sets both durations to zero and removes the rise. The app is then instant and loses nothing.
 

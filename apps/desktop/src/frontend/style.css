@@ -127,17 +127,13 @@ button:disabled {
 }
 
 /* The bar's right corner is the page's: the search stands first and the gear
-   beside it, 5 px apart and 5 px from the bar's top and right edge. The gear
-   leaves the settings page and keeps its space, so the search does not move. */
+   beside it, 5 px apart and 5 px from the bar's top and right edge. Both stay
+   drawn on every page; the one whose page is open is marked. */
 .tools {
   display: flex;
   align-items: center;
   gap: 5px;
   margin-left: auto;
-}
-
-.icon.away {
-  visibility: hidden;
 }
 
 .icon[aria-current="page"] {

@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
 
   import { keyAction } from "@pereda/keys/keys.js";
-  import { resolve } from "$app/paths";
 
   import Entry from "#lib/Entry.svelte";
   import Search from "#lib/Search.svelte";
@@ -119,8 +118,7 @@
     }
   }
 
-  // Today is the page's own address: the mark and ⌘T take it, and either mode
-  // leaves for it.
+  // Today is the page's own address: ⌘T takes it, and either mode leaves for it.
   async function goToday() {
     if (!(await flushAll())) return;
     if (mode === "search") {
@@ -228,13 +226,6 @@
     handles.get(target.day)?.edit();
   }
 
-  // The mark is the page's name and the way home: the log at today, from any
-  // mode. It is a link so a reader can see where it goes; the page decides.
-  function onHome(event) {
-    event.preventDefault();
-    goToday();
-  }
-
   function onKeydown(event) {
     const action = keyAction(event, OS);
     if (action === null) return;
@@ -297,7 +288,6 @@
 </script>
 
 <header class="bar">
-  <a class="mark" href={resolve("/")} title="Today" onclick={onHome}>Pereda</a>
   <nav class="tools" aria-label="Notes">
     <button
       class="icon"
@@ -305,7 +295,7 @@
       title="Search"
       aria-label="Search"
       aria-current={mode === "search" ? "page" : undefined}
-      onclick={openSearch}
+      onclick={() => (mode === "search" ? closeSearch() : openSearch())}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="6.5" />
@@ -314,11 +304,11 @@
     </button>
     <button
       class="icon"
-      class:away={mode === "settings"}
       type="button"
       title="Settings"
       aria-label="Settings"
-      onclick={openSettings}
+      aria-current={mode === "settings" ? "page" : undefined}
+      onclick={() => (mode === "settings" ? closeSettings() : openSettings())}
     >
       <svg class="gear" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="3" />
