@@ -1,7 +1,7 @@
-// The four fixed keys, read the same way by the page and its tests. ⌘ on a
+// The five fixed keys, read the same way by the page and its tests. ⌘ on a
 // Mac is Ctrl elsewhere; nothing here stores a combination or offers a setting.
 
-// The action a keydown means, or null when it is not one of the four. Escape
+// The action a keydown means, or null when it is not one of the five. Escape
 // is reported whatever holds the focus; the page decides what it closes.
 export function keyAction(event, os) {
   if (event.key === "Escape") return "escape";
@@ -12,6 +12,8 @@ export function keyAction(event, os) {
       return "search";
     case "t":
       return "today";
+    case ",":
+      return "settings";
     case "arrowup":
       return "previous";
     case "arrowdown":

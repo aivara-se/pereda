@@ -47,7 +47,7 @@ let searchToken = 0; // the newest search, so a slow one cannot win
 let searchTimer = 0;
 let settingsOpen = false; // the settings page is over the log
 let settingsScroll = 0; // the log's scroll when the page opened
-let settingsEditing = false; // the note was being written when the gear was pressed
+let settingsEditing = false; // the note was being written when the page opened
 let exporting = false; // one export at a time
 let assistantBusy = false; // one summary at a time
 let commandError = ""; // a menu action that could not finish
@@ -878,7 +878,7 @@ queryEl.addEventListener("input", () => {
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
 });
 
-// The four fixed keys. Escape closes the search from anywhere in it and the
+// The five fixed keys. Escape closes the search from anywhere in it and the
 // settings page from anywhere on it; the others cancel the webview's own
 // meaning before taking the app's path. Nothing is configurable. The listener
 // is in the capture phase so a note's editor never sees a key the app owns: one
@@ -908,6 +908,15 @@ document.addEventListener(
     event.preventDefault();
     if (action === "search") {
       openSearch();
+      return;
+    }
+    if (action === "settings") {
+      if (!settingsOpen) {
+        // The key reaches the page before the note's blur does, so the write is
+        // remembered here as the gear's mousedown remembers it.
+        settingsEditing = focused !== null && focused.editing;
+        openSettings();
+      }
       return;
     }
     if (action === "today") {
