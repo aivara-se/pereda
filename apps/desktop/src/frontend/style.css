@@ -91,22 +91,6 @@ button:disabled {
   color: var(--zoom);
 }
 
-/* One control sits at the right of the bar: the way back, while a page replaces
-   the log. It stands alone there, so its arrival moves nothing and the bar
-   keeps its height and its drag area. */
-
-.tools {
-  display: flex;
-  gap: 2px;
-  margin-left: auto;
-}
-
-.tools > * {
-  transition:
-    opacity var(--t-quick) var(--ease),
-    transform var(--t-quick) var(--ease);
-}
-
 .icon {
   display: grid;
   place-items: center;
@@ -712,14 +696,12 @@ button:disabled {
    window, and the way out has to stay where the person last saw it. The status
    line and the assistant panel are read, not navigated, so they stay at full
    strength. */
-.bar .tools,
 .entry:not(:focus-within),
 .entry:focus-within .date {
   transition: opacity var(--t-soft) var(--ease);
 }
 
 body.writing .corner,
-body.writing .bar .tools,
 body.writing .entry:not(:focus-within),
 body.writing .entry:focus-within .date {
   opacity: 0.25;

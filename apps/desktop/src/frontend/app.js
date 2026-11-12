@@ -26,7 +26,6 @@ const searchPage = $("searchpage");
 const queryEl = $("query");
 const settingsEl = $("settingspage");
 const settingsButton = $("settings");
-const backButton = $("back");
 const exportButton = $("export");
 const exportResult = $("export-result");
 const statusLine = $("status");
@@ -142,21 +141,16 @@ function noticeDate(day, today) {
   });
 }
 
-// The bar carries one control: the way back, while the search or the settings
-// page replaces the log. The gear stands at the window's bottom-left corner.
-// The traffic lights at its left are the window's, so they are always there.
-function renderBar() {
-  if (searchOpen || settingsOpen) {
-    hide(settingsButton);
-    show(backButton);
-  } else {
-    show(settingsButton);
-    hide(backButton);
-  }
+// The gear is the log's alone: the search and the settings page draw no control
+// of their own, and Esc leaves them. The bar carries only the window's three
+// dots, which are the window's and are always there.
+function renderGear() {
+  if (searchOpen || settingsOpen) hide(settingsButton);
+  else show(settingsButton);
 }
 
 function renderStatus() {
-  renderBar();
+  renderGear();
   const failure = saveFailures.values().next().value;
   const problem = failure
     ? `Not saved — ${failure}`
@@ -842,15 +836,6 @@ function fatal(message) {
   show($("fatal"));
 }
 
-// The bar's one back button is the mode's way out, the same one Esc is: the
-// search closes at today, the settings page where it opened.
-backButton.addEventListener("click", () => {
-  if (settingsOpen) {
-    closeSettings();
-    return;
-  }
-  closeSearch();
-});
 // mousedown comes before the note's blur, so this is the last moment the note
 // can say it was being written.
 settingsButton.addEventListener("mousedown", () => {

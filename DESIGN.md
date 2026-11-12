@@ -5,7 +5,7 @@ One window on the desktop, read at arm's length and written in a hurry. The page
 ## The window
 
 - The bar is 44 px high and holds the window's controls at its left: three 26 px hit areas, each with an 11 px dot, 2 px apart.
-- The page's controls: one 34 px hit area at the bar's right, a 19 px icon at 1.6 stroke, for the way back while a page replaces the log. The gear is a 34 px hit area with a 14 px icon at the window's bottom-left corner, 12 px from each edge.
+- The page's controls: the gear alone, a 34 px hit area with a 14 px icon at the window's bottom-left corner, 12 px from each edge. The bar's right corner carries nothing: Esc leaves the search and the settings page.
 - One page fills the window under the bar: the log, the search, or the settings page. The page scrolls and the bar does not.
 - Three surfaces sit outside the page flow: the gear at the bottom-left corner, the status line at the bottom centre, and the assistant panel above it at the right.
 
