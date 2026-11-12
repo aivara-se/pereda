@@ -142,13 +142,13 @@ function noticeDate(day, today) {
   });
 }
 
-// The bar's right corner carries the page's two controls: the search, marked
-// while its mode is open, and the gear beside it. The gear leaves the settings
-// page and keeps its space, so the search does not move under the pointer.
+// The bar's right corner carries the page's two controls, both always drawn.
+// The one whose page is open is marked, and pressing it closes that page.
 function renderBar() {
   if (searchOpen) searchButton.setAttribute("aria-current", "page");
   else searchButton.removeAttribute("aria-current");
-  settingsButton.classList.toggle("away", settingsOpen);
+  if (settingsOpen) settingsButton.setAttribute("aria-current", "page");
+  else settingsButton.removeAttribute("aria-current");
 }
 
 function renderStatus() {
@@ -840,11 +840,19 @@ function fatal(message) {
 
 // mousedown comes before the note's blur, so this is the last moment the note
 // can say it was being written.
-searchButton.addEventListener("click", openSearch);
+// The control of the page you are on is its way back: the search closes at
+// today, as Esc does, and the gear returns to the day, scroll and caret it left.
+searchButton.addEventListener("click", () => {
+  if (searchOpen) closeSearch();
+  else openSearch();
+});
 settingsButton.addEventListener("mousedown", () => {
   if (!settingsOpen) settingsEditing = focused !== null && focused.editing;
 });
-settingsButton.addEventListener("click", openSettings);
+settingsButton.addEventListener("click", () => {
+  if (settingsOpen) closeSettings();
+  else openSettings();
+});
 exportButton.addEventListener("click", runExport);
 $("assistant-close").addEventListener("click", hideAssistant);
 

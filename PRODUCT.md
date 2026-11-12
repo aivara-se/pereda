@@ -16,7 +16,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - An older note is read-only until its edit button is pressed, and it draws no caret before that. Edit makes it writable, puts the caret at the end and fades the page's controls and the other entries as today's note does; leaving the note ends the edit. Its other actions are summarise and delete, and they show while the note is selected; a press anywhere on the entry selects it, and a pointer that only passes over it changes nothing ([`032`](docs/adrs/032-an-entrys-actions-belong-to-selection.md), [`037`](docs/adrs/037-a-selected-note-draws-no-caret.md)). Today is always writable, has no action row, and is selected when the app opens.
 - A File menu opens the data folder, so the backup is a copy the person can find without being told a path.
 - Five fixed keys: ⌘F — Ctrl+F on Windows and Linux — opens the search and Esc is its only way out; Esc closes the search at today, or settings where it opened, ⌘T takes the Today path, ⌘, opens the settings page, and ⌘↑/⌘↓ move between days with the caret at the end. Nothing is configurable.
-- The window is frameless and the page draws its bar: close, minimize and zoom at its left on every page and at full strength in every state, the search and the gear at its right 5 px apart and 5 px from its top and right edge, the gear leaving the settings page and keeping its space, and a paper translucent enough to read the desktop through ([`029`](docs/adrs/029-the-bar-carries-only-the-pages-controls.md), [`036`](docs/adrs/036-the-window-does-not-fade-and-the-gear-moves.md), [`044`](docs/adrs/044-the-controls-share-the-bars-corner.md), [`045`](docs/adrs/045-the-search-has-a-control.md)).
+- The window is frameless and the page draws its bar: close, minimize and zoom at its left on every page and at full strength in every state, the search and the gear at its right 5 px apart and 5 px from its top and right edge, on every page, with the control whose page is open marked and its second press closing that page, and a paper translucent enough to read the desktop through ([`029`](docs/adrs/029-the-bar-carries-only-the-pages-controls.md), [`036`](docs/adrs/036-the-window-does-not-fade-and-the-gear-moves.md), [`044`](docs/adrs/044-the-controls-share-the-bars-corner.md), [`045`](docs/adrs/045-the-search-has-a-control.md), [`046`](docs/adrs/046-the-controls-are-toggles.md)).
 - A page change cross-fades in place, and a surface that comes or goes fades without moving the page. Nothing moves while the person types, and the system's Reduce Motion setting turns every transition off ([`031`](docs/adrs/031-the-window-moves-in-one-language.md)). The fixed values are in [`DESIGN.md`](DESIGN.md).
 - Settings is a page in the same window, opened from the gear in the bar's right corner or with ⌘,. It replaces the log, which stays loaded; Esc returns to the same day and scroll with the note's focus back — the caret where it was writable. Nothing is stored: the app always opens on today.
 
@@ -30,7 +30,7 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The export needs the File System Access API, which Chromium browsers offer and Firefox and Safari do not. A browser without it says so and writes nothing.
 - A browser that cannot give the page a place to write says so and keeps nothing. It is never given a log that would vanish on the next reload.
 - The web app has no assistant: the model is the Mac's and stays there.
-- It wears the same page as the app: the log, the search and the settings page are modes over one log that is never rebuilt, and ⌘F, ⌘, and Esc open and close them where the browser has a keyboard. The name at the left is the way home and the way out of a mode, Search sits at the right at every width because a phone has no ⌘F, the gear sits to its right in the bar's corner exactly as the desktop's does, and Today has no control. An older note is read-only until Edit and draws no caret before that; blur ends the edit, a note cleared to nothing leaves the log, and the page's controls and the other entries fade while a note is written ([`039`](docs/adrs/039-the-web-app-takes-the-bar-and-the-notes-states.md), [`043`](docs/adrs/043-the-web-is-the-desktops-page.md), [`044`](docs/adrs/044-the-controls-share-the-bars-corner.md)).
+- It wears the same page as the app: the log, the search and the settings page are modes over one log that is never rebuilt, and ⌘F, ⌘, and Esc open and close them where the browser has a keyboard. Search and the gear sit at the right, at every width, exactly as the desktop's do, and the control of the page on screen closes it — a phone has no ⌘F, so the icons are also its way in and out; the bar draws no name, and Today has no control. An older note is read-only until Edit and draws no caret before that; blur ends the edit, a note cleared to nothing leaves the log, and the page's controls and the other entries fade while a note is written ([`039`](docs/adrs/039-the-web-app-takes-the-bar-and-the-notes-states.md), [`043`](docs/adrs/043-the-web-is-the-desktops-page.md), [`044`](docs/adrs/044-the-controls-share-the-bars-corner.md), [`046`](docs/adrs/046-the-controls-are-toggles.md)).
 
 ## The day
 
@@ -62,14 +62,14 @@ Pereda has two flows — **the live day**, which opens on today's entry at the t
 - The data folder is the backup: copy it with the app closed, and copy it back to restore. It is portable between the three platforms.
 - **Show data folder** in the File menu opens that folder in the system's file manager. It copies nothing, chooses no destination and verifies nothing.
 - An export writes one Markdown file per day that has a note, named `YYYY-MM-DD.md`, into a folder chosen each time. The note's text is written verbatim; a file with the same name in that folder is replaced, and the section says so before the button. The app reports how many files it wrote and where, or the first day that failed and why.
-- In v1.18 the desktop app makes no network request: no account, no telemetry, no update check. A new version is a download. The web page is the one thing that travels over the network, and only to be loaded.
+- In v1.19 the desktop app makes no network request: no account, no telemetry, no update check. A new version is a download. The web page is the one thing that travels over the network, and only to be loaded.
 - Deleting a note removes its text; there is no trash.
 
 ## What it never does
 
 - Never asks for a save: no save button, no dirty state, no "unsaved changes" dialog.
 - Never asks for structure: no notebooks, titles, templates, tags or required fields.
-- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.18 has none. The web page asks for its own files once and for nothing after them.
+- Never calls the network on its own: a request exists only when the person starts a feature that needs one, and v1.19 has none. The web page asks for its own files once and for nothing after them.
 - Never sends a note anywhere without the person asking.
 - Never shows an ad, sells a note, or trains a model on one.
 - Never lets AI write into a note unmarked and unaccepted.
@@ -114,7 +114,7 @@ Known, and deliberately not handled in this version.
 
 ## Acceptance
 
-v1.0 is done when each of these holds, and someone other than its author can check it; v1.18 keeps every one.
+v1.0 is done when each of these holds, and someone other than its author can check it; v1.19 keeps every one.
 
 - A build for macOS, Windows and Linux opens on today with the cursor in an empty note.
 - No account, sign-in, network request or update check exists; the app works with the network off.
@@ -124,9 +124,9 @@ v1.0 is done when each of these holds, and someone other than its author can che
 - The log opens on today and scrolling reaches every older day that has a note; a future day cannot be written.
 - A window left open across midnight keeps writing to the day it opened, and the status line names that day and today until Today moves the log.
 - While the app runs, the shortcut brings the window forward on today; a system that refuses the combination says so once and takes nothing else away.
-- ⌘F opens the search, and the bar's search control does the same thing, so the mode has a pointer's way in; Esc is its only way out. Esc closes the search at today, ⌘T takes the Today path, ⌘, opens the settings page, and ⌘↑/⌘↓ move between days with the caret at the end. ⌘T and the two day keys have no control of their own.
-- Settings opens from the gear in the bar's right corner or with ⌘, as a page in the window; Esc closes it to the log it left, with the same day, scroll and focus.
-- The bar's right corner carries the gear on the log and on the search — with the web's search control at its left — and holds the gear's space while the settings page is open; close, minimize and zoom sit at its left on all three pages and never fade.
+- ⌘F and the bar's search control open the search; the control closes it at today on a second press, and Esc closes it from anywhere. ⌘T takes the Today path, ⌘, opens the settings page, and ⌘↑/⌘↓ move between days with the caret at the end. ⌘T and the two day keys have no control of their own.
+- Settings opens from the gear in the bar's right corner or with ⌘, as a page in the window; the gear again or Esc closes it to the log it left, with the same day, scroll and focus.
+- The bar's right corner carries the search and the gear on every page, the control of the page on screen marked; close, minimize and zoom sit at its left on all three pages and never fade.
 - An older note is read-only until its edit button is pressed and draws no caret before that; today is always writable, and no action sits under its date.
 - While a note is being written — today always, an older note after its edit — the page's controls and the other entries fade; blur restores the window.
 - On macOS 26 with Apple Intelligence on, pressing an older note's summarise action shows its summary in a panel marked as generated on this Mac, and no word of it enters the note.
@@ -144,6 +144,7 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Changelog
 
+- **v1.19** — the controls are toggles: the search and the gear stay drawn on every page, the one whose page is open is marked, and its second press returns to the log — the search at today, the gear to the day, scroll and caret it left. The web app draws no name: the two icons are its way in and out, which is what a phone has. Neither surface changes its bar as a page opens ([`046`](docs/adrs/046-the-controls-are-toggles.md)).
 - **v1.18** — the page's controls: the search and the gear share the bar's right corner at one 5 px margin, the window keeps only its dots, the search opens from its control as well as ⌘F, and ⌘, opens the settings page. Neither page carries a close button; Esc leaves both. The web app becomes the desktop's page: one log, three modes and no routes, with the same keys, and a path the app does not name boots it ([`041`](docs/adrs/041-the-pages-have-no-close-button.md), [`042`](docs/adrs/042-the-settings-page-has-a-key.md), [`043`](docs/adrs/043-the-web-is-the-desktops-page.md), [`044`](docs/adrs/044-the-controls-share-the-bars-corner.md), [`045`](docs/adrs/045-the-search-has-a-control.md)).
 - **v1.17** — the bar gives the window its corner back: close, minimize and zoom keep full strength while a note is written, the gear moves to the window's corner, Today leaves the bar, an older note draws no caret until Edit, and its actions land on every webview. The web app takes the same bar and the same note states: the name goes home, Search stays, the gear sits at the corner, and an older web note is read-only until Edit, ends its edit on blur, and leaves the log when cleared.
 - **v1.16** — the web app and the libraries it shares: the day, the store, the note and the theme move into `libs/`, and a static SvelteKit page writes the same log in the browser's own storage, with the same search, the same actions and the export ([`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md), [`034`](docs/adrs/034-the-two-surfaces-share-libraries.md), [`035`](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)).
@@ -166,4 +167,4 @@ v1.0 is done when each of these holds, and someone other than its author can che
 
 ## Roadmap
 
-Everything decided for v1.x is built: the binary is v1.18, and the web app of [`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md) deploys from `main` as a static page that keeps its notes in the browser. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
+Everything decided for v1.x is built: the binary is v1.19, and the web app of [`033`](docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md) deploys from `main` as a static page that keeps its notes in the browser. Cloud sync is not a v1.x candidate: if it comes, it is a v2 decision that syncs the local store, and it never turns the app into a cloud app.
