@@ -186,13 +186,36 @@
     settingsEditing = false;
   }
 
-  // A result or a date opens the log at its day; the mode is done then.
+  // A result opens the log at its day; the mode is done then.
   async function openDay(day) {
     if (!(await flushAll())) return;
     mode = "log";
     search.close();
     show(logEl);
     await loadLog(day);
+  }
+
+  // A date is answered with its page of the log, which carries today even when
+  // the day is empty. A day with nothing written lands on the newest day before
+  // it, and the status says so once.
+  async function openJump({ day, days: page, more: hasMore }) {
+    if (!(await flushAll())) return;
+    loadToken += 1;
+    mode = "log";
+    search.close();
+    show(logEl);
+    days = page;
+    more = hasMore;
+    loaded = true;
+    midnight = null;
+    logEl.scrollTop = 0;
+    if (days.length === 0) {
+      say(`No note on or before ${formatShortDay(day)}.`);
+    } else if (days[0].day !== day) {
+      say(
+        `No note on ${formatShortDay(day)} — showing ${formatShortDay(days[0].day)}.`,
+      );
+    }
   }
 
   // ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
@@ -328,7 +351,13 @@
       </div>
     </main>
 
-    <Search bind:this={search} onjump={openDay} before={flushAll} today={session.today} />
+    <Search
+      bind:this={search}
+      onopen={openDay}
+      onjump={openJump}
+      before={flushAll}
+      today={session.today}
+    />
     <Settings bind:this={settings} />
   </div>
 </div>
