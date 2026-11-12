@@ -54,7 +54,10 @@ button:disabled {
   display: flex;
   align-items: center;
   height: var(--bar);
-  padding: 0 12px 0 22px;
+  /* One 34 px control in a 44 px bar leaves 5 px above it; the gap between the
+     two controls and the bar's right edge are the same 5 px
+     (docs/adrs/044-the-controls-share-the-bars-corner.md). */
+  padding: 0 5px 0 22px;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -76,7 +79,7 @@ button:disabled {
 .tools {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 5px;
   margin-left: auto;
 }
 
@@ -117,20 +120,11 @@ button:disabled {
   outline: 2px solid var(--accent);
 }
 
-/* The gear is the log's way into settings, at the window's bottom-left corner
-   so the bar carries only the name and the search. It sits on the paper — a
-   chip, not a glyph over the note scrolling behind it. */
-.corner {
-  position: fixed;
-  left: 12px;
-  bottom: 12px;
-  z-index: 1;
-  background: var(--bg);
-  transition: opacity var(--t-quick) var(--ease);
-}
-
-.corner:hover {
-  background: linear-gradient(var(--hover), var(--hover)), var(--bg);
+/* The bar's right corner is the page's: the gear stands there with the search
+   at its left. It leaves the settings page and keeps its space, so the search
+   does not move. */
+.icon.away {
+  visibility: hidden;
 }
 
 .app {
@@ -596,7 +590,7 @@ button:disabled {
   transition: opacity var(--t-soft) var(--ease);
 }
 
-body:has(.entry.editing:focus-within) .corner,
+body:has(.entry.editing:focus-within) .bar .tools,
 body:has(.entry.editing:focus-within) .entry:not(:focus-within),
 body:has(.entry.editing:focus-within) .entry:focus-within .date {
   opacity: 0.25;
