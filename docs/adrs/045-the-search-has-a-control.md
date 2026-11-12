@@ -17,8 +17,8 @@ The operator asked the desktop to match the web, keeping only the window's three
 
 ## Consequences
 
-- [`028`](028-the-search-has-no-control.md)'s decision that the search has no control falls, and with it that ADR's "the bar's right corner does not change while the mode is open"; its "⌘F is the only way in" now reads one of two ways in.
+- [`028`](028-the-search-has-no-control.md)'s decision that the search has no control falls, and with it that ADR's "The bar's right corner no longer changes while the mode is open"; its "⌘F / Ctrl+F is the search's only control" now reads one of two ways in.
 - [`029`](029-the-bar-carries-only-the-pages-controls.md)'s "The log shows Today and the gear" reads the search and the gear, which is the corner [`044`](044-the-controls-share-the-bars-corner.md) draws.
-- [`043`](043-the-web-is-the-desktops-page.md)'s "Search sits at the right at every width, because a phone has no ⌘F" keeps its placement and loses its contrast: both surfaces carry the control, and the phone is now one reason for it rather than the only one.
+- [`043`](043-the-web-is-the-desktops-page.md)'s "Search at its right at every width, because a phone has no ⌘F" keeps its placement and loses its contrast: both surfaces carry the control, and the phone is now one reason for it rather than the only one.
 - The desktop gains a pointer's way into the search and keeps none out of it: [`041`](041-the-pages-have-no-close-button.md) left Esc as the only way out on that surface, and the web's name is the control the desktop does not draw.
 - The control dims with the rest of the page while a note is written, as the gear does, and stays at full strength on the settings page, where it opens the search from it.

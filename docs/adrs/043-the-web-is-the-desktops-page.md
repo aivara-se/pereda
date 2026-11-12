@@ -21,7 +21,7 @@ The two surfaces share everything under the page already — the store, the call
 
 - [`039`](039-the-web-app-takes-the-bar-and-the-notes-states.md)'s "the web's bar carries Search on every page, because the page has no ⌘F" falls in its reason and stays in its result: the control stays at every width, and the key now exists where there is a keyboard.
 - [`039`](039-the-web-app-takes-the-bar-and-the-notes-states.md)'s name as a link home stands, and is now the only pointer's way out of a mode: [`041`](041-the-pages-have-no-close-button.md) removed the desktop's back button, and the web never draws one.
-- [`035`](035-the-web-app-is-a-static-sveltekit-site.md)'s "every route is prerendered" reads one route and a fallback; the deploy writes `404.html`, which GitHub Pages serves for a path it does not hold.
+- [`035`](035-the-web-app-is-a-static-sveltekit-site.md)'s "Every route is a page" reads one route and a fallback; the deploy writes `404.html`, which GitHub Pages serves for a path it does not hold.
 - A search can no longer be linked to or reloaded into; nothing is lost, because the notes are the device's and the log opens on today.
 - The browser's Back leaves the app rather than a mode. Esc and the name leave a mode, and the page does not learn which was pressed.
 - ⌘T still opens a tab, as it does everywhere. The mark is one control away from the same path.
