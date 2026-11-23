@@ -3,6 +3,7 @@
   "private": true,
   "license": "MIT",
   "type": "module",
+  "packageManager": "bun@1.4.4",
   "workspaces": [
     "apps/*",
     "libs/*"
@@ -11,6 +12,8 @@
     "dev": "cd apps/desktop && tinyjs dev",
     "build": "cd apps/desktop && tinyjs build",
     "build:web": "cd apps/website && bun run build",
+    "format": "bun fmt --no-script",
+    "format:check": "bun fmt --no-script --check",
     "test": "bun test"
   }
 }

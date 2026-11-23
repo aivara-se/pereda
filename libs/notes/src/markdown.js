@@ -1,13 +1,15 @@
-// The note's five forms, read from its Markdown source. The source is what the
-// store holds, so nothing here changes a character: it says which ranges the
-// page draws differently — a mark to hide, a text to style — and the page draws
-// them.
+/**
+ * The note's five forms, read from its Markdown source. The source is what the
+ * store holds, so nothing here changes a character: it says which ranges the
+ * page draws differently — a mark to hide, a text to style — and the page draws
+ * them.
+ */
 
 import { parser, Strikethrough } from "@lezer/markdown";
 
 const markdown = parser.configure([Strikethrough]);
 
-// A form, the node that carries its delimiters, and the style its text takes.
+/** A form, the node that carries its delimiters, and the style its text takes. */
 const FORMS = {
   Emphasis: { mark: "EmphasisMark", style: "em" },
   StrongEmphasis: { mark: "EmphasisMark", style: "strong" },
@@ -15,14 +17,18 @@ const FORMS = {
   InlineCode: { mark: "CodeMark", style: "code" },
 };
 
-// The delimiters the note renders. `_` is not one of them, so `_text_` and a
-// tight `_pair_` stay as they were typed, and a mark is hidden only when its
-// own first character is one of these.
+/**
+ * The delimiters the note renders. `_` is not one of them, so `_text_` and a
+ * tight `_pair_` stay as they were typed, and a mark is hidden only when its
+ * own first character is one of these.
+ */
 const DELIMITERS = "*~`";
 
-// Every range the page draws differently: `style` names a style, or is null for
-// a mark that hides. `block` marks a hide that takes a whole line, which the
-// page draws away as a line and not as text.
+/**
+ * Every range the page draws differently: `style` names a style, or is null for
+ * a mark that hides. `block` marks a hide that takes a whole line, which the
+ * page draws away as a line and not as text.
+ */
 export function noteRanges(body, from, to) {
   const ranges = [];
   markdown.parse(body).iterate({
@@ -38,21 +44,25 @@ export function noteRanges(body, from, to) {
   return ranges;
 }
 
-// The selection is inside a form when it covers some of the form's own text: a
-// caret at either end of it is outside, so a note drawn where it stands stays
-// drawn until the person steps into it.
+/**
+ * The selection is inside a form when it covers some of the form's own text: a
+ * caret at either end of it is outside, so a note drawn where it stands stays
+ * drawn until the person steps into it.
+ */
 function inside(node, from, to) {
   return from < node.to && to > node.from;
 }
 
-// A block is inside at its own edges too: the fence lines are the block's
-// first and last line, so a caret at either end of it is on the block and the
-// lines show.
+/**
+ * A block is inside at its own edges too: the fence lines are the block's first
+ * and last line, so a caret at either end of it is on the block and the lines
+ * show.
+ */
 function touches(node, from, to) {
   return from <= node.to && to >= node.from;
 }
 
-// The children of a node that carry its delimiters, in the order they are read.
+/** The children of a node that carry its delimiters, in the order they are read. */
 function marks(node, name) {
   const found = [];
   for (let child = node.node.firstChild; child; child = child.nextSibling) {
@@ -61,22 +71,25 @@ function marks(node, name) {
   return found;
 }
 
-// The start of the line a position is on, and the end of it without its new
-// line: the pair a whole line is hidden by.
+/**
+ * The start of the line a position is on, and the end of it without its new
+ * line: the pair a whole line is hidden by.
+ */
 function lineAt(body, position) {
   const from = body.lastIndexOf("\n", position - 1) + 1;
   const next = body.indexOf("\n", position);
   return { from, to: next === -1 ? body.length : next };
 }
 
-// One inline pair: its text is styled whether or not its marks show, and the
-// marks hide while the selection is outside it. A pair inside it stays literal,
-// because the children are not read.
+/**
+ * One inline pair: its text is styled whether or not its marks show, and the
+ * marks hide while the selection is outside it. A pair inside it stays literal,
+ * because the children are not read.
+ */
 function formAt(ranges, body, node, form, from, to) {
   const pair = marks(node, form.mark);
   if (pair.length !== 2) return;
   if (!DELIMITERS.includes(body[pair[0].from])) return;
-
   const [open, close] = pair;
   if (close.from > open.to) {
     ranges.push({ from: open.to, to: close.from, style: form.style });
@@ -87,9 +100,11 @@ function formAt(ranges, body, node, form, from, to) {
   return false;
 }
 
-// One fenced block: its code is drawn line by line as the block it is, and the
-// two fence lines hide while the selection is outside the block. A fence that
-// never closes has one line to hide.
+/**
+ * One fenced block: its code is drawn line by line as the block it is, and the
+ * two fence lines hide while the selection is outside the block. A fence that
+ * never closes has one line to hide.
+ */
 function fence(ranges, body, node, from, to) {
   const fenceMarks = marks(node, "CodeMark");
   const open = lineAt(body, node.from);
@@ -112,9 +127,11 @@ function fence(ranges, body, node, from, to) {
   return false;
 }
 
-// The lines of a range, so a block of code is drawn one line at a time: a style
-// that began at the block's first character would stop at a blank line inside
-// it, and the code after the blank line would be drawn as prose.
+/**
+ * The lines of a range, so a block of code is drawn one line at a time: a style
+ * that began at the block's first character would stop at a blank line inside
+ * it, and the code after the blank line would be drawn as prose.
+ */
 function lines(body, from, to) {
   const found = [];
   let start = from;
@@ -127,8 +144,10 @@ function lines(body, from, to) {
   return found;
 }
 
-// A hide that takes the line and its new line, so the block closes up where the
-// fence was instead of leaving an empty line behind.
+/**
+ * A hide that takes the line and its new line, so the block closes up where the
+ * fence was instead of leaving an empty line behind.
+ */
 function hiddenLine(line, end) {
   return {
     from: line.from,

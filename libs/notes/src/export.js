@@ -1,11 +1,15 @@
-// The export: one Markdown file per day, oldest first, stopping at the first
-// failure. The store and the filesystem belong to the caller, so this loop runs
-// under bun, in the app and in the page without a second implementation.
+/**
+ * The export: one Markdown file per day, oldest first, stopping at the first
+ * failure. The store and the filesystem belong to the caller, so this loop runs
+ * under bun, in the app and in the page without a second implementation.
+ */
 
 import { validDay } from "./day.js";
 
-// Write every row to target(day) with writeFile. A day that is not a real date
-// is refused before its path is built; a failed write keeps what came before.
+/**
+ * Write every row to target(day) with writeFile. A day that is not a real date
+ * is refused before its path is built; a failed write keeps what came before.
+ */
 export async function writeExport(rows, target, writeFile) {
   let written = 0;
   for (const { day, body } of rows) {

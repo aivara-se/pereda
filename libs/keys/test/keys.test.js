@@ -21,7 +21,6 @@ describe("the fixed keys", () => {
     expect(keyAction(press("f", { ctrlKey: true }), "macos")).toBeNull();
     expect(keyAction(press("f", { metaKey: true }), "linux")).toBeNull();
   });
-
   test("are the five, and nothing else", () => {
     const cases = [
       ["f", "search"],
@@ -39,7 +38,6 @@ describe("the fixed keys", () => {
     expect(keyAction(press("s", { metaKey: true }), "macos")).toBeNull();
     expect(keyAction(press("f"), "macos")).toBeNull();
   });
-
   test("ignore a third modifier", () => {
     expect(
       keyAction(press("f", { metaKey: true, altKey: true }), "macos"),
@@ -51,7 +49,6 @@ describe("the fixed keys", () => {
       keyAction(press("ArrowUp", { metaKey: true, shiftKey: true }), "macos"),
     ).toBeNull();
   });
-
   test("report Escape wherever it is pressed", () => {
     expect(keyAction(press("Escape"), "macos")).toBe("escape");
     expect(keyAction(press("Escape", { ctrlKey: true }), "linux")).toBe(

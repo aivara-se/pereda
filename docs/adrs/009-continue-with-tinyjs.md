@@ -4,10 +4,10 @@
 
 [001](001-a-desktop-app-on-tinyjs.md) chose tinyjs, and the app has shipped on it. Two builds give the numbers, and each is quoted for its own platform.
 
-| Build | macOS arm64 | Linux x86_64 |
-| --- | --- | --- |
-| v1.0.0 release, built here | 8,243,461 B (`.app`) | 10,113,118 B (tree) |
-| gpuix-svelte port, built for #16 | 86.0 MB (`.app`) | 105.1 MB (binary) |
+| Build                            | macOS arm64          | Linux x86_64        |
+| -------------------------------- | -------------------- | ------------------- |
+| v1.0.0 release, built here       | 8,243,461 B (`.app`) | 10,113,118 B (tree) |
+| gpuix-svelte port, built for #16 | 86.0 MB (`.app`)     | 105.1 MB (binary)   |
 
 Both rows were measured on unpacked artifacts. The Linux port figure is its binary alone — its addon ships beside it — so that ratio is a floor. The port costs about ten times the release on either OS, and it needed hand-built replacements for what the webview gives free — auto-growing text, font fallback, letter-spacing and the delete dialog.
 

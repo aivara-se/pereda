@@ -6,10 +6,13 @@
   import { formatShortDay } from "#lib/days.js";
   import { say } from "#lib/notice.svelte.js";
 
-  // One entry of the log. Today is always writable and carries no action row;
-  // an older note is read-only until its edit button is pressed, and a press
-  // anywhere on the entry selects it.
-  let { entry, today, onready, onforget, onfocus, onremove, onmidnight } = $props();
+  /**
+   * One entry of the log. Today is always writable and carries no action row;
+   * an older note is read-only until its edit button is pressed, and a press
+   * anywhere on the entry selects it.
+   */
+  let { entry, today, onready, onforget, onfocus, onremove, onmidnight } =
+    $props();
 
   const DEBOUNCE = 300;
 
@@ -18,12 +21,16 @@
   let editing = $state(entry.day === today);
   let counter = entry.seq;
   let timer = null;
-  let saved = Promise.resolve(true); // every write this entry asked for, in order
+
+  /** Every write this entry asked for, in order. */
+  let saved = Promise.resolve(true);
 
   const open = $derived(entry.day === today || editing);
 
-  // One write at a time, in order. A flush answers with the promise of every
-  // write it has queued, so a blur can wait for the text it is about to close.
+  /**
+   * One write at a time, in order. A flush answers with the promise of every
+   * write it has queued, so a blur can wait for the text it is about to close.
+   */
   function flush() {
     clearTimeout(timer);
     timer = null;
@@ -40,9 +47,8 @@
       const answer = await call("saveDay", { day: entry.day, body, seq });
       counter = answer.seq;
       entry.body = body;
-      // The reply says which day the store is on: only a save can say the log
-      // is behind midnight.
-      if (answer.today > entry.day) onmidnight({ day: entry.day, today: answer.today });
+      if (answer.today > entry.day)
+        onmidnight({ day: entry.day, today: answer.today });
       return true;
     } catch (error) {
       say(`Not saved — ${error.message}`, true);
@@ -55,16 +61,18 @@
     timer = setTimeout(flush, DEBOUNCE);
   }
 
-  // Edit puts the caret at the end of the note and makes it writable.
+  /** Edit puts the caret at the end of the note and makes it writable. */
   function edit() {
     editing = true;
     editor.setEditable(true);
     editor.focusEnd();
   }
 
-  // Leaving a note ends an older one's edit: the text is saved first, then the
-  // note takes no keystroke again. A note cleared to nothing leaves the log, as
-  // it does on the desktop.
+  /**
+   * Leaving a note ends an older one's edit: the text is saved first, then the
+   * note takes no keystroke again. A note cleared to nothing leaves the log, as
+   * it does on the desktop.
+   */
   function left() {
     if (entry.day === today) {
       flush();
@@ -79,8 +87,10 @@
     });
   }
 
-  // Delete asks once on an older day and cannot be undone. Today has no delete:
-  // clearing its last character is how the text goes.
+  /**
+   * Delete asks once on an older day and cannot be undone. Today has no delete:
+   * clearing its last character is how the text goes.
+   */
   async function remove() {
     const sure = window.confirm(
       `Delete the note for ${formatShortDay(entry.day)}?\n\nThe text is gone for good. There is no undo.`,
@@ -101,7 +111,12 @@
   }
 
   onMount(() => {
-    onready({ flush, edit, focus: () => editor.focus(), editing: () => editing });
+    onready({
+      flush,
+      edit,
+      focus: () => editor.focus(),
+      editing: () => editing,
+    });
   });
 
   onDestroy(() => onforget());
@@ -119,7 +134,9 @@
   }}
 >
   <div class="meta">
-    <p class="date">{entry.day === today ? "Today" : formatShortDay(entry.day)}</p>
+    <p class="date">
+      {entry.day === today ? "Today" : formatShortDay(entry.day)}
+    </p>
     {#if entry.day !== today}
       <div class="actions">
         <button

@@ -1,4 +1,6 @@
-// The page: one log of days, newest first, every entry saved as it is typed.
+/**
+ * The page: one log of days, newest first, every entry saved as it is typed.
+ */
 
 import { SHORTCUT_ID, shortcutNotice } from "../shared/shortcut.js";
 import { DATA_FOLDER_EVENT } from "../shared/menu.js";
@@ -8,7 +10,7 @@ import { noteEditor } from "@pereda/note-editor";
 
 const DEBOUNCE = 300;
 const SEARCH_DEBOUNCE = 200;
-const LOAD_AT = 700; // pixels from the bottom that ask for the next page
+const LOAD_AT = 700;
 const OS = tiny.system.os();
 
 const EDIT_ICON =
@@ -34,35 +36,41 @@ const assistantPanel = $("assistant");
 const assistantMark = $("assistant-mark");
 const assistantText = $("assistant-text");
 
-let todayKey = null; // the backend's idea of today, refreshed on every load
-let entries = []; // the days on screen, newest first
-let more = false; // is there a page before the oldest day loaded?
+/**
+ * The page's state: the day the backend last gave, the entries on screen, and
+ * the mode, the saves and the notices that decide what is shown.
+ */
+let todayKey = null;
+let entries = [];
+let more = false;
 let loading = false;
-let loadToken = 0; // the newest load, so a slow one cannot win
-let focused = null; // the entry the keys move from, and the one with the caret when it is editable
+let loadToken = 0;
+let focused = null;
 let logError = "";
 let searchError = "";
-let shortcutMissing = ""; // said once when the system would not give the combination
-let searchOpen = false; // the log is replaced by the field and the results
-let searchToken = 0; // the newest search, so a slow one cannot win
+let shortcutMissing = "";
+let searchOpen = false;
+let searchToken = 0;
 let searchTimer = 0;
-let settingsOpen = false; // the settings page is over the log
-let settingsScroll = 0; // the log's scroll when the page opened
-let settingsEditing = false; // the note was being written when the page opened
-let exporting = false; // one export at a time
-let assistantBusy = false; // one summary at a time
-let commandError = ""; // a menu action that could not finish
-let commandSelectable = false; // the data folder's path is text to copy
-let jumpNotice = ""; // a date landed on an empty day
-let midnight = null; // the loaded day is behind the backend's today
-const saveFailures = new Map(); // day -> the last reason its save failed
+let settingsOpen = false;
+let settingsScroll = 0;
+let settingsEditing = false;
+let exporting = false;
+let assistantBusy = false;
+let commandError = "";
+let commandSelectable = false;
+let jumpNotice = "";
+let midnight = null;
+const saveFailures = new Map();
 
-// A surface arrives from `enter` and leaves from `leave`, and `hidden` is the
-// state it takes when its fade ends — so every show and hide goes through these
-// two. The duration is the stylesheet's, which is what makes Reduce Motion
-// instant on the same code path.
-const leaving = new Map(); // a surface on its way out -> its frame and its landing
-let painted = false; // the first paint has no entrance
+/**
+ * A surface arrives from `enter` and leaves from `leave`, and `hidden` is the
+ * state it takes when its fade ends — so every show and hide goes through these
+ * two. The duration is the stylesheet's, which is what makes Reduce Motion
+ * instant on the same code path.
+ */
+const leaving = new Map();
+let painted = false;
 
 function show(node) {
   const out = leaving.get(node);
@@ -75,14 +83,12 @@ function show(node) {
   node.hidden = false;
   if (!painted) return;
   node.classList.add("enter");
-  void node.offsetWidth; // the frame the surface arrives from
+  void node.offsetWidth;
   node.classList.remove("enter");
 }
 
 function hide(node, after) {
   if (node.hidden || leaving.has(node)) return;
-  // A surface that leaves takes no pointer and holds no focus from its first
-  // frame, so a press or a Tab during a swap reaches the page that arrives.
   if (node.contains(document.activeElement)) document.activeElement.blur();
   node.classList.remove("enter");
   const ms = painted ? fade(node) : 0;
@@ -104,8 +110,7 @@ function hide(node, after) {
   });
 }
 
-// How long this surface's own fade runs, read from the one declaration in the
-// stylesheet: a node with no transition answers zero and changes at once.
+/** How long this surface's own fade runs, read from the stylesheet. */
 function fade(node) {
   return parseFloat(getComputedStyle(node).transitionDuration) * 1000;
 }
@@ -132,8 +137,10 @@ function longDate(day) {
   });
 }
 
-// A day and a month for the midnight line; the year appears only when the two
-// days are in different years.
+/**
+ * A day and a month for the midnight line; the year appears only when the two
+ * days are in different years.
+ */
 function noticeDate(day, today) {
   return dayDate(day).toLocaleDateString(undefined, {
     day: "numeric",
@@ -142,8 +149,10 @@ function noticeDate(day, today) {
   });
 }
 
-// The bar's right corner carries the page's two controls, both always drawn.
-// The one whose page is open is marked, and pressing it closes that page.
+/**
+ * The bar's right corner carries the page's two controls, both always drawn.
+ * The one whose page is open is marked, and pressing it closes that page.
+ */
 function renderBar() {
   if (searchOpen) searchButton.setAttribute("aria-current", "page");
   else searchButton.removeAttribute("aria-current");
@@ -163,7 +172,6 @@ function renderStatus() {
       : writingNotice(midnight.day, midnight.today, (day) =>
           noticeDate(day, midnight.today),
         );
-  // A notice is said once: a real problem replaces it and it does not come back.
   if (problem !== "") shortcutMissing = "";
   const said = problem || behind || jumpNotice || shortcutMissing;
   statusLine.textContent = said;
@@ -180,9 +188,11 @@ function renderStatus() {
   );
 }
 
-// An older note is read-only until its edit button asks for the caret: the
-// text becomes writable and the rest of the window fades as today's does.
-// Today starts in this state and never leaves it.
+/**
+ * An older note is read-only until its edit button asks for the caret: the text
+ * becomes writable and the rest of the window fades as today's does. Today
+ * starts in this state and never leaves it.
+ */
 function beginEditing(entry) {
   if (!entry.editing) {
     entry.editing = true;
@@ -199,7 +209,7 @@ function startEditing(entry) {
   entry.note.focusEnd();
 }
 
-// Leaving the caret ends an older note's edit; today stays writable.
+/** Leaving the caret ends an older note's edit; today stays writable. */
 function stopEditing(entry) {
   if (entry.day === todayKey) return;
   entry.editing = false;
@@ -207,9 +217,11 @@ function stopEditing(entry) {
   entry.article.classList.remove("editing");
 }
 
-// ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
-// older, and the caret lands at the end of the note reached, which opens it
-// for writing.
+/**
+ * ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
+ * older, and the caret lands at the end of the note reached, which opens it for
+ * writing.
+ */
 function moveDay(delta) {
   if (searchOpen || settingsOpen || entries.length === 0) return;
   const index = focused === null ? 0 : entries.indexOf(focused);
@@ -227,7 +239,7 @@ function hideAssistant() {
   assistantText.textContent = "";
 }
 
-// A reply is marked as generated; a refusal is not a reply, so it says so.
+/** A reply is marked as generated; a refusal is not a reply, so it says so. */
 function showAssistant(text, { busy = false, error = false } = {}) {
   assistantMark.textContent = error ? "No summary" : "Generated on this Mac";
   assistantText.textContent = text;
@@ -236,8 +248,10 @@ function showAssistant(text, { busy = false, error = false } = {}) {
   show(assistantPanel);
 }
 
-// The note whose button was pressed is the one read: its text is sent, and the
-// reply is marked in the panel and never touches the textarea.
+/**
+ * The note whose button was pressed is the one read: its text is sent, and the
+ * reply is marked in the panel and never touches the textarea.
+ */
 async function summarise(entry) {
   if (assistantBusy) {
     commandError = "The assistant is still answering the last note.";
@@ -253,7 +267,6 @@ async function summarise(entry) {
     renderStatus();
     return;
   }
-
   assistantBusy = true;
   commandError = "";
   commandSelectable = false;
@@ -276,9 +289,11 @@ async function summarise(entry) {
   }
 }
 
-// The only state the fade has is the caret in a writable note: today, or an
-// older note the edit button opened. A summary or a status message never
-// fades with it.
+/**
+ * The only state the fade has is the caret in a writable note: today, or an
+ * older note the edit button opened. A summary or a status message never fades
+ * with it.
+ */
 function updateFade() {
   const writing =
     !searchOpen &&
@@ -310,8 +325,6 @@ async function run(entry) {
     entry.seq = stamp;
     entry.savedBody = body;
     saveFailures.delete(entry.day);
-    // The reply says which day was written and which day the backend is on.
-    // Only the save's own reply can raise this line; nothing polls.
     midnight =
       saved.today > saved.day ? { day: saved.day, today: saved.today } : null;
     renderStatus();
@@ -319,9 +332,11 @@ async function run(entry) {
   return true;
 }
 
-// One save in flight per entry; a newer body replaces the one waiting. The
-// promise clears the runner in a microtask, so a run that ends before it is
-// assigned still releases the next save.
+/**
+ * One save in flight per entry; a newer body replaces the one waiting. The
+ * promise clears the runner in a microtask, so a run that ends before it is
+ * assigned still releases the next save.
+ */
 function flushEntry(entry) {
   clearTimeout(entry.timer);
   entry.pending = entry.note.body();
@@ -368,21 +383,17 @@ function dropEntry(entry) {
 function makeEntry(day, body, seq) {
   const article = document.createElement("article");
   article.className = "entry";
-  const editable = day === todayKey; // today is always writable, an older day is not
+  const editable = day === todayKey;
   article.classList.toggle("today", editable);
   article.classList.toggle("editing", editable);
-
   const meta = document.createElement("div");
   meta.className = "meta";
-
   const label = document.createElement("p");
   label.className = "date";
   label.textContent = day === todayKey ? "Today" : shortDate(day);
   meta.append(label);
-
   const note = document.createElement("div");
   note.className = "note";
-
   const entry = {
     day,
     seq,
@@ -394,15 +405,11 @@ function makeEntry(day, body, seq) {
     article,
     note: null,
   };
-
-  // An older note carries its actions under its date. Today has none: it is
-  // always writable and has no delete.
   if (editable) {
     meta.append(label);
   } else {
     const actions = document.createElement("div");
     actions.className = "actions";
-
     const action = (hint, name, icon) => {
       const button = document.createElement("button");
       button.type = "button";
@@ -413,7 +420,6 @@ function makeEntry(day, body, seq) {
       actions.append(button);
       return button;
     };
-
     action(
       "Edit this note",
       `Edit the note for ${longDate(day)}`,
@@ -433,9 +439,6 @@ function makeEntry(day, body, seq) {
     remove.addEventListener("click", () => removeEntry(entry));
     meta.append(label, actions);
   }
-
-  // Every note is one editor over its string, and an older one takes no
-  // keystroke until its edit button opens it.
   entry.note = noteEditor(note, {
     body,
     readOnly: !editable,
@@ -457,18 +460,12 @@ function makeEntry(day, body, seq) {
       });
     },
   });
-
   article.append(meta, note);
-
-  // A press anywhere on the entry selects it — its note, its date, or the space
-  // it holds — so the row under the date is reachable with the pointer. The note
-  // takes its own presses, and a pointer that only passes over changes nothing.
   article.addEventListener("mousedown", (event) => {
     if (event.target.closest(".note, .action") !== null) return;
     event.preventDefault();
     entry.note.focus();
   });
-
   return entry;
 }
 
@@ -482,11 +479,13 @@ function renderLog(days, hasMore) {
   more = hasMore;
 }
 
-// Load the first page again: today at the top, older days after it, or the log
-// from a day when a search result asked for it.
+/**
+ * Load the first page again: today at the top, older days after it, or the log
+ * from a day when a search result asked for it.
+ */
 async function loadLog(from) {
   const token = ++loadToken;
-  searchToken += 1; // a load ends any search still on its way
+  searchToken += 1;
   let result;
   try {
     result = await tiny.api.call(
@@ -504,7 +503,7 @@ async function loadLog(from) {
   jumpNotice = "";
   midnight = null;
   hideAssistant();
-  showLog(); // first: an entry measured while the log is hidden has no height
+  showLog();
   renderLog(result.days, result.more);
   focused = entries[0] ?? null;
   if (focused !== null && focused.editing) {
@@ -518,7 +517,6 @@ async function loadLog(from) {
   painted = true;
 }
 
-// Ask for the days before the oldest one on screen.
 async function loadOlder() {
   if (!more || loading || searchOpen || settingsOpen || entries.length === 0)
     return;
@@ -544,8 +542,10 @@ async function loadOlder() {
   }
 }
 
-// The search leaves the screen without deciding where the log is: the log, the
-// settings page and a jump all come back to it.
+/**
+ * The search leaves the screen without deciding where the log is: the log, the
+ * settings page and a jump all come back to it.
+ */
 function hideSearch() {
   searchOpen = false;
   searchToken += 1;
@@ -555,7 +555,7 @@ function hideSearch() {
   hideResults();
 }
 
-// Settings is over the loaded log, never a reload of it.
+/** Settings is over the loaded log, never a reload of it. */
 function hideSettings() {
   settingsOpen = false;
   hide(settingsEl);
@@ -563,7 +563,7 @@ function hideSettings() {
   exportResult.classList.remove("error");
 }
 
-// The log is the default view: no field, no settings and no results.
+/** The log is the default view: no field, no settings and no results. */
 function showLog() {
   hideSearch();
   hideSettings();
@@ -575,15 +575,17 @@ function showResults() {
   show(resultsEl);
 }
 
-// The results area is empty until the first character.
+/** The results area is empty until the first character. */
 function hideResults() {
   hide(resultsEl, () => {
     resultsEl.replaceChildren();
   });
 }
 
-// Search is a mode opened by ⌘F or the bar's search control: the field takes the
-// caret and the log leaves the screen until Esc or a second press closes it.
+/**
+ * Search is a mode opened by ⌘F or the bar's search control: the field takes the
+ * caret and the log leaves the screen until Esc or a second press closes it.
+ */
 function openSearch() {
   if (!searchOpen) {
     hideSearch();
@@ -600,9 +602,11 @@ function openSearch() {
   updateFade();
 }
 
-// Settings replaces the log or the search below the bar. The log stays loaded,
-// so closing returns to the day and scroll it held and gives a note it was
-// writing its caret back. It is not stored: the app always opens on today.
+/**
+ * Settings replaces the log or the search below the bar. The log stays loaded,
+ * so closing returns to the day and scroll it held and gives a note it was
+ * writing its caret back. It is not stored: the app always opens on today.
+ */
 function openSettings() {
   hideSearch();
   hideAssistant();
@@ -642,30 +646,29 @@ function renderResults(days) {
     const result = document.createElement("button");
     result.type = "button";
     result.className = "result";
-
     const date = document.createElement("span");
     date.className = "date";
     date.textContent = day === todayKey ? "Today" : shortDate(day);
-
     const text = document.createElement("span");
     text.className = "snippet";
     text.textContent = snippet;
-
     result.append(date, text);
     result.addEventListener("click", () => openDay(day));
     resultsEl.append(result);
   }
 }
 
-// A result opens the log at its day, so the note found can be read and written.
+/** A result opens the log at its day, so the note found can be read and written. */
 async function openDay(day) {
   if (!(await flushAll())) return;
   queryEl.value = "";
   await loadLog(day);
 }
 
-// A date is answered with the page of the log at that day. An empty day is
-// not in the log, so the newest day before it is shown and the status says why.
+/**
+ * A date is answered with the page of the log at that day. An empty day is not
+ * in the log, so the newest day before it is shown and the status says why.
+ */
 function showJump({ day, days, more: hasMore }) {
   commandError = "";
   commandSelectable = false;
@@ -692,9 +695,11 @@ function showJump({ day, days, more: hasMore }) {
   renderStatus();
 }
 
-// The search mode: every word must be in a note, as a prefix, in any order, and
-// a text search never reaches today. An exact date opens its day before that
-// rule. An empty field stays open.
+/**
+ * The search mode: every word must be in a note, as a prefix, in any order, and
+ * a text search never reaches today. An exact date opens its day before that
+ * rule. An empty field stays open.
+ */
 async function search(query) {
   if (!searchOpen) return;
   if (query.trim() === "") {
@@ -723,7 +728,6 @@ async function search(query) {
   commandError = "";
   commandSelectable = false;
   if (result.refused !== undefined) {
-    // A date after today: say so and leave the log where it is.
     searchError = result.refused;
     renderStatus();
     return;
@@ -745,8 +749,10 @@ async function goToday() {
   await loadLog();
 }
 
-// Leaving the search empties the field and puts the log back at today. A save
-// that cannot finish keeps the mode open, because the text has not landed yet.
+/**
+ * Leaving the search empties the field and puts the log back at today. A save
+ * that cannot finish keeps the mode open, because the text has not landed yet.
+ */
 async function closeSearch() {
   clearTimeout(searchTimer);
   searchToken += 1;
@@ -755,8 +761,10 @@ async function closeSearch() {
   await loadLog();
 }
 
-// Delete asks once on an older day and cannot be undone. Today has no delete:
-// clearing its last character is how the text goes.
+/**
+ * Delete asks once on an older day and cannot be undone. Today has no delete:
+ * clearing its last character is how the text goes.
+ */
 async function removeEntry(target) {
   const sure = await tiny.dialog.confirm(
     `Delete the note for ${shortDate(target.day)}?`,
@@ -767,11 +775,7 @@ async function removeEntry(target) {
     },
   );
   if (!sure) return;
-
-  // The dialog's blur can start a save; let it settle, or the delete and that
-  // save would carry one counter and one of them would lose.
   if (!(await flushEntry(target))) return;
-
   clearTimeout(target.timer);
   target.pending = null;
   const stamp = target.seq + 1;
@@ -791,9 +795,11 @@ async function removeEntry(target) {
   dropEntry(target);
 }
 
-// Export is one-way: the folder is chosen every time, every loaded note is
-// flushed first, and the backend writes the files. A failure names the first day
-// that did not write; the files before it stay.
+/**
+ * Export is one-way: the folder is chosen every time, every loaded note is
+ * flushed first, and the backend writes the files. A failure names the first day
+ * that did not write; the files before it stay.
+ */
 async function runExport() {
   if (exporting) return;
   exporting = true;
@@ -838,10 +844,6 @@ function fatal(message) {
   show($("fatal"));
 }
 
-// mousedown comes before the note's blur, so this is the last moment the note
-// can say it was being written.
-// The control of the page you are on is its way back: the search closes at
-// today, as Esc does, and the gear returns to the day, scroll and caret it left.
 searchButton.addEventListener("click", () => {
   if (searchOpen) closeSearch();
   else openSearch();
@@ -856,15 +858,10 @@ settingsButton.addEventListener("click", () => {
 exportButton.addEventListener("click", runExport);
 $("assistant-close").addEventListener("click", hideAssistant);
 
-// The backend registers the shortcut at launch and brings the window forward on
-// a press; the press reaches this page too, and it takes the Today path.
 tiny.hotkey.on((id) => {
   if (id === SHORTCUT_ID) goToday();
 });
 
-// The menu's one click comes back as this event: the backend opened the
-// folder, or it could not and sent the path back. The path is the fallback the
-// person can copy.
 tiny.api.on(DATA_FOLDER_EVENT, ({ path, error }) => {
   if (error === null) {
     commandError = "";
@@ -889,25 +886,17 @@ queryEl.addEventListener("input", () => {
   searchTimer = setTimeout(() => search(queryEl.value), SEARCH_DEBOUNCE);
 });
 
-// The five fixed keys. Escape closes the search from anywhere in it and the
-// settings page from anywhere on it; the others cancel the webview's own
-// meaning before taking the app's path. Nothing is configurable. The listener
-// is in the capture phase so a note's editor never sees a key the app owns: one
-// that is already cancelled is ignored by the editor.
 document.addEventListener(
   "keydown",
   (event) => {
     const action = keyAction(event, OS);
     if (action === null) return;
-
     if (action === "escape") {
       if (settingsOpen) {
         event.preventDefault();
         closeSettings();
         return;
       }
-      // Search is a mode with one way out: the field has the caret, but a result
-      // can take the focus, and the key leaves from wherever it is in the mode.
       if (searchOpen) {
         event.preventDefault();
         closeSearch();
@@ -915,7 +904,6 @@ document.addEventListener(
       }
       return;
     }
-
     event.preventDefault();
     if (action === "search") {
       openSearch();
@@ -923,8 +911,6 @@ document.addEventListener(
     }
     if (action === "settings") {
       if (!settingsOpen) {
-        // The key reaches the page before the note's blur does, so the write is
-        // remembered here as the gear's mousedown remembers it.
         settingsEditing = focused !== null && focused.editing;
         openSettings();
       }
@@ -939,8 +925,6 @@ document.addEventListener(
   true,
 );
 
-// The window has no frame, so its controls live in the page. A close waits for
-// the saves in flight, then quits; a failed save is already on the status line.
 $("close").addEventListener("click", async () => {
   await flushAll();
   tiny.win.close();
@@ -968,8 +952,6 @@ window.addEventListener("blur", () => {
 });
 window.addEventListener("focus", updateFade);
 
-// One ask says whether the system gave the app its shortcut; a missing one is
-// said once in the status line, and everything else works without it.
 tiny.api.call("readShortcut").then(({ registered }) => {
   shortcutMissing = shortcutNotice(tiny.system.os(), registered);
   renderStatus();

@@ -1,5 +1,7 @@
-// Pereda's backend: it owns the clock and the notes database, and the page
-// reaches them only through the calls below.
+/**
+ * Pereda's backend: it owns the clock and the notes database, and the page
+ * reaches them only through the calls below.
+ */
 
 import { Database } from "tjs:sqlite";
 import path from "tjs:path";
@@ -19,8 +21,10 @@ import {
 
 const DB_NAME = "pereda.db";
 
-// The store is opened once and shared by every call, so a database that cannot
-// be opened reports the same reason to each of them for the life of the app.
+/**
+ * The store is opened once and shared by every call, so a database that cannot
+ * be opened reports the same reason to each of them for the life of the app.
+ */
 let opening = null;
 
 function store(app) {
@@ -33,8 +37,10 @@ function store(app) {
   return opening;
 }
 
-// The shortcut is asked for once for the life of the process: init asks at
-// launch, and a page that asks first still gets the same answer.
+/**
+ * The shortcut is asked for once for the life of the process: init asks at
+ * launch, and a page that asks first still gets the same answer.
+ */
 let registering = null;
 
 async function registerShortcut(app) {
@@ -48,12 +54,14 @@ function shortcutRegistration(app) {
   return registering;
 }
 
-// One request at a time, for the life of the process.
+/** One request at a time, for the life of the process. */
 let generating = false;
 
-// The OS model, read through the only door the runtime has for it. Anything
-// other than macOS 26 with the model built in is `unsupported`; a request then
-// says why in the status line instead of starting a model that is not there.
+/**
+ * The OS model, read through the only door the runtime has for it. Anything
+ * other than macOS 26 with the model built in is `unsupported`; a request then
+ * says why in the status line instead of starting a model that is not there.
+ */
 async function assistantAvailability(app) {
   if (
     app.system.os() !== "macos" ||
@@ -69,9 +77,11 @@ async function assistantAvailability(app) {
   }
 }
 
-// The folder is the backup, so the person has to be able to reach it. The
-// backend asks for the path; the page never builds one. Opening it copies
-// nothing, and a folder that will not open comes back with its path.
+/**
+ * The folder is the backup, so the person has to be able to reach it. The
+ * backend asks for the path; the page never builds one. Opening it copies
+ * nothing, and a folder that will not open comes back with its path.
+ */
 async function openDataFolder(app) {
   let path = "";
   try {
@@ -83,44 +93,51 @@ async function openDataFolder(app) {
   }
 }
 
-// The menu is the app's, so it is built from the backend and its clicks are
-// handled here.
+/**
+ * The menu is the app's, so it is built from the backend and its clicks are
+ * handled here.
+ */
 export async function onMenu(id, app) {
   if (id === SHOW_DATA_FOLDER) await openDataFolder(app);
 }
 
-// One hotkey, while the app runs. The File menu is put up once at launch: it
-// does not depend on the model or on a stored preference.
+/**
+ * One hotkey, while the app runs. The File menu is put up once at launch: it
+ * does not depend on the model or on a stored preference.
+ */
 export async function init(app) {
   shortcutRegistration(app);
   await app.menu.set(fileMenus());
 }
 
-// A press brings the window forward; the page hears the same press and takes
-// the Today path, so the shortcut does what the button does, not a second thing.
+/**
+ * A press brings the window forward; the page hears the same press and takes
+ * the Today path, so the shortcut does what the button does, not a second thing.
+ */
 export function onHotkey(id, app) {
   if (id === SHORTCUT_ID) app.win.show();
 }
 
+/**
+ * The page's calls. The three notes calls are the library's, so the checks,
+ * the refusals and their sentences are the web app's too; each one here binds
+ * this backend's store.
+ */
 export const api = {
-  // The three calls are the notes library's, so the checks, the refusals and
-  // their sentences are the web app's too. Each one here binds this backend's
-  // store; the page still asks for the same names.
   async openLog(params, app) {
     return openLog(await store(app), params);
   },
-
   async saveDay(params, app) {
     return saveDay(await store(app), params);
   },
-
   async searchNotes(params, app) {
     return searchNotes(await store(app), params);
   },
-
-  // The export reads every note once and writes one Markdown file per day into
-  // the folder the page picked. The body is verbatim and the store is never
-  // written; the first failed write stops the run and what came before stays.
+  /**
+   * The export reads every note once and writes one Markdown file per day into
+   * the folder the page picked. The body is verbatim and the store is never
+   * written; the first failed write stops the run and what came before stays.
+   */
   async exportNotes(params, app) {
     const notes = await store(app);
     const folder = params?.folder;
@@ -134,17 +151,19 @@ export const api = {
     );
     return { folder, ...result };
   },
-
-  // Whether the system gave the app its shortcut, so the page can say a missing
-  // one once and work on without it. A registration that failed to answer is
-  // the same answer as a refusal: no shortcut.
+  /**
+   * Whether the system gave the app its shortcut, so the page can say a missing
+   * one once and work on without it. A registration that failed to answer is
+   * the same answer as a refusal: no shortcut.
+   */
   async readShortcut(params, app) {
     return { registered: await shortcutRegistration(app).catch(() => false) };
   },
-
-  // One summary at a time, of the note whose button was pressed and nothing
-  // else. The reply is text for the page's panel; it is never written to the
-  // notes. A machine without the model says why.
+  /**
+   * One summary at a time, of the note whose button was pressed and nothing
+   * else. The reply is text for the page's panel; it is never written to the
+   * notes. A machine without the model says why.
+   */
   async summariseNote(params, app) {
     const availability = await assistantAvailability(app);
     if (availability !== "available")

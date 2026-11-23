@@ -1,11 +1,12 @@
-// The web app's store: SQLite compiled to WebAssembly, kept in the
-// origin-private file system, with the notes library opened over it. The library
-// takes the database handle, so this file is the driver and nothing else: the
-// schema, the SQL and the search are the desktop's.
-//
-// The library's handle is the one the desktop passes: `exec`, `prepare().all()`,
-// `prepare().run()` and `close`. SQLite's oo1 API answers a query through `exec`
-// with a callback, so this adapter is the whole of the difference.
+/**
+ * The web app's store: SQLite compiled to WebAssembly, kept in the
+ * origin-private file system, with the notes library opened over it. The library
+ * takes the database handle, so this file is the driver and nothing else: the
+ * schema, the SQL and the search are the desktop's. The handle is `exec`,
+ * `prepare().all()`, `prepare().run()` and `close`; SQLite's oo1 API answers a
+ * query through `exec` with a callback, so this adapter is the whole of the
+ * difference.
+ */
 
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm";
 import wasm from "@sqlite.org/sqlite-wasm/sqlite3.wasm?url";
@@ -33,9 +34,11 @@ function handle(db) {
   };
 }
 
-// The pool is the browser's file: one connection, made from a worker, without a
-// header the host cannot set. A browser without the origin-private file system
-// refuses here, and the app says so instead of keeping notes it would lose.
+/**
+ * The pool is the browser's file: one connection, made from a worker, without a
+ * header the host cannot set. A browser without the origin-private file system
+ * refuses here, and the app says so instead of keeping notes it would lose.
+ */
 async function create() {
   const sqlite3 = await sqlite3InitModule({ locateFile: () => wasm });
   const pool = await openPool(sqlite3);
@@ -43,10 +46,12 @@ async function create() {
   return openStore(FILE, () => handle(db));
 }
 
-// A page can open while the worker of the page it replaced still holds the
-// pool's access handles: an installed app that opens from the cache is faster
-// than the teardown. The pool is asked for again a few times before the app
-// says it cannot write.
+/**
+ * A page can open while the worker of the page it replaced still holds the
+ * pool's access handles: an installed app that opens from the cache is faster
+ * than the teardown. The pool is asked for again a few times before the app
+ * says it cannot write.
+ */
 async function openPool(sqlite3) {
   for (let attempt = 0; ; attempt++) {
     try {
@@ -69,28 +74,28 @@ function store() {
   return opening;
 }
 
-// The calls' bodies are the notes library's; this worker only says how it is
-// asked, over the store it opened.
+/**
+ * The calls' bodies are the notes library's; this worker only says how it is
+ * asked, over the store it opened.
+ */
 const calls = {
   async open() {
     await store();
     return { today: today() };
   },
-
   async openLog(params) {
     return openLog(await store(), params);
   },
-
   async saveDay(params) {
     return saveDay(await store(), params);
   },
-
   async searchNotes(params) {
     return searchNotes(await store(), params);
   },
-
-  // Every day that has a note, oldest first, for the export. A tombstone is not
-  // a note and writes no file.
+  /**
+   * Every day that has a note, oldest first, for the export. A tombstone is not
+   * a note and writes no file.
+   */
   async all() {
     const notes = await store();
     return notes.all();

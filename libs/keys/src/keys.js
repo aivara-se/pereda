@@ -1,8 +1,12 @@
-// The five fixed keys, read the same way by the page and its tests. ⌘ on a
-// Mac is Ctrl elsewhere; nothing here stores a combination or offers a setting.
+/**
+ * The five fixed keys, read the same way by the page and its tests. ⌘ on a Mac
+ * is Ctrl elsewhere; nothing here stores a combination or offers a setting.
+ */
 
-// The action a keydown means, or null when it is not one of the five. Escape
-// is reported whatever holds the focus; the page decides what it closes.
+/**
+ * The action a keydown means, or null when it is not one of the five. Escape is
+ * reported whatever holds the focus; the page decides what it closes.
+ */
 export function keyAction(event, os) {
   if (event.key === "Escape") return "escape";
   const modifier = os === "macos" ? event.metaKey : event.ctrlKey;
