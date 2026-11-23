@@ -14,12 +14,18 @@
   let query = $state("");
   let days = $state([]);
   let timer = 0;
-  let token = 0; // the newest search, so a slow one cannot win
-  let shown = false; // the mode is open, not fading in or out
 
-  // The field takes the caret and an empty log of results; the mode is the
-  // page's to open and close. ⌘F while the mode is open keeps the query and
-  // brings the caret back, as the desktop's does.
+  /** The newest search, so a slow one cannot win. */
+  let token = 0;
+
+  /** The mode is open, not fading in or out. */
+  let shown = false;
+
+  /**
+   * The field takes the caret and an empty log of results; the mode is the
+   * page's to open and close. ⌘F while the mode is open keeps the query and
+   * brings the caret back, as the desktop's does.
+   */
   export function open() {
     if (!shown) {
       clearTimeout(timer);
@@ -34,7 +40,7 @@
     field.select();
   }
 
-  // Leaving empties the field and lets the results area go with its own fade.
+  /** Leaving empties the field and lets the results area go with its own fade. */
   export function close() {
     clearTimeout(timer);
     token += 1;
@@ -46,9 +52,11 @@
     hide(resultsEl);
   }
 
-  // Every word must be in a note, as a prefix, in any order, and a text search
-  // never reaches today. An exact date opens its day before that rule. An empty
-  // field stays open with nothing under it.
+  /**
+   * Every word must be in a note, as a prefix, in any order, and a text search
+   * never reaches today. An exact date opens its day before that rule. An empty
+   * field stays open with nothing under it.
+   */
   async function look() {
     const mine = ++token;
     if (query.trim() === "") {
@@ -68,7 +76,6 @@
     }
     if (mine !== token) return;
     if (answer.refused !== undefined) {
-      // A date after today: say so and leave the list where it is.
       say(answer.refused, true);
       return;
     }

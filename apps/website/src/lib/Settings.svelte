@@ -20,9 +20,11 @@
     });
   }
 
-  // The notes are one Markdown file per day, in a folder the person picks. A
-  // browser that cannot write a folder says so; nothing is downloaded into a
-  // directory nobody chose (docs/adrs/024-export-writes-markdown.md).
+  /**
+   * The notes are one Markdown file per day, in a folder the person picks. A
+   * browser that cannot write a folder says so; nothing is downloaded into a
+   * directory nobody chose (docs/adrs/024-export-writes-markdown.md).
+   */
   async function exportNotes() {
     if (exporting) return;
     if (typeof window.showDirectoryPicker !== "function") {
@@ -32,15 +34,12 @@
       };
       return;
     }
-
     let folder;
     try {
       folder = await window.showDirectoryPicker({ mode: "readwrite" });
     } catch {
-      // The picker was dismissed: nothing was written and nothing is said.
       return;
     }
-
     exporting = true;
     report = { text: "", failed: false };
     try {
@@ -48,8 +47,6 @@
       const result = await writeExport(
         rows,
         (day) => `${day}.md`,
-        // The page's writer is the folder it picked: the same-named file is
-        // replaced because create is true, and the body is written as stored.
         async (name, body) => {
           const file = await folder.getFileHandle(name, { create: true });
           const stream = await file.createWritable();

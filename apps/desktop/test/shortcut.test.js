@@ -8,7 +8,6 @@ describe("the shortcut", () => {
     expect(shortcutNotice("windows", true)).toBe("");
     expect(shortcutNotice("linux", true)).toBe("");
   });
-
   test("names the combination the person would press, and says it once", () => {
     expect(shortcutNotice("macos", false)).toBe(
       "The shortcut ⌘⇧D is not available on this computer.",

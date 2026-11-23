@@ -1,9 +1,5 @@
 @import "@pereda/theme/theme.css";
 
-/* The web app draws the desktop's page from the shared theme and adds no token:
-   the same bar, the same column, the same note, with the name where the window
-   draws its dots (docs/adrs/043-the-web-is-the-desktops-page.md). */
-
 * {
   box-sizing: border-box;
 }
@@ -17,8 +13,7 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  /* The browser is the window: its paper is opaque, not the desktop's
-     translucent --window over a wallpaper. */
+
   background: var(--bg);
   color: var(--ink);
 }
@@ -45,18 +40,12 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* The bar carries the app's two controls at its right, the search then the gear,
-   and nothing at its left, where the desktop carries the window's dots. The page
-   below it scrolls and the bar does not. */
-
 .bar {
   flex: none;
   display: flex;
   align-items: center;
   height: var(--bar);
-  /* One 34 px control in a 44 px bar leaves 5 px above it; the gap between the
-     two controls and the bar's right edge are the same 5 px
-     (docs/adrs/044-the-controls-share-the-bars-corner.md). */
+
   padding: 0 5px;
   -webkit-user-select: none;
   user-select: none;
@@ -107,20 +96,12 @@ button:disabled {
   outline: 2px solid var(--accent);
 }
 
-/* The bar's right corner is the page's: the search stands first and the gear
-   beside it. Both stay drawn on every page; the one whose page is open is
-   marked, and pressing it closes that page. */
-
 .app {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-
-/* The log, the search and the settings page are mounted together and clipped to
-   the column, so a page's 4 px rise never scrolls the window: a page swap is a
-   cross-fade of two siblings in place, and the log is never rebuilt. */
 
 .pages {
   flex: 1;
@@ -145,9 +126,6 @@ button:disabled {
   margin: 0 auto;
   padding: 30px 0 45vh;
 }
-
-/* The search page is the field and the list under it: the field holds its place
-   and the list scrolls at the window's edge, so its column moves nowhere. */
 
 .search-page {
   display: flex;
@@ -240,9 +218,6 @@ button:disabled {
   font-size: 17px;
 }
 
-/* Settings is a page on the log's grid: a nav where the dates sit and a panel
-   where the notes sit. It replaces the log; it never loads another day. */
-
 .settings {
   min-height: 0;
   overflow-y: auto;
@@ -330,8 +305,6 @@ button:disabled {
   color: var(--error);
 }
 
-/* An entry is a date column and the note, on the one grid every page shares. */
-
 .entry {
   display: grid;
   grid-template-columns: 7.5rem 1fr;
@@ -339,19 +312,12 @@ button:disabled {
   padding-bottom: 48px;
 }
 
-/* The date column carries the entry's actions without making the entry taller:
-   the row is out of the flow and only its own entry can show it. */
 .entry .meta {
   position: relative;
   align-self: start;
   min-width: 0;
 }
 
-/* The row hangs 1 px under the date, against its right edge, outside the flow,
-   and only the selected entry shows it. It arrives on the one entrance and
-   leaves through opacity alone. Its keys leave with the fade's end, never at
-   its first frame: a press on a button blurs the note, and the button under
-   the pointer must still be there when the press ends. */
 .entry .actions {
   position: absolute;
   top: calc(100% + 1px);
@@ -367,7 +333,6 @@ button:disabled {
     visibility 0s var(--t-soft);
 }
 
-/* Selected: the row arrives with the 4 px rise and is hit-testable at once. */
 .entry:focus-within .actions {
   opacity: 1;
   transform: none;
@@ -443,8 +408,6 @@ button:disabled {
   min-height: 1.65em;
 }
 
-/* The note is one editor over its string. CodeMirror's own chrome goes, so the
-   note keeps the page's type, its caret and its wrap. */
 .entry .note .cm-editor {
   background: transparent;
   color: var(--ink);
@@ -480,13 +443,10 @@ button:disabled {
 
 .entry:not(.editing) .note .cm-content {
   cursor: default;
-  /* The caret is the sign of writing: a selected note that has not been opened
-     for editing keeps the focus and the selection, but draws no caret. */
+
   caret-color: transparent;
 }
 
-/* The forms the note draws where it stands. A mark is hidden, not styled: these
-   are the styles of the text a mark was drawn away from. */
 .md-em {
   font-style: italic;
 }
@@ -512,9 +472,6 @@ button:disabled {
   font-size: 0.85em;
 }
 
-/* The status line is one sentence at the bottom centre, over the page. An error
-   is the colour of the line; a fact is muted. */
-
 .status {
   position: fixed;
   left: 50%;
@@ -533,8 +490,6 @@ button:disabled {
 .status.info {
   color: var(--muted);
 }
-
-/* The one screen that stops the app: the store is named, not touched. */
 
 .fatal {
   position: fixed;
@@ -565,10 +520,6 @@ button:disabled {
   color: var(--muted);
 }
 
-/* The entry being written dims the page's controls and the other entries while
-   it has the caret. The app's name and its search are the page's identity, so
-   they stay at full strength, as the window's dots do. The status line is read,
-   not navigated, so it stays at full strength. */
 .entry:not(:focus-within),
 .entry:focus-within .date {
   transition: opacity var(--t-soft) var(--ease);
@@ -627,11 +578,6 @@ body:has(.entry.editing:focus-within) .entry:focus-within .date {
   }
 }
 
-/* One entrance and one exit, for every surface above. The page adds `enter` for
-   the frame a surface arrives from and `leave` from the frame it goes; `hidden`
-   is the state it takes when the fade ends, so the two classes are only ever the
-   ends of that fade. */
-
 .surface {
   transition:
     opacity var(--t-soft) var(--ease),
@@ -648,13 +594,10 @@ body:has(.entry.editing:focus-within) .entry:focus-within .date {
   pointer-events: none;
 }
 
-/* The status line is centred by its own transform, so its rise keeps the centre. */
 .status.enter {
   transform: translate(-50%, 4px);
 }
 
-/* Reduce Motion: both durations go to zero and the rise goes with them, so the
-   same code path draws an instant change and nothing is lost. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --t-quick: 0ms;

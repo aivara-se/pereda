@@ -1,28 +1,28 @@
 # Pereda
 
-A real-time daily note app: one note per day, written as you type. The desktop app runs on macOS, Windows and Linux, in about 9.5 MB, with no account, no server and no network. A static web page writes the same log in the browser's own storage.
+A real-time daily note app: one note per day, written as you type. The desktop app runs on macOS, Windows and Linux; a static web page writes the same log in the browser. The product is [docs/SPEC8N.md](docs/SPEC8N.md) and the design values are [docs/DESIGN.md](docs/DESIGN.md).
 
 ![Pereda open on today's note, at the top of the log](docs/screenshot.png)
 
-The product is [PRODUCT.md](PRODUCT.md); the architecture is [SYSTEMS.md](SYSTEMS.md); the decisions are in [docs/adrs](docs/adrs/). The repository is a bun workspace: the desktop app in `apps/desktop`, the web app in `apps/website`, and the day, the store, the note and the theme the two share in `libs/`. The root scripts run both.
+## Setup
 
-## Run it
+Bun 1.4.4 or newer.
 
 ```sh
-bun run dev        # the app, with hot reload
-bun test           # the store, the calls, the search, the jump, the export, the day, the note's forms, the shortcut, the keys, the midnight line, the assistant's refusal and the menu
-bun run build      # the app for this OS
-bun run build:web  # the site, into apps/website/build
+bun install
+bun run dev
 ```
 
-## Release
+## Usage
 
-`.github/workflows/publish.yml` runs on a push to `main`: it reads the version in `apps/desktop/tinyjs.json`, builds macOS arm64 and x86_64, Windows, Linux and the web app, tags `v<version>` once every build succeeds, publishes the GitHub release with the four desktop archives, and deploys the web app to GitHub Pages. A push that leaves the version alone does nothing ([007](docs/adrs/007-releases-follow-the-version-file.md), [038](docs/adrs/038-the-web-app-ships-with-the-release.md)).
+Run the checks and the builds.
 
-The site is served under the repository's path until a custom domain is pointed at it; that is a CNAME in `apps/website/static/` and an empty `PEREDA_BASE` ([035](docs/adrs/035-the-web-app-is-a-static-sveltekit-site.md)).
-
-The macOS build is signed and notarized when these secrets are set, and ad-hoc signed without them: `MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PASSWORD`, `MACOS_KEYCHAIN_PASSWORD`, `MACOS_SIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`, `MACOS_APPLE_ID`, `MACOS_TEAM_ID`, `MACOS_APP_PASSWORD`.
+```sh
+bun test
+bun run build
+bun run build:web
+```
 
 ## License
 
-MIT — see [LICENSE](LICENSE) ([019](docs/adrs/019-the-app-is-released-under-mit.md)). The bundled Instrument Sans and Newsreader fonts keep the SIL Open Font License, in `libs/theme/fonts/`.
+MIT — see [LICENSE](LICENSE).

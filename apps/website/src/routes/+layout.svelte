@@ -8,14 +8,15 @@
 
   let { children } = $props();
 
+  /**
+   * A new worker deletes the cache of the build it replaces, so a page that was
+   * already controlled reloads once when the new worker takes over, and its
+   * files and its cache name the same build. The first install has no
+   * controller to replace and does not reload.
+   */
   onMount(() => {
     startPainting();
     openStore();
-
-    // A new worker deletes the cache of the build it replaces, so a page that
-    // was already controlled reloads once when the new worker takes over, and
-    // its files and its cache name the same build. The first install has no
-    // controller to replace and does not reload.
     if (!navigator.serviceWorker?.controller) return;
     let reloading = false;
     const reload = () => {

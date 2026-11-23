@@ -14,13 +14,17 @@
   import { session } from "#lib/session.svelte.js";
   import { hide, show, startPainting } from "#lib/surfaces.js";
 
-  // The same five keys the desktop reads. ⌘T never arrives: the browser takes it
-  // for a new tab before the page sees it (docs/adrs/043-the-web-is-the-desktops-page.md).
-  const PLATFORM = navigator.userAgentData?.platform ?? navigator.platform ?? "";
+  /**
+   * The same five keys the desktop reads. ⌘T never arrives: the browser takes it
+   * for a new tab before the page sees it
+   * (docs/adrs/043-the-web-is-the-desktops-page.md).
+   */
+  const PLATFORM =
+    navigator.userAgentData?.platform ?? navigator.platform ?? "";
   const OS = /mac/i.test(PLATFORM) ? "macos" : "other";
-  const SEARCH_DEBOUNCE = 200;
 
-  let mode = $state("log"); // log | search | settings
+  /** The page's state: the mode on screen, the log it holds and the day in focus. */
+  let mode = $state("log");
   let days = $state([]);
   let more = $state(false);
   let loaded = $state(false);
@@ -30,9 +34,10 @@
   let busy = false;
   let loadToken = 0;
 
-  const handles = new Map(); // day -> the entry's flush and its way into the caret
+  /** The entry handles: each day's flush and its way into the caret. */
+  const handles = new Map();
 
-  let midnight = $state(null); // the loaded day is behind the store's today
+  let midnight = $state(null);
 
   let logEl;
   let edge;
@@ -40,9 +45,11 @@
   let settings;
   let statusEl;
 
-  // The status line is the problem the page has, or the day the text is going
-  // to when the log is behind midnight. A real problem outranks it, and a
-  // reload clears the midnight line.
+  /**
+   * The status line is the problem the page has, or the day the text is going
+   * to when the log is behind midnight. A real problem outranks it, and a
+   * reload clears the midnight line.
+   */
   const line = $derived(
     notice.text !== ""
       ? notice.text
@@ -54,8 +61,6 @@
   );
   const isError = $derived(notice.text !== "" && notice.failed);
 
-  // One entry at a time: the log asks each for its write, and a mode opens only
-  // when every write that was asked for has landed.
   function register(day, handle) {
     handles.set(day, handle);
   }
@@ -65,21 +70,20 @@
   }
 
   function flushAll() {
-    return Promise.all([...handles.values()].map((handle) => handle.flush())).then(
-      (results) => results.every(Boolean),
-    );
+    return Promise.all(
+      [...handles.values()].map((handle) => handle.flush()),
+    ).then((results) => results.every(Boolean));
   }
 
-  // The log opens on today at the top, or at the page that holds a day a search
-  // asked for.
+  /**
+   * The log opens on today at the top, or at the page that holds a day a search
+   * asked for.
+   */
   async function loadLog(from) {
     const token = ++loadToken;
     let answer;
     try {
-      answer = await call(
-        "openLog",
-        from === undefined ? {} : { from },
-      );
+      answer = await call("openLog", from === undefined ? {} : { from });
     } catch (error) {
       say(`Could not load the notes — ${error.message}`, true);
       return;
@@ -118,9 +122,11 @@
     }
   }
 
-  // The key map's today action: it closes either mode and reloads the log. The
-  // browser takes ⌘T for a new tab, so no key reaches it here
-  // (docs/adrs/043-the-web-is-the-desktops-page.md).
+  /**
+   * The key map's today action: it closes either mode and reloads the log. The
+   * browser takes ⌘T for a new tab, so no key reaches it here
+   * (docs/adrs/043-the-web-is-the-desktops-page.md).
+   */
   async function goToday() {
     if (!(await flushAll())) return;
     if (mode === "search") {
@@ -135,9 +141,11 @@
     await loadLog();
   }
 
-  // The search is a mode over the log, opened by ⌘F or its control: the field
-  // takes the caret, and the log leaves the screen until Esc or a second press
-  // on the control closes it.
+  /**
+   * The search is a mode over the log, opened by ⌘F or its control: the field
+   * takes the caret, and the log leaves the screen until Esc or a second press
+   * on the control closes it.
+   */
   async function openSearch() {
     if (mode === "search") {
       search.open();
@@ -159,8 +167,10 @@
     await loadLog();
   }
 
-  // Settings opens over the log it leaves and returns to the same day, scroll
-  // and caret.
+  /**
+   * Settings opens over the log it leaves and returns to the same day, scroll
+   * and caret.
+   */
   async function openSettings() {
     if (mode === "settings") return;
     if (!(await flushAll())) return;
@@ -187,7 +197,7 @@
     settingsEditing = false;
   }
 
-  // A result opens the log at its day; the mode is done then.
+  /** A result opens the log at its day; the mode is done then. */
   async function openDay(day) {
     if (!(await flushAll())) return;
     mode = "log";
@@ -196,9 +206,11 @@
     await loadLog(day);
   }
 
-  // A date is answered with its page of the log, which carries today even when
-  // the day is empty. A day with nothing written lands on the newest day before
-  // it, and the status says so once.
+  /**
+   * A date is answered with its page of the log, which carries today even when
+   * the day is empty. A day with nothing written lands on the newest day before
+   * it, and the status says so once.
+   */
   async function openJump({ day, days: page, more: hasMore }) {
     if (!(await flushAll())) return;
     loadToken += 1;
@@ -219,11 +231,14 @@
     }
   }
 
-  // ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
-  // older, and the caret lands at the end of the note reached.
+  /**
+   * ⌘↑ and ⌘↓ make the day the unit: the day above is newer, the day below is
+   * older, and the caret lands at the end of the note reached.
+   */
   function moveDay(delta) {
     if (mode !== "log" || days.length === 0) return;
-    const index = focusedDay === null ? 0 : days.findIndex((day) => day.day === focusedDay);
+    const index =
+      focusedDay === null ? 0 : days.findIndex((day) => day.day === focusedDay);
     const from = index === -1 ? 0 : index;
     const target = days[Math.min(days.length - 1, Math.max(0, from + delta))];
     handles.get(target.day)?.edit();
@@ -232,15 +247,12 @@
   function onKeydown(event) {
     const action = keyAction(event, OS);
     if (action === null) return;
-
     if (action === "escape") {
       if (mode === "settings") {
         event.preventDefault();
         closeSettings();
         return;
       }
-      // Search is a mode with one way out: the field has the caret, but a result
-      // can take the focus, and the key leaves from wherever it is in the mode.
       if (mode === "search") {
         event.preventDefault();
         closeSearch();
@@ -248,9 +260,6 @@
       }
       return;
     }
-
-    // Every other key belongs to the page, not to the browser's own reading of
-    // it: ⌘F would open its find bar and ⌘, its settings.
     event.preventDefault();
     if (action === "search") {
       openSearch();
@@ -276,13 +285,10 @@
     startPainting();
     loadLog();
     document.addEventListener("keydown", onKeydown, true);
-
-    // Scrolling past the last entry asks for the page before it.
     const seen = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) older();
     });
     seen.observe(edge);
-
     return () => {
       document.removeEventListener("keydown", onKeydown, true);
       seen.disconnect();
@@ -355,11 +361,6 @@
   </div>
 </div>
 
-<p
-  class="status surface"
-  bind:this={statusEl}
-  class:info={!isError}
-  hidden
->
+<p class="status surface" bind:this={statusEl} class:info={!isError} hidden>
   {line}
 </p>

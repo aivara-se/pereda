@@ -1,6 +1,3 @@
-/* The two faces and the values every surface draws with. A surface adds its own
-   layout and redefines no token. */
-
 @font-face {
   font-family: "Instrument Sans";
   src: url("./fonts/instrument-sans-latin.woff2") format("woff2");
@@ -20,7 +17,6 @@
 :root {
   color-scheme: light dark;
   --bar: 44px;
-  /* One curve and two durations: every transition in this file names them. */
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --t-quick: 120ms;
   --t-soft: 200ms;

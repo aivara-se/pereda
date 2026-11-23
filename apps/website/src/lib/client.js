@@ -1,5 +1,7 @@
-// The page's side of the worker: one request at a time, each answered by its
-// own id, so a slow call never answers for a later one.
+/**
+ * The page's side of the worker: one request at a time, each answered by its
+ * own id, so a slow call never answers for a later one.
+ */
 
 let worker = null;
 let sent = 0;

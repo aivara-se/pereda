@@ -1,6 +1,8 @@
-// What the app knows about its own store, and the line it says when it cannot
-// keep notes: a browser without the origin-private file system keeps nothing
-// (docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md).
+/**
+ * What the app knows about its own store, and the line it says when it cannot
+ * keep notes: a browser without the origin-private file system keeps nothing
+ * (docs/adrs/033-the-notes-have-a-second-surface-on-the-web.md).
+ */
 
 import { call } from "#lib/client.js";
 
@@ -19,8 +21,6 @@ export function openStore() {
 
 async function start() {
   try {
-    // The browser may still evict what it was not asked to keep; asking is the
-    // most a page can do, and eviction stays an unhandled case of its own.
     try {
       await navigator.storage?.persist?.();
     } catch {}

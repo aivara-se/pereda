@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, mock, test } from "bun:test";
 
-// The backend imports tjs:sqlite and tjs:path at the top; the summary handler
-// never opens either, so a stub is enough to load the module under bun.
+/**
+ * The backend imports tjs:sqlite and tjs:path at the top; the summary handler
+ * never opens either, so a stub is enough to load the module under bun.
+ */
 mock.module("tjs:sqlite", () => ({ Database: class {} }));
 mock.module("tjs:path", () => ({
   default: { join: (...parts) => parts.join("/") },
@@ -42,7 +44,6 @@ describe("the summary request", () => {
     expect(app.calls[0].prompt).toBe("The note on screen.");
     expect(app.calls[0].options.instructions).toContain("Summarise");
   });
-
   test("refuses a second request while the first is still answering", async () => {
     let release;
     const gate = new Promise((resolve) => {
@@ -61,7 +62,6 @@ describe("the summary request", () => {
     release();
     await expect(first).resolves.toEqual({ text: "A short summary." });
   });
-
   test("refuses when the model is not ready", async () => {
     await expect(
       api.summariseNote(
@@ -78,7 +78,6 @@ describe("the summary request", () => {
       ),
     ).rejects.toThrow("The assistant needs macOS 26 or later.");
   });
-
   test("refuses an empty note before it reaches the model", async () => {
     const app = fakeApp();
     await expect(api.summariseNote({ body: "   " }, app)).rejects.toThrow(
